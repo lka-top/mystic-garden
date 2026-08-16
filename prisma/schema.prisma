@@ -1,0 +1,234 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ============================================================================
+// 1. 用户与访客信息表 (users)
+// ============================================================================
+model User {
+  id           Int       @id @default(autoincrement())                 // 用户唯一主键 ID
+  username     String    @unique @db.VarChar(50)                      // 登录用户名/自动生成标识 (唯一索引)
+  passwordHash String?   @map("password_hash") @db.VarChar(255)       // 加盐哈希加密后的登录密码 (bcrypt, 游客免密注册时为 NULL)
+  nickname     String    @default("洛凯") @db.VarChar(50)             // 前台展示昵称 (如: 洛凯、漫步花友_7a2b)
+  avatar       String?   @db.VarChar(255)                             // 个人头像图片 URL (支持 DiceBear 动态生成)
+  email        String?   @db.VarChar(100)                             // 联系与通知邮箱 (可选)
+  bio          String?   @default("欢迎来到洛凯花园，这里记录思考与生活。") @db.VarChar(255) // 个人个性签名 / 简介
+  role         String    @default("guest") @db.VarChar(20)            // 角色权限 (admin: 超级管理员, user: 注册用户, guest: 免登录游客)
+  guestUuid    String?   @unique @map("guest_uuid") @db.VarChar(64)   // 访客设备持久化唯一指纹 UUID (免登录评论自动识别归档)
+  ipAddress    String?   @map("ip_address") @db.VarChar(50)          // 用户首次注册/留言时的 IP 地址
+  userAgent    String?   @map("user_agent") @db.VarChar(255)         // 用户注册/建档时的浏览器 User-Agent
+  createdAt    DateTime  @default(now()) @map("created_at")           // 账号注册/创建时间
+  updatedAt    DateTime  @updatedAt @map("updated_at")                // 资料最后修改时间
+
+  // 实体关联关系
+  articles     Article[]                                              // 1:N 该用户发表的深度文章列表
+  essays       Essay[]                                                // 1:N 该用户发布的随笔微言列表
+  notes        Note[]                                                 // 1:N 该用户编写的知识库笔记列表
+  comments     Comment[]                                              // 1:N 该用户发表的评论回复列表 (强关联外键)
+
+  @@map("users")
+}
+
+// ============================================================================
+// 2. 长篇深度文章表 (articles)
+// ============================================================================
+model Article {
+  id          Int          @id @default(autoincrement())             // 文章唯一主键 ID
+  slug        String       @unique @db.VarChar(100)                  // URL 路由唯一语义标识 (如: /articles/nuxt3-deep-dive)
+  title       String       @db.VarChar(200)                          // 文章主标题
+  summary     String       @db.VarChar(500)                          // 文章摘要简介 (用于列表展示与 SEO description)
+  content     String       @db.LongText                              // Markdown 格式的文章正文完整内容 (支持代码、图片、表格)
+  coverImage  String?      @map("cover_image") @db.VarChar(255)      // 文章封面大图 URL (可选)
+  isPublished Boolean      @default(false) @map("is_published")      // 发布状态 (true: 已公开发布, false: 草稿箱)
+  isPinned    Boolean      @default(false) @map("is_pinned")         // 置顶推荐状态 (true: 首页顶部巨幅推荐展示)
+  views       Int          @default(0)                               // 文章累计浏览量计数器
+  readingTime Int          @default(0) @map("reading_time")          // 预估阅读耗时 (分钟数)
+  categoryId  Int?         @map("category_id")                       // 所属分类 ID (外键 -> categories.id)
+  authorId    Int          @map("author_id")                         // 作者用户 ID (外键 -> users.id)
+  createdAt   DateTime     @default(now()) @map("created_at")        // 文章初次创建发布时间
+  updatedAt   DateTime     @updatedAt @map("updated_at")             // 文章最后编辑修改时间
+
+  // 实体关联关系
+  category    Category?    @relation(fields: [categoryId], references: [id]) // N:1 所属文章分类
+  author      User         @relation(fields: [authorId], references: [id])   // N:1 文章作者
+  tags        ArticleTag[]                                           // N:M 文章挂载的标签中间关联
+  comments    Comment[]                                              // 1:N 文章下的所有评论互动 (级联删除)
+
+  @@index([categoryId])
+  @@index([isPublished, isPinned, createdAt(sort: Desc)])           // 复合索引: 加速首页与列表页高效排序分页
+  @@map("articles")
+}
+
+// ============================================================================
+// 3. 随笔灵感微言表 (essays)
+// ============================================================================
+model Essay {
+  id          Int       @id @default(autoincrement())                // 随笔唯一主键 ID
+  content     String    @db.Text                                     // 随笔正文字符串 (支持换行与即时随想)
+  mood        String?   @db.VarChar(30)                              // 发布此刻的心情标签 (如: 思考, 专注, 闲适)
+  weather     String?   @db.VarChar(30)                              // 发布此刻的天气标签 (如: 晴朗, 多云, 阴雨)
+  location    String?   @db.VarChar(100)                             // 发布地理位置 / 场所 (如: 工作室, 书房, 阳台)
+  images      Json?                                                  // 随笔配图数组 (JSON 格式存储图片 URL 列表)
+  isPinned    Boolean   @default(false) @map("is_pinned")            // 置顶状态 (true: 随笔时间轴最顶部固定展示)
+  isPublished Boolean   @default(true) @map("is_published")          // 发布状态 (true: 公开可见, false: 隐藏)
+  likes       Int       @default(0)                                  // 访客点赞累计次数
+  authorId    Int       @map("author_id")                            // 发布者用户 ID (外键 -> users.id)
+  createdAt   DateTime  @default(now()) @map("created_at")           // 随笔发布时间戳
+  updatedAt   DateTime  @updatedAt @map("updated_at")                // 随笔最后编辑时间
+
+  // 实体关联关系
+  author      User      @relation(fields: [authorId], references: [id]) // N:1 随笔作者
+  comments    Comment[]                                              // 1:N 随笔下的所有互动留言 (级联删除)
+
+  @@index([isPublished, isPinned, createdAt(sort: Desc)])          // 复合索引: 加速时间轴倒序分页流查询
+  @@map("essays")
+}
+
+// ============================================================================
+// 4. 笔记本与知识库分类表 (notebooks)
+// ============================================================================
+model Notebook {
+  id          Int       @id @default(autoincrement())                // 笔记本唯一主键 ID
+  name        String    @unique @db.VarChar(50)                      // 笔记本名称 (如: 前端工程备忘录, 服务端架构笔记)
+  slug        String    @unique @db.VarChar(50)                      // URL 路由唯一标识 (如: frontend-knowledge)
+  description String?   @db.VarChar(200)                             // 笔记本定位与内容说明简介
+  icon        String?   @db.VarChar(50)                              // 分类展示图标标识 (如: terminal, layers, book)
+  isPrivate   Boolean   @default(false) @map("is_private")           // 私密状态 (true: 仅管理员登录后可见, false: 全网公开)
+  sortOrder   Int       @default(0) @map("sort_order")               // 笔记本在前台展示的排序权重 (数值越小越靠前)
+  createdAt   DateTime  @default(now()) @map("created_at")           // 笔记本创建时间
+  updatedAt   DateTime  @updatedAt @map("updated_at")                // 笔记本更新时间
+
+  // 实体关联关系
+  notes       Note[]                                                 // 1:N 该笔记本下归档的所有结构化笔记
+
+  @@map("notebooks")
+}
+
+// ============================================================================
+// 5. 结构化长文笔记表 (notes)
+// ============================================================================
+model Note {
+  id          Int       @id @default(autoincrement())                // 笔记唯一主键 ID
+  title       String    @db.VarChar(200)                             // 笔记主标题 / 速查主题名
+  slug        String    @unique @db.VarChar(100)                     // 笔记 URL 路由唯一标识 (如: nuxt3-middleware-tricks)
+  content     String    @db.LongText                                 // Markdown 格式的完整笔记内容 (支持代码块、速查表)
+  summary     String?   @db.VarChar(500)                             // 笔记摘要或一句话备忘核心点 (可选)
+  isPinned    Boolean   @default(false) @map("is_pinned")            // 置顶状态 (true: 在知识库列表中高亮置顶)
+  isPublished Boolean   @default(true) @map("is_published")          // 发布状态 (true: 公开, false: 草稿)
+  isEncrypted Boolean   @default(false) @map("is_encrypted")        // 是否加密访问 (true: 需要密码才可查看)
+  password    String?   @db.VarChar(255)                             // 笔记独立访问密码 (加密保护时生效)
+  views       Int       @default(0)                                  // 笔记查看次数统计
+  notebookId  Int?      @map("notebook_id")                          // 所属笔记本 ID (外键 -> notebooks.id, 可为空)
+  authorId    Int       @map("author_id")                            // 作者用户 ID (外键 -> users.id)
+  createdAt   DateTime  @default(now()) @map("created_at")           // 笔记创建时间
+  updatedAt   DateTime  @updatedAt @map("updated_at")                // 笔记修改时间
+
+  // 实体关联关系
+  notebook    Notebook? @relation(fields: [notebookId], references: [id]) // N:1 归属的笔记本知识库
+  author      User      @relation(fields: [authorId], references: [id])   // N:1 笔记作者
+  tags        NoteTag[]                                              // N:M 笔记关联的标签列表
+
+  @@index([notebookId])
+  @@index([isPublished, isPinned, createdAt(sort: Desc)])          // 复合索引: 加速知识库卡片流快速检索
+  @@map("notes")
+}
+
+// ============================================================================
+// 6. 多级评论与互动留言表 (comments)
+// ============================================================================
+model Comment {
+  id           Int       @id @default(autoincrement())               // 评论唯一主键 ID
+  targetType   String    @map("target_type") @db.VarChar(20)         // 多态目标类型 (article: 文章评论, essay: 随笔留言, guestbook: 全站留言板)
+  articleId    Int?      @map("article_id")                          // 关联的文章 ID (当 targetType 为 article 时生效, 外键 -> articles.id)
+  essayId      Int?      @map("essay_id")                            // 关联的随笔 ID (当 targetType 为 essay 时生效, 外键 -> essays.id)
+  parentId     Int?      @map("parent_id")                           // 父级评论 ID (自引用外键 -> comments.id, 为 NULL 表示顶级主评论, 有值表示楼中楼回复)
+  userId       Int       @map("user_id")                             // 发表评论的用户/游客 ID (外键 -> users.id, 强关联归一化)
+  content      String    @db.Text                                    // 评论正文内容 (支持换行排版)
+  ipAddress    String?   @map("ip_address") @db.VarChar(50)          // 评论发布时的 IP 地址 (用于防刷与安全审计)
+  userAgent    String?   @map("user_agent") @db.VarChar(255)         // 评论发布时的浏览器与操作系统 User-Agent 标识
+  isApproved   Boolean   @default(true) @map("is_approved")          // 审核状态 (true: 已审核通过公开显示, false: 待审核/下线)
+  isPinned     Boolean   @default(false) @map("is_pinned")           // 置顶状态 (true: 该条精选评论在顶部固定显示)
+  createdAt    DateTime  @default(now()) @map("created_at")          // 评论发表时间
+  updatedAt    DateTime  @updatedAt @map("updated_at")               // 评论最后修改时间
+
+  // 实体关联关系
+  article      Article?  @relation(fields: [articleId], references: [id], onDelete: Cascade) // N:1 关联文章 (文章删除时级联删除其下评论)
+  essay        Essay?    @relation(fields: [essayId], references: [id], onDelete: Cascade)   // N:1 关联随笔 (随笔删除时级联删除其下留言)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)    // N:1 关联发表用户 (用户删除时级联删除其评论)
+  parent       Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade) // N:1 父级评论自关联 (父评论删除时级联清理子回复)
+  replies      Comment[] @relation("CommentReplies")                                         // 1:N 当前评论下的子回复列表 (楼中楼树形结构)
+
+  @@index([targetType, articleId, isApproved])                      // 复合索引: 加速文章评论区高效加载
+  @@index([targetType, essayId, isApproved])                        // 复合索引: 加速随笔互动弹窗加载
+  @@index([userId])                                                 // 索引: 加速查询某用户/游客的所有历史留言
+  @@map("comments")
+}
+
+// ============================================================================
+// 7. 文章分类表 (categories)
+// ============================================================================
+model Category {
+  id          Int       @id @default(autoincrement())                // 分类唯一主键 ID
+  name        String    @unique @db.VarChar(50)                      // 分类名称 (如: 技术探索, 设计美学, 生活杂谈)
+  slug        String    @unique @db.VarChar(50)                      // 分类 URL 路由标识 (如: technology, design, life)
+  description String?   @db.VarChar(200)                             // 分类定位简介与描述
+  articles    Article[]                                              // 1:N 该分类下收录的所有深度文章
+
+  @@map("categories")
+}
+
+// ============================================================================
+// 8. 全局标签索引表 (tags)
+// ============================================================================
+model Tag {
+  id       Int          @id @default(autoincrement())                // 标签唯一主键 ID
+  name     String       @unique @db.VarChar(50)                      // 标签展示名称 (如: Vue 3, Nuxt 3, TypeScript, MySQL)
+  slug     String       @unique @db.VarChar(50)                      // 标签 URL 路由标识 (如: vue3, nuxt3, typescript)
+  articles ArticleTag[]                                              // N:M 关联的文章中间表
+  notes    NoteTag[]                                                 // N:M 关联的笔记中间表
+
+  @@map("tags")
+}
+
+// ============================================================================
+// 9. 文章与标签的多对多中间关联表 (article_tags)
+// ============================================================================
+model ArticleTag {
+  articleId Int     @map("article_id")                             // 关联的文章 ID (外键 -> articles.id)
+  tagId     Int     @map("tag_id")                                 // 关联的标签 ID (外键 -> tags.id)
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade) // N:1 关联文章 (文章删除时自动解绑)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)     // N:1 关联标签 (标签删除时自动解绑)
+
+  @@id([articleId, tagId])                                         // 联合主键: 防止文章与标签重复绑定
+  @@map("article_tags")
+}
+
+// ============================================================================
+// 10. 笔记与标签的多对多中间关联表 (note_tags)
+// ============================================================================
+model NoteTag {
+  noteId Int  @map("note_id")                                        // 关联的笔记 ID (外键 -> notes.id)
+  tagId  Int  @map("tag_id")                                         // 关联的标签 ID (外键 -> tags.id)
+  note   Note @relation(fields: [noteId], references: [id], onDelete: Cascade) // N:1 关联笔记 (笔记删除时自动解绑)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)  // N:1 关联标签 (标签删除时自动解绑)
+
+  @@id([noteId, tagId])                                            // 联合主键: 防止笔记与标签重复绑定
+  @@map("note_tags")
+}
+
+// ============================================================================
+// 11. 全站动态运行配置表 (settings)
+// ============================================================================
+model Setting {
+  key         String   @id @db.VarChar(50)                           // 配置项唯一键名 (如: site_name, icp_beian, notice_bar)
+  value       String   @db.Text                                      // 配置项具体值 (支持长文本或 JSON 字符串)
+  description String?  @db.VarChar(100)                              // 配置项含义说明 (便于后台管理界面呈现)
+  updatedAt   DateTime @updatedAt @map("updated_at")                 // 配置项最后更新修改时间
+
+  @@map("settings")
+}

@@ -1,0 +1,58 @@
+services:
+  mysql:
+    image: mysql:8.0.36
+    container_name: luokai-mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-LuokaiSecureRoot2025!}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-luokai_blog}
+      MYSQL_USER: ${MYSQL_USER:-luokai}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-LuokaiSecurePass2025!}
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+08:00
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - luokai-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-LuokaiSecureRoot2025!}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # 前端/全栈 Web 服务 (当前已关闭，如需启用可取消注释)
+  # app:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: luokai-blog-app
+  #   restart: always
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     DATABASE_URL: "mysql://${MYSQL_USER:-luokai}:${MYSQL_PASSWORD:-LuokaiSecurePass2025!}@mysql:3306/${MYSQL_DATABASE:-luokai_blog}?schema=public"
+  #     JWT_SECRET: ${JWT_SECRET:-luokai-garden-super-secret-jwt-key-2025}
+  #     NODE_ENV: production
+  #     NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL:-http://localhost:3000}
+  #   volumes:
+  #     - uploads-data:/app/public/uploads
+  #   depends_on:
+  #     mysql:
+  #       condition: service_healthy
+  #   networks:
+  #     - luokai-network
+
+volumes:
+  mysql-data:
+    name: luokai_mysql_data
+  uploads-data:
+    name: luokai_uploads_data
+
+networks:
+  luokai-network:
+    name: luokai_network

@@ -1,0 +1,42 @@
+name: CI / CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    name: Build & Verify Application
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: ⚙️ Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: 📥 Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🗄️ Generate Prisma Client
+        run: npx prisma generate
+
+      - name: 🚀 Build Nuxt 3 Production Application
+        run: pnpm build
+
+      - name: ✅ Verify Production Artifacts
+        run: |
+          test -f .output/server/index.mjs && echo "Production server bundle generated successfully!"

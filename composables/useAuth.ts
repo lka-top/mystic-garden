@@ -1,0 +1,53 @@
+import type { ApiResponse } from '~/types'
+
+export function useAuth() {
+  const token = useCookie<string | null>('luokai_token', {
+    maxAge: 60 * 60 * 24 * 7,
+    path: '/'
+  })
+
+  const currentUser = useState<any | null>('currentUser', () => null)
+  const isAuthenticated = computed(() => !!token.value)
+
+  async function fetchCurrentUser() {
+    if (!token.value) {
+      currentUser.value = null
+      return null
+    }
+    try {
+      const res = await $fetch<ApiResponse<any>>('/api/v1/auth/me', {
+        headers: {
+          Authorization: `Bearer ${token.value}`
+        }
+      })
+      if (res.code === 200) {
+        currentUser.value = res.data
+        return res.data
+      }
+    } catch {
+      token.value = null
+      currentUser.value = null
+    }
+    return null
+  }
+
+  function setLogin(newToken: string, user: any) {
+    token.value = newToken
+    currentUser.value = user
+  }
+
+  function logout() {
+    token.value = null
+    currentUser.value = null
+    navigateTo('/admin/login')
+  }
+
+  return {
+    token,
+    currentUser,
+    isAuthenticated,
+    fetchCurrentUser,
+    setLogin,
+    logout
+  }
+}

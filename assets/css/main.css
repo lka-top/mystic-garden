@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#fafafa] text-zinc-900 dark:bg-[#09090b] dark:text-zinc-100 transition-colors duration-200 antialiased selection:bg-brand-500/20 selection:text-brand-700 dark:selection:bg-brand-500/30 dark:selection:text-brand-300;
+    min-height: 100vh;
+  }
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-zinc-300 dark:bg-zinc-700 rounded-full hover:bg-zinc-400 dark:hover:bg-zinc-600 transition-colors;
+}
+
+/* 全局页面切换平滑过渡 (Page Enter / Leave Transition) */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(12px) scale(0.99);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-12px) scale(0.99);
+}
+
+/* 布局级别切换过渡 */
+.layout-enter-active,
+.layout-leave-active {
+  transition: all 0.2s ease-out;
+}
+.layout-enter-from,
+.layout-leave-to {
+  opacity: 0;
+  transform: translateY(4px);
+}

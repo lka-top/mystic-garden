@@ -63,8 +63,11 @@ async function handleRegister() {
       setLogin(res.data.token, res.data.user)
       isSuccess.value = true
     }
-  } catch (err: any) {
-    errorMessage.value = err?.data?.statusMessage || '注册失败，请稍后重试'
+  } catch (err: unknown) {
+    const message = err instanceof Error && 'data' in err
+      ? (err as { data?: { statusMessage?: string } }).data?.statusMessage
+      : undefined
+    errorMessage.value = message || '注册失败，请稍后重试'
   } finally {
     loading.value = false
   }
@@ -81,7 +84,7 @@ useSeoMeta({
       
       <!-- 注册成功状态 -->
       <div v-if="isSuccess" class="text-center py-6 space-y-4">
-        <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center">
+        <div class="w-14 h-14 rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 mx-auto flex items-center justify-center">
           <CheckCircle2 class="w-8 h-8" />
         </div>
         <div>
@@ -122,10 +125,11 @@ useSeoMeta({
 
         <form class="space-y-3.5" @submit.prevent="handleRegister">
           <div class="space-y-1">
-            <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">用户名 (唯一登录账号)</label>
+            <label for="register-username" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">用户名 (唯一登录账号)</label>
             <div class="relative">
               <User class="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
+                id="register-username"
                 v-model="form.username"
                 type="text"
                 required
@@ -136,10 +140,11 @@ useSeoMeta({
           </div>
 
           <div class="space-y-1">
-            <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">显示昵称</label>
+            <label for="register-nickname" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">显示昵称</label>
             <div class="relative">
               <Smile class="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
+                id="register-nickname"
                 v-model="form.nickname"
                 type="text"
                 required
@@ -150,10 +155,11 @@ useSeoMeta({
           </div>
 
           <div class="space-y-1">
-            <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">电子邮箱 (选填，用于通知)</label>
+            <label for="register-email" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">电子邮箱 (选填，用于通知)</label>
             <div class="relative">
               <Mail class="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
+                id="register-email"
                 v-model="form.email"
                 type="email"
                 placeholder="you@example.com"
@@ -164,10 +170,11 @@ useSeoMeta({
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div class="space-y-1">
-              <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">设置密码</label>
+              <label for="register-password" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">设置密码</label>
               <div class="relative">
                 <Lock class="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
+                  id="register-password"
                   v-model="form.password"
                   type="password"
                   required
@@ -178,10 +185,11 @@ useSeoMeta({
             </div>
 
             <div class="space-y-1">
-              <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">确认密码</label>
+              <label for="register-password-confirm" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">确认密码</label>
               <div class="relative">
                 <Lock class="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
+                  id="register-password-confirm"
                   v-model="form.confirmPassword"
                   type="password"
                   required

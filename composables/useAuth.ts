@@ -1,4 +1,4 @@
-import type { ApiResponse } from '~/types'
+import type { ApiResponse, User } from '~/types'
 
 export function useAuth() {
   const token = useCookie<string | null>('luokai_token', {
@@ -6,7 +6,7 @@ export function useAuth() {
     path: '/'
   })
 
-  const currentUser = useState<any | null>('currentUser', () => null)
+  const currentUser = useState<User | null>('currentUser', () => null)
   const isAuthenticated = computed(() => !!token.value)
 
   async function fetchCurrentUser() {
@@ -15,7 +15,7 @@ export function useAuth() {
       return null
     }
     try {
-      const res = await $fetch<ApiResponse<any>>('/api/v1/auth/me', {
+      const res = await $fetch<ApiResponse<User>>('/api/v1/auth/me', {
         headers: {
           Authorization: `Bearer ${token.value}`
         }
@@ -31,7 +31,7 @@ export function useAuth() {
     return null
   }
 
-  function setLogin(newToken: string, user: any) {
+  function setLogin(newToken: string, user: User) {
     token.value = newToken
     currentUser.value = user
   }

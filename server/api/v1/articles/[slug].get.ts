@@ -30,6 +30,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: '文章不存在或已被删除' })
   }
 
+  // 非管理员不可查看未发布文章
+  if (!article.isPublished && !tryGetAdminUser(event)) {
+    throw createError({ statusCode: 404, statusMessage: '文章不存在或已被删除' })
+  }
+
   prisma.article.update({
     where: { id: article.id },
     data: { views: { increment: 1 } }

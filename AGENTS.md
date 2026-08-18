@@ -1,54 +1,146 @@
-# AGENT 协同与技能执行规范 (AGENTS.md)
+# AGENT 协同与技能执行规范
 
-本项目为基于 **Nuxt 3 + Prisma + TailwindCSS** 构建的博客系统 (`luokai-garden`)。
-为确保 AI Agent 在日常协作、代码开发以及多模态任务中高效、稳定地执行，特制定本规范。
-
----
-
-## 1. Agent Skills 规范库与触发准则
-
-工作区内的专业技能文件存放于 `.agents/skills/` 目录，已接入 DSH 原生技能系统（支持通过 `skill` 工具直接动态加载）。在执行对应类型的任务前，Agent 应主动调用或阅读相应技能指南：
-
-### 1.1 技能触发矩阵 (Skill Trigger Matrix)
-| 任务场景 | 技能名称 | 规范文件路径 | 核心指导与目标 |
-| :--- | :--- | :--- | :--- |
-| **视觉/UI分析**<br>（截图识别、UI 差异对比、组件定位、取色、OCR 等） | `vision-tools` | 原生 Session 工具库 | 1. 调用 `skill(name: "vision-tools")`<br>2. 使用 `vision_glance` / `vision_ground` 定位元素<br>3. 使用 `vision_dominant_colors` 提取主题色<br>4. 使用 `vision_pixel_diff` 校验 UI 还原度 |
-| **前端设计与 UI/UX 规划**<br>（新页面布局、主题风格、排版、组件视觉提升） | `frontend-design` | `.agents/skills/frontend-design/SKILL.md` | 调用 `skill(name: "frontend-design")`，告别模板化，制定清晰排版、微交互、优雅暗黑模式与定制化视觉风格 |
-| **Tailwind 样式开发**<br>（原子类组织、CVA 变体组件、动态类名合并） | `tailwind-css` | `.agents/skills/tailwind-css/SKILL.md` | 调用 `skill(name: "tailwind-css")`，使用 `cn()` 管理类名，CVA 变体封装，规范类名书写顺序 |
-| **Vue 3 / Nuxt 3 架构实践**<br>（组件设计、响应式优化、SSR 数据流） | `vue-best-practices` | `.agents/skills/vue-best-practices/SKILL.md` | 调用 `skill(name: "vue-best-practices")`，`<script setup lang="ts">` 纯类型 Props/Emits、`shallowRef` 性能优化、`useAsyncData`/`useFetch` 防水合不一致 |
-| **Web 性能与 SEO 优化**<br>（Core Web Vitals、Meta 标签、资源加载与结构化数据） | `web-performance-seo` | `.agents/skills/web-performance-seo/SKILL.md` | 调用 `skill(name: "web-performance-seo")`，`useSeoMeta` 完善 OpenGraph，优化 LCP/CLS 指标，语义化 HTML 与图片懒加载 |
-| **TypeScript 类型工程**<br>（严格类型约束、Zod 接口校验、Prisma 类型同步） | `typescript-web` | `.agents/skills/typescript-web/SKILL.md` | 调用 `skill(name: "typescript-web")`，杜绝 `any`，Zod 端到端 Schema 验证与推导，Prisma Payload 关联类型复用 |
-| **大规模文件检索与批量重构** | Subagent / Workflow | 运行时调度 | 拆分为子任务并发执行，保持单轮上下文精简 |
-
-### 1.2 执行规则 (Execution Rules)
-1. **优先调用 Skill 工具**：当用户提出对应领域的开发需求（如重构组件、添加 API、优化页面速度、设计 UI）时，应首先通过 `skill` 工具加载对应技能。
-2. **多模态工具优先**：凡涉及图像处理或 UI 分析任务，**必须优先加载 `vision-tools`**，严禁在未加载技能的情况下凭空推测视觉细节。
-3. **工具化与类型化契约**：严格落实 Zod 运行时验证与 TypeScript 静态编译检查。
+本项目为基于 **Nuxt 3 + Prisma + MySQL + TailwindCSS** 构建的个人博客系统（`luokai-garden` / 神秘花园）。
 
 ---
 
-## 2. 项目工程与代码规范
+## 1. 项目架构概览
 
-### 2.1 技术栈概览
-- **框架**：Nuxt 3 (Vue 3 Composition API / `<script setup>`)
-- **样式**：Tailwind CSS (`@nuxtjs/tailwindcss`)、CVA (`class-variance-authority`)、`clsx` / `tailwind-merge`
-- **图标**：Lucide Icons (`lucide-vue-next`)、`@nuxt/icon`
-- **ORM / 数据层**：Prisma (`@prisma/client`)、SQLite / PostgreSQL
-- **内容渲染**：Markdown-it (`markdown-it-anchor`, `markdown-it-container` 等)、Shiki 代码高亮
-
-### 2.2 常用命令
-- 开发环境：`pnpm dev` 或 `npm run dev`
-- 数据库同步：`npx prisma db push` / `npm run db:push`
-- Prisma 客户端生成：`npx prisma generate`
-- 构建打包：`npm run build`
-
-### 2.3 开发与修改规范
-- **文件观察策略**：在编辑现有文件前，必须先使用 `read` 工具读取上下文。
-- **精准替换**：修改文件时优先使用 `edit` 工具进行局部替换，避免无意义的整文件重写。
-- **TypeScript 严格类型**：确保类型定义完整，尽量避免使用 `any`。
+```
+├── pages/                  # 页面路由（Nuxt 文件路由）
+│   ├── index.vue           # 首页（Bento Grid 布局）
+│   ├── articles/           # 文章列表与详情
+│   ├── essays/             # 随笔
+│   ├── notes/              # 笔记
+│   ├── archive.vue         # 归档
+│   ├── about.vue           # 关于
+│   ├── register.vue        # 注册
+│   └── admin/              # 后台管理
+├── components/
+│   ├── ui/                 # 通用 UI 组件
+│   ├── layout/             # 布局组件（导航、侧栏等）
+│   ├── article/            # 文章相关组件
+│   ├── comment/            # 评论组件
+│   └── essay/              # 随笔组件
+├── composables/            # 组合式函数（useAuth, useGuestUser）
+├── utils/                  # 工具函数（cn.ts 等）
+├── server/
+│   ├── api/v1/             # RESTful API（按资源分目录）
+│   │   ├── articles/       ├── auth/        ├── categories/
+│   │   ├── comments/       ├── essays/      ├── notebooks/
+│   │   ├── notes/          ├── search/      ├── settings/
+│   │   ├── stats/          ├── tags/        └── upload.post.ts
+│   └── utils/              # 服务端工具（prisma, auth, response）
+├── layouts/                # 布局（default, admin）
+├── middleware/             # 路由中间件（auth.global.ts）
+├── prisma/
+│   └── schema.prisma       # 数据模型定义（MySQL）
+├── assets/css/             # 全局样式
+├── types/                  # TypeScript 类型声明
+├── docker-compose.yml      # Docker MySQL 服务
+└── nuxt.config.ts          # Nuxt 配置
+```
 
 ---
 
-## 3. 长任务与协同最佳实践
-1. **结构化任务跟踪**：多步骤复杂任务主动使用 `todo_write` 维护任务清单与执行状态。
-2. **产物引用**：在最终交付与说明中，创建或修改的文件路径统一使用 Markdown 行内代码（如 `server/api/...`），确保在 Web 界面可直接点击导航。
+## 2. 技术栈
+
+| 层次 | 技术 | 说明 |
+|------|------|------|
+| **框架** | Nuxt 3 / Vue 3 | Composition API / `<script setup lang="ts">` |
+| **样式** | Tailwind CSS + CVA | `cn()` = `clsx` + `tailwind-merge` |
+| **图标** | Lucide Icons / `@nuxt/icon` | `lucide-vue-next` |
+| **数据库** | MySQL 8.0 | Docker 容器运行，Prisma ORM |
+| **认证** | JWT + bcryptjs | `server/utils/auth.ts` |
+| **内容渲染** | markdown-it + Shiki | 支持 anchor / container / task-lists |
+| **动效** | @vueuse/motion | 页面过渡 `page` / `out-in` |
+| **暗色模式** | @nuxtjs/color-mode | `preference: 'system'`，`classSuffix: ''` |
+
+---
+
+## 3. 开发命令
+
+```bash
+# 启动数据库（Docker）
+docker compose up -d mysql
+
+# 启动前端开发服务器
+pnpm dev                        # → http://localhost:3000
+
+# 数据库操作
+npx prisma db push              # Schema 同步到数据库
+npx prisma generate             # 重新生成 Prisma Client
+npx prisma migrate dev          # 创建迁移
+npx prisma studio               # 数据库可视化管理
+
+# 数据填充与构建
+npm run db:seed                  # 执行种子数据
+npm run build                    # 生产构建
+```
+
+### 环境变量（`.env`）
+
+```
+DATABASE_URL="mysql://luokai:LuokaiSecurePass2025!@localhost:3306/luokai_blog"
+JWT_SECRET="..."
+NUXT_PUBLIC_SITE_URL="http://localhost:3000"
+```
+
+---
+
+## 4. 代码规范
+
+### 4.1 通用准则
+- **先读后改**：编辑现有文件前，必须先读取文件内容了解上下文。
+- **精准替换**：优先使用局部替换（`edit` 工具），禁止无意义的整文件重写。
+- **保留注释**：不删除与修改无关的已有注释和文档字符串。
+
+### 4.2 TypeScript
+- 严格类型定义，**禁止 `any`**。
+- API 请求/响应使用 **Zod Schema** 做运行时验证，并通过 `z.infer<>` 推导类型。
+- Prisma 关联查询使用 `Prisma.XXXGetPayload<>` 复用类型。
+
+### 4.3 Vue / Nuxt
+- 统一使用 `<script setup lang="ts">`。
+- Props / Emits 使用纯类型声明（`defineProps<{ ... }>()`）。
+- 数据获取使用 `useAsyncData` / `useFetch`，注意 SSR 水合一致性。
+- 大型列表或不变数据使用 `shallowRef` 优化性能。
+
+### 4.4 样式
+- 使用 `cn()` （`utils/cn.ts`）合并动态类名。
+- 可复用组件使用 CVA（`class-variance-authority`）封装变体。
+- Tailwind 类名遵循排序规范：布局 → 定位 → 盒模型 → 视觉 → 交互。
+
+### 4.5 API 约定
+- 路由格式：`server/api/v1/{resource}/[...].{method}.ts`
+- 统一响应封装：使用 `server/utils/response.ts` 中的工具函数。
+- 认证守卫：使用 `server/utils/auth.ts` 中的中间件。
+
+---
+
+## 5. 技能触发规则
+
+工作区内的专业技能位于 `.agents/skills/` 目录。执行对应任务前，Agent **必须**先阅读对应 `SKILL.md`：
+
+| 任务类型 | 技能 | 触发时机 |
+|----------|------|----------|
+| **UI/UX 设计** | `frontend-design` | 新页面布局、主题风格、排版、视觉提升 |
+| **Tailwind 样式** | `tailwind-css` | CVA 组件、`cn()` 使用、动态类名、样式组织 |
+| **Vue / Nuxt 架构** | `vue-best-practices` | 组件设计、响应式优化、SSR 数据流 |
+| **性能 / SEO** | `web-performance-seo` | Core Web Vitals、Meta 标签、图片懒加载 |
+| **TypeScript 类型** | `typescript-web` | Zod 校验、Prisma 类型、泛型设计 |
+| **资源推荐与选型** | `resource-recommendation` | 寻找第三方库、框架调研、开源项目对比、闭环迭代选型 |
+| **视觉分析** | `vision-tools`（内置） | 截图识别、UI 对比、取色、OCR |
+
+### 执行原则
+1. **Skill 优先**：开发需求匹配上述场景时，先加载对应技能再动手。
+2. **视觉任务强制加载**：涉及图像或 UI 分析时，**必须加载 `vision-tools`**，不得凭空推测。
+3. **大规模重构**：拆分为 Subagent 子任务并发执行，保持单轮上下文精简。
+
+---
+
+## 6. 协同与交付
+
+1. **任务跟踪**：多步骤复杂任务使用 `task.md` 维护执行清单与进度。
+2. **文件引用**：交付说明中的文件路径使用 Markdown 链接（如 [`nuxt.config.ts`](file:///d:/luo_kai_blog/nuxt.config.ts)），确保可点击导航。
+3. **修改验证**：代码修改后应确认构建通过或开发服务器无报错。

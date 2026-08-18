@@ -17,7 +17,12 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: '仅支持上传图片文件 (JPG, PNG, WebP, GIF, SVG)' })
   }
 
-  const ext = path.extname(file.filename || '') || '.png'
+  const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg']
+  const ext = path.extname(file.filename || '').toLowerCase()
+  if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
+    throw createError({ statusCode: 400, statusMessage: '不支持的文件格式，仅允许: JPG, PNG, WebP, GIF, SVG' })
+  }
+
   const randomName = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`
   
   const uploadDir = path.resolve(process.cwd(), 'public/uploads')

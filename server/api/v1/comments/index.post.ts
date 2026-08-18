@@ -90,7 +90,7 @@ export default defineEventHandler(async (event) => {
       content: data.content,
       ipAddress,
       userAgent,
-      isApproved: true
+      isApproved: !!authHeader
     },
     include: {
       user: {

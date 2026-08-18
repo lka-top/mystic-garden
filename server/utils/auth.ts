@@ -36,6 +36,18 @@ export function requireAdminUser(event: H3Event): AuthPayload {
   }
 }
 
+/**
+ * 静默鉴权：尝试获取管理员身份，失败时返回 null 而非抛出异常。
+ * 用于 GET 端点中条件性地允许 `?all=true` 等管理员专属参数。
+ */
+export function tryGetAdminUser(event: H3Event): AuthPayload | null {
+  try {
+    return requireAdminUser(event)
+  } catch {
+    return null
+  }
+}
+
 export function signAuthToken(payload: AuthPayload, secret: string, expiresIn = '7d'): string {
   return jwt.sign(payload, secret, { expiresIn })
 }

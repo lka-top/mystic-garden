@@ -21,7 +21,15 @@ import Button from '~/components/ui/Button.vue'
 
 // SSR 预取全部文章 (不限分页获取所有已发布文章进行全量归档)
 const { data: res } = await useFetch<ApiResponse<{ list: Article[] }>>('/api/v1/articles', {
-  params: { pageSize: 500, all: 'true' }
+  params: { pageSize: 200 },
+  transform: (response) => {
+    if (response?.data?.list) {
+      response.data.list = response.data.list.map(({ id, slug, title, createdAt, views, category, readingTime, tags, isPublished, isPinned, commentCount }) => ({
+        id, slug, title, createdAt, views, category, readingTime, tags, isPublished, isPinned, commentCount
+      })) as Article[]
+    }
+    return response
+  }
 })
 
 const articles = computed(() => res.value?.data?.list || [])

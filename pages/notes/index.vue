@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import type { ApiResponse, Note, Notebook, Tag } from '~/types'
 import Button from '~/components/ui/Button.vue'
 import Badge from '~/components/ui/Badge.vue'
+import Pagination from '~/components/ui/Pagination.vue'
 
 const route = useRoute()
 
@@ -185,27 +186,7 @@ useSeoMeta({
       </div>
 
       <!-- 分页控制 -->
-      <div v-if="pagination.totalPages > 1" class="flex justify-center gap-2 pt-6">
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="page <= 1"
-          @click="page--"
-        >
-          上一页
-        </Button>
-        <span class="px-4 py-1.5 text-xs text-zinc-500 flex items-center font-mono">
-          {{ page }} / {{ pagination.totalPages }}
-        </span>
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="page >= pagination.totalPages"
-          @click="page++"
-        >
-          下一页
-        </Button>
-      </div>
+      <Pagination v-model:page="page" :total-pages="pagination.totalPages" />
     </div>
 
     <!-- 空状态 -->

@@ -33,6 +33,13 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  if (!user.passwordHash) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: '用户名或密码错误'
+    })
+  }
+
   const isPasswordValid = await bcrypt.compare(password, user.passwordHash)
   if (!isPasswordValid) {
     throw createError({

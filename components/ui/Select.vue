@@ -1,18 +1,18 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends string | number | null">
 import { ref, computed } from 'vue'
 import { ChevronDown, Check } from 'lucide-vue-next'
 import { onClickOutside } from '@vueuse/core'
 import { cn } from '~/utils/cn'
 
-export interface SelectOption {
+export interface SelectOption<V = string | number | null> {
   label: string
-  value: string | number | null
+  value: V
   disabled?: boolean
 }
 
 interface Props {
-  modelValue?: string | number | null
-  options?: SelectOption[]
+  modelValue?: T
+  options?: SelectOption<T>[]
   placeholder?: string
   disabled?: boolean
   className?: string
@@ -27,8 +27,8 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: any): void
-  (e: 'change', value: any): void
+  (e: 'update:modelValue', value: T): void
+  (e: 'change', value: T): void
 }>()
 
 const isOpen = ref(false)
@@ -47,7 +47,7 @@ function toggleDropdown() {
   isOpen.value = !isOpen.value
 }
 
-function handleSelect(opt: SelectOption) {
+function handleSelect(opt: SelectOption<T>) {
   if (opt.disabled) return
   emit('update:modelValue', opt.value)
   emit('change', opt.value)

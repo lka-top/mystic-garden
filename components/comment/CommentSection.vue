@@ -13,7 +13,7 @@ const props = defineProps<{
   targetId?: number
 }>()
 
-const { token, user: loggedInUser } = useAuth()
+const { token, currentUser: loggedInUser } = useAuth()
 const { getGuestUuid } = useGuestUser()
 
 const comments = ref<Comment[]>([])
@@ -34,9 +34,9 @@ async function fetchComments() {
     if (props.targetType === 'article') params.articleId = props.targetId
     if (props.targetType === 'essay') params.essayId = props.targetId
 
-    const res = await $fetch<ApiResponse<Comment[]>>('/api/v1/comments', { params })
+    const res = await $fetch<ApiResponse<{ list: Comment[]; pagination: { total: number } }>>('/api/v1/comments', { params })
     if (res.code === 200) {
-      comments.value = res.data
+      comments.value = res.data.list
     }
   } catch (err) {
     console.error('获取评论失败:', err)

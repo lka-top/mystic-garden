@@ -8,7 +8,8 @@ export default defineEventHandler(async (event) => {
   const notebookSlug = query.notebook as string | undefined
   const tagSlug = query.tag as string | undefined
   const keyword = query.keyword as string | undefined
-  const isAll = query.all === 'true'
+  const isAdmin = !!tryGetAdminUser(event)
+  const isAll = isAdmin && query.all === 'true'
 
   const whereCondition: any = {}
 
@@ -60,10 +61,13 @@ export default defineEventHandler(async (event) => {
     })
   ])
 
-  const list = notes.map(item => ({
-    ...item,
-    tags: item.tags.map(t => t.tag)
-  }))
+  const list = notes.map(item => {
+    const { password, ...rest } = item
+    return {
+      ...rest,
+      tags: item.tags.map(t => t.tag)
+    }
+  })
 
   return paginationResponse(list, total, page, pageSize)
 })

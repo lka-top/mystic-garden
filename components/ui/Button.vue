@@ -7,10 +7,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-zinc-900 text-zinc-50 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 shadow-sm',
-        brand: 'bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600 shadow-sm shadow-brand-500/20',
-        outline: 'border border-zinc-200 bg-transparent hover:bg-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200',
-        ghost: 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300',
+        default: 'bg-slate-900 text-slate-50 hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 shadow-sm',
+        brand: 'bg-brand-500 text-white hover:bg-brand-600 dark:bg-brand-500 dark:hover:bg-brand-600 shadow-sm shadow-brand-500/25',
+        gradient: 'bg-gradient-to-r from-sky-500 to-rose-400 text-white shadow-md shadow-sky-500/20 hover:opacity-95',
+        rose: 'bg-rose-500 text-white hover:bg-rose-600 shadow-sm shadow-rose-500/20',
+        outline: 'border border-sky-100 bg-transparent hover:bg-sky-50/80 dark:border-slate-800 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200',
+        ghost: 'hover:bg-sky-50/80 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300',
         danger: 'bg-red-600 text-white hover:bg-red-700 shadow-sm shadow-red-500/20',
       },
       size: {

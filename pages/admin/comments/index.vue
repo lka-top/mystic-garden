@@ -11,11 +11,11 @@ definePageMeta({
 })
 
 const { token } = useAuth()
-const { data: res, refresh } = await useFetch<ApiResponse<Comment[]>>('/api/v1/comments', {
-  query: { all: 'true' }
+const { data: res, refresh } = await useFetch<ApiResponse<{ list: Comment[]; pagination: { total: number } }>>('/api/v1/comments', {
+  query: { all: 'true', pageSize: 100 }
 })
 
-const comments = computed(() => res.value?.data || [])
+const comments = computed(() => res.value?.data?.list || [])
 
 async function toggleApprove(id: number, currentStatus: boolean) {
   try {

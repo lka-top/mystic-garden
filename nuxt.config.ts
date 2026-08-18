@@ -44,6 +44,10 @@ export default defineNuxtConfig({
       name: 'page',
       mode: 'out-in'
     },
+    layoutTransition: {
+      name: 'layout',
+      mode: 'out-in'
+    },
     head: {
       title: '神秘花园 - 记录思考与沉淀生活',
       titleTemplate: '%s | 神秘花园',

@@ -37,8 +37,11 @@ async function handleLogin() {
       setLogin(res.data.token, res.data.user)
       navigateTo('/admin')
     }
-  } catch (err: any) {
-    errorMessage.value = err?.data?.statusMessage || '登录失败，请检查账号密码'
+  } catch (err: unknown) {
+    const message = err instanceof Error && 'data' in err
+      ? (err as { data?: { statusMessage?: string } }).data?.statusMessage
+      : undefined
+    errorMessage.value = message || '登录失败，请检查账号密码'
   } finally {
     loading.value = false
   }
@@ -70,10 +73,11 @@ useSeoMeta({
 
       <form class="space-y-4" @submit.prevent="handleLogin">
         <div class="space-y-1.5">
-          <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">管理员账号</label>
+          <label for="login-username" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">管理员账号</label>
           <div class="relative">
             <User class="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
+              id="login-username"
               v-model="username"
               type="text"
               required
@@ -84,10 +88,11 @@ useSeoMeta({
         </div>
 
         <div class="space-y-1.5">
-          <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">管理密码</label>
+          <label for="login-password" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">管理密码</label>
           <div class="relative">
             <Lock class="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
+              id="login-password"
               v-model="password"
               type="password"
               required

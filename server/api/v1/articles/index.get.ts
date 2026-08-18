@@ -8,7 +8,8 @@ export default defineEventHandler(async (event) => {
   const categorySlug = query.category as string | undefined
   const tagSlug = query.tag as string | undefined
   const keyword = query.keyword as string | undefined
-  const isAll = query.all === 'true'
+  const isAdmin = !!tryGetAdminUser(event)
+  const isAll = isAdmin && query.all === 'true'
 
   const whereCondition: any = {}
 

@@ -27,13 +27,19 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: '笔记不存在或已被删除' })
   }
 
+  // 非管理员不可查看未发布笔记
+  if (!note.isPublished && !tryGetAdminUser(event)) {
+    throw createError({ statusCode: 404, statusMessage: '笔记不存在或已被删除' })
+  }
+
   prisma.note.update({
     where: { id: note.id },
     data: { views: { increment: 1 } }
   }).catch((err) => console.error('递增笔记浏览量失败:', err))
 
+  const { password, ...noteWithoutPassword } = note
   const formattedNote = {
-    ...note,
+    ...noteWithoutPassword,
     tags: note.tags.map(t => t.tag)
   }
 

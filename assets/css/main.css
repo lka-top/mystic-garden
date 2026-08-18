@@ -4,8 +4,17 @@
 
 @layer base {
   body {
-    @apply bg-[#fafafa] text-zinc-900 dark:bg-[#09090b] dark:text-zinc-100 transition-colors duration-200 antialiased selection:bg-brand-500/20 selection:text-brand-700 dark:selection:bg-brand-500/30 dark:selection:text-brand-300;
+    @apply bg-[#f6f9fc] text-slate-800 dark:bg-[#0b1120] dark:text-slate-100 transition-colors duration-300 antialiased selection:bg-brand-500/20 selection:text-brand-600 dark:selection:bg-brand-500/30 dark:selection:text-brand-300;
     min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .md3-card {
+    @apply rounded-3xl border border-sky-100/80 dark:border-slate-800/80 bg-white/80 dark:bg-[#131c31]/80 backdrop-blur-md shadow-card hover:shadow-card-hover transition-all duration-300 hover:border-sky-300/60 dark:hover:border-sky-500/40;
+  }
+  .md3-card-elevated {
+    @apply rounded-3xl border border-sky-100/90 dark:border-slate-800/90 bg-white/95 dark:bg-[#131c31]/95 backdrop-blur-lg shadow-card-hover transition-all duration-300;
   }
 }
 

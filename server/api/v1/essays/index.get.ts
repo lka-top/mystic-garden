@@ -6,7 +6,8 @@ export default defineEventHandler(async (event) => {
   const page = Math.max(1, parseInt(query.page as string) || 1)
   const pageSize = Math.min(50, Math.max(1, parseInt(query.pageSize as string) || 15))
   const mood = query.mood as string | undefined
-  const isAll = query.all === 'true'
+  const isAdmin = !!tryGetAdminUser(event)
+  const isAll = isAdmin && query.all === 'true'
 
   const whereCondition: any = {}
   if (!isAll) {

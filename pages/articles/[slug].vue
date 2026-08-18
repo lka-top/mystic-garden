@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { Calendar, Clock, Eye, ArrowLeft, List } from 'lucide-vue-next'
+import { Calendar, Clock, Eye, ArrowLeft, Sparkles, Heart } from 'lucide-vue-next'
 import dayjs from 'dayjs'
 import type { ApiResponse, Article } from '~/types'
 import MarkdownRenderer from '~/components/article/MarkdownRenderer.vue'
 import CommentSection from '~/components/comment/CommentSection.vue'
-import Badge from '~/components/ui/Badge.vue'
+import TableOfContents from '~/components/article/TableOfContents.vue'
+import ProfileCard from '~/components/layout/ProfileCard.vue'
 
 const route = useRoute()
 const slug = route.params.slug as string
@@ -37,7 +38,7 @@ function updateReadingProgress() {
 }
 
 onMounted(() => {
-  window.addEventListener('scroll', updateReadingProgress)
+  window.addEventListener('scroll', updateReadingProgress, { passive: true })
 })
 
 onUnmounted(() => {
@@ -55,105 +56,114 @@ useSeoMeta({
 </script>
 
 <template>
-  <div>
-    <!-- 顶部固定阅读进度条 -->
+  <div class="space-y-8">
+    <!-- 顶部固定阅读进度条 (蔚蓝到珊瑚粉流光渐变) -->
     <div
-      class="fixed top-0 left-0 h-1 bg-brand-500 z-50 transition-all duration-100"
+      class="fixed top-0 left-0 h-1 bg-gradient-to-r from-sky-400 via-teal-300 to-rose-400 z-50 transition-all duration-100 shadow-xs"
       :style="{ width: `${readingProgress}%` }"
     />
 
-    <!-- 返回按钮 -->
-    <div class="mb-6">
-      <NuxtLink to="/articles" class="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-        <ArrowLeft class="w-3.5 h-3.5" />
-        返回文章列表
-      </NuxtLink>
-    </div>
+    <!-- 1. 顶部沉浸式文章封面与元信息卡片 (MD3 Hero Card) -->
+    <div class="md3-card-elevated p-6 sm:p-10 relative overflow-hidden">
+      <!-- 背景光晕装饰 -->
+      <div class="absolute -top-24 -right-24 w-80 h-80 bg-sky-400/15 rounded-full blur-3xl pointer-events-none" />
+      <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-rose-400/10 rounded-full blur-3xl pointer-events-none" />
 
-    <!-- 文章主体双栏布局 -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-      <!-- 左侧主文章内容 -->
-      <article class="lg:col-span-8 space-y-6">
-        <!-- 头部元信息 -->
-        <header class="space-y-3 pb-6 border-b border-zinc-200/80 dark:border-zinc-800/80">
-          <div class="flex flex-wrap items-center gap-2">
-            <Badge v-if="article.category" variant="brand">
-              {{ article.category.name }}
-            </Badge>
-            <span
-              v-for="tag in article.tags"
-              :key="tag.id"
-              class="text-xs text-zinc-400 dark:text-zinc-500 font-mono"
-            >
-              #{{ tag.name }}
+      <div class="relative z-10 space-y-4">
+        <!-- 返回面包屑导航 -->
+        <NuxtLink
+          to="/articles"
+          class="inline-flex items-center gap-1.5 text-xs font-bold text-sky-600 dark:text-sky-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
+        >
+          <ArrowLeft class="w-3.5 h-3.5" />
+          <span>返回文章专栏</span>
+        </NuxtLink>
+
+        <!-- 分类与标签 -->
+        <div class="flex flex-wrap items-center gap-2 pt-1">
+          <span
+            v-if="article.category"
+            class="px-3.5 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-sky-500 to-rose-400 text-white shadow-xs"
+          >
+            {{ article.category.name }}
+          </span>
+
+          <span
+            v-for="tag in article.tags"
+            :key="tag.id"
+            class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-50 dark:bg-slate-800 text-sky-700 dark:text-sky-300 border border-sky-100 dark:border-slate-700"
+          >
+            #{{ tag.name }}
+          </span>
+        </div>
+
+        <!-- 文章大标题 -->
+        <h1 class="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
+          {{ article.title }}
+        </h1>
+
+        <!-- 摘要引用框 -->
+        <div v-if="article.summary" class="p-4 rounded-2xl bg-sky-50/70 dark:bg-slate-900/60 border-l-4 border-sky-400 text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-light leading-relaxed">
+          {{ article.summary }}
+        </div>
+
+        <!-- 底部元信息 (作者、发布日期、阅读时间、浏览量) -->
+        <div class="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-sky-100/70 dark:border-slate-800/80 text-xs text-slate-400 font-mono">
+          <div class="flex items-center gap-4 flex-wrap">
+            <span class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 font-bold font-sans">
+              <img
+                v-if="article.author?.avatar"
+                :src="article.author.avatar"
+                :alt="article.author.nickname"
+                class="w-5 h-5 rounded-full object-cover"
+              />
+              <span>{{ article.author?.nickname || '神秘人' }}</span>
             </span>
-          </div>
-
-          <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 leading-tight">
-            {{ article.title }}
-          </h1>
-
-          <div class="flex flex-wrap items-center gap-4 text-xs text-zinc-400 dark:text-zinc-500 font-mono">
             <span class="flex items-center gap-1">
-              <Calendar class="w-3.5 h-3.5" />
-              {{ dayjs(article.createdAt).format('YYYY年MM月DD日') }}
+              <Calendar class="w-3.5 h-3.5 text-sky-500" />
+              {{ dayjs(article.createdAt).format('YYYY-MM-DD') }}
             </span>
             <span class="flex items-center gap-1">
-              <Clock class="w-3.5 h-3.5" />
+              <Clock class="w-3.5 h-3.5 text-rose-400" />
               {{ article.readingTime }} 分钟阅读
             </span>
             <span class="flex items-center gap-1">
-              <Eye class="w-3.5 h-3.5" />
+              <Eye class="w-3.5 h-3.5 text-amber-400" />
               {{ article.views }} 次阅读
             </span>
           </div>
-        </header>
+        </div>
+      </div>
+    </div>
 
-        <!-- 封面图 -->
-        <div v-if="article.coverImage" class="rounded-3xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 max-h-96">
+    <!-- 2. 文章主体双栏网格 (左侧正文 + 右侧粘性目录 TOC) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <!-- 左侧正文与互动区 (8列) -->
+      <article class="lg:col-span-8 space-y-8">
+        <!-- 封面大图 (若有) -->
+        <div v-if="article.coverImage" class="rounded-3xl overflow-hidden shadow-card border border-sky-100 dark:border-slate-800 max-h-96">
           <img :src="article.coverImage" :alt="article.title" class="w-full h-full object-cover">
         </div>
 
-        <!-- Markdown 文章正文渲染器 -->
-        <MarkdownRenderer
-          :content="article.content || ''"
-          @toc-ready="handleTocReady"
-        />
+        <!-- 正文卡片 -->
+        <div class="md3-card p-6 sm:p-10">
+          <MarkdownRenderer
+            :content="article.content || ''"
+            @toc-ready="handleTocReady"
+          />
+        </div>
 
-        <!-- 评论互动区 -->
+        <!-- 底部评论留言区 -->
         <CommentSection
           target-type="article"
           :target-id="article.id"
         />
       </article>
 
-      <!-- 右侧悬浮目录 (TOC) -->
-      <aside class="hidden lg:block lg:col-span-4 sticky top-24 space-y-6">
-        <div class="p-6 rounded-3xl border border-zinc-200/80 bg-white/70 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-900/60 shadow-sm space-y-3">
-          <div class="flex items-center gap-2 text-xs font-bold text-zinc-900 dark:text-zinc-100 pb-2 border-b border-zinc-100 dark:border-zinc-800">
-            <List class="w-4 h-4 text-brand-600" />
-            <span>文章目录</span>
-          </div>
-
-          <nav v-if="toc.length > 0" class="space-y-1.5 text-xs max-h-[65vh] overflow-y-auto pr-2">
-            <a
-              v-for="item in toc"
-              :key="item.id"
-              :href="`#${item.id}`"
-              :class="[
-                'block py-1 text-zinc-600 dark:text-zinc-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors truncate',
-                item.level === 1 && 'font-bold text-zinc-900 dark:text-zinc-200',
-                item.level === 2 && 'pl-2',
-                item.level === 3 && 'pl-4 text-zinc-500'
-              ]"
-            >
-              {{ item.text }}
-            </a>
-          </nav>
-          <div v-else class="text-xs text-zinc-400">
-            暂无子章节标题
-          </div>
-        </div>
+      <!-- 右侧侧边栏 (4列): TOC 文章目录 + 简短个人卡片 -->
+      <aside class="hidden lg:block lg:col-span-4 space-y-6">
+        <TableOfContents :items="toc" />
+        <ProfileCard />
       </aside>
     </div>
   </div>

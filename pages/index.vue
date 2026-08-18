@@ -25,18 +25,8 @@ import type { ApiResponse, Article, Essay, Category, Tag } from '~/types'
 import ArticleCard from '~/components/article/ArticleCard.vue'
 import Button from '~/components/ui/Button.vue'
 import Badge from '~/components/ui/Badge.vue'
-import { useNow } from '@vueuse/core'
-
-// 实时时钟计算 (年月日时分秒 + 星期)
-const now = useNow()
-const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
-const currentWeekday = computed(() => weekdays[now.value.getDay()])
-const currentYear = computed(() => now.value.getFullYear())
-const currentMonth = computed(() => String(now.value.getMonth() + 1).padStart(2, '0'))
-const currentDay = computed(() => String(now.value.getDate()).padStart(2, '0'))
-const currentHours = computed(() => String(now.value.getHours()).padStart(2, '0'))
-const currentMinutes = computed(() => String(now.value.getMinutes()).padStart(2, '0'))
-const currentSeconds = computed(() => String(now.value.getSeconds()).padStart(2, '0'))
+import LiveClock from '~/components/ui/LiveClock.vue'
+import HeroBanner from '~/components/layout/HeroBanner.vue'
 
 // SSR 预取全站数据
 const { data: statsRes } = await useFetch<ApiResponse<any>>('/api/v1/stats/overview')
@@ -81,7 +71,16 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="space-y-12">
+  <div class="space-y-10">
+    <!-- 顶部沉浸式大图壁纸 Hero Banner -->
+    <div class="-mx-4 sm:-mx-6 lg:-mx-8 -mt-8 sm:-mt-12 mb-4">
+      <HeroBanner
+        title="神秘花园"
+        subtitle="记录思考 · 沉淀技术 · 探索现代 Web 美学与工程架构"
+        height="md"
+      />
+    </div>
+
     <!-- ========================================================================= -->
     <!-- 1. BENTO GRID 模块化个人名片 & 灵感速递 -->
     <!-- ========================================================================= -->
@@ -113,8 +112,8 @@ useSeoMeta({
                   神秘人
                 </h1>
                 <span class="text-xs font-mono text-zinc-400 font-normal">/ Mystic Garden</span>
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-300 border border-rose-200/60 dark:border-rose-800/60">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                   ONLINE
                 </span>
               </div>
@@ -198,40 +197,7 @@ useSeoMeta({
           :enter="{ opacity: 1, y: 0, scale: 1, transition: { duration: 400, delay: 100, ease: 'easeOut' } }"
           class="p-5 sm:p-6 rounded-3xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-zinc-900/60 backdrop-blur-md shadow-xs relative flex flex-col justify-between space-y-3"
         >
-          <div class="flex items-center justify-between text-xs font-bold text-zinc-800 dark:text-zinc-200">
-            <span class="flex items-center gap-1.5 font-mono">
-              <Clock class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
-              时钟记录仪
-            </span>
-            <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/50 dark:border-emerald-800/50 text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>LIVE</span>
-            </div>
-          </div>
-
-          <div class="py-1">
-            <div class="text-2xl sm:text-3xl font-extrabold font-mono tracking-wider text-zinc-900 dark:text-zinc-100 flex items-center gap-1">
-              <span class="px-1.5 py-0.5 rounded-lg bg-zinc-200/60 dark:bg-zinc-800/80 shadow-xs">{{ currentHours }}</span>
-              <span class="text-zinc-400 animate-pulse">:</span>
-              <span class="px-1.5 py-0.5 rounded-lg bg-zinc-200/60 dark:bg-zinc-800/80 shadow-xs">{{ currentMinutes }}</span>
-              <span class="text-zinc-400 animate-pulse">:</span>
-              <span class="px-1.5 py-0.5 rounded-lg bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 shadow-xs">{{ currentSeconds }}</span>
-            </div>
-            <div class="text-xs text-zinc-500 dark:text-zinc-400 font-mono mt-2.5 flex items-center gap-1.5">
-              <Calendar class="w-3.5 h-3.5 text-zinc-400" />
-              <span>{{ currentYear }}年{{ currentMonth }}月{{ currentDay }}日</span>
-              <span>·</span>
-              <span>{{ currentWeekday }}</span>
-            </div>
-          </div>
-
-          <div class="pt-2 flex items-center justify-between text-[11px] text-zinc-400 font-mono border-t border-zinc-200/50 dark:border-zinc-800/50">
-            <span class="text-[10px]">东八区 · UTC+8</span>
-            <span class="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
-              <Activity class="w-2.5 h-2.5 text-emerald-500" />
-              全栈平稳运行
-            </span>
-          </div>
+          <LiveClock />
         </div>
 
         <!-- 站点数据矩阵 (Stats Matrix) -->
@@ -282,8 +248,8 @@ useSeoMeta({
               :class="[
                 'px-3 py-1 rounded-xl font-medium transition-colors',
                 !activeCategory
-                  ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
-                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+                  ? 'bg-sky-500 text-white shadow-xs'
+                  : 'text-slate-500 hover:text-sky-600 dark:hover:text-sky-300'
               ]"
               @click="activeCategory = ''"
             >
@@ -296,8 +262,8 @@ useSeoMeta({
               :class="[
                 'px-3 py-1 rounded-xl font-medium transition-colors',
                 activeCategory === cat.slug
-                  ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
-                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+                  ? 'bg-sky-500 text-white shadow-xs'
+                  : 'text-slate-500 hover:text-sky-600 dark:hover:text-sky-300'
               ]"
               @click="activeCategory = cat.slug"
             >

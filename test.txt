@@ -1,4 +1,0 @@
-# DSH 写入测试
-
-- 测试文件: test.txt
-- 目标目录: D:\luo_kai_blog

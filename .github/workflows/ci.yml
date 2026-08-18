@@ -53,13 +53,10 @@ jobs:
       - name: 极速安装项目依赖 (Install dependencies)
         run: pnpm install --frozen-lockfile
 
-      - name: 校验 Prisma 数据模型语法 (Validate Prisma Schema)
-        run: npx prisma validate
+      - name: 代码规范与语法质量检测 (ESLint Check)
+        run: pnpm lint
 
-      - name: 生成 Prisma Client 类型声明 (Generate Prisma Client)
-        run: npx prisma generate
-
-      - name: 生产环境打包构建校验 (Nuxt 3 Build Verification)
+      - name: 生产环境打包构建全量校验 (Nuxt 3 Build Verification)
         run: pnpm build
         env:
           NODE_ENV: production

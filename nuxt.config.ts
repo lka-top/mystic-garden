@@ -4,6 +4,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   modules: [
+    '@nuxt/eslint',
     '@nuxtjs/tailwindcss',
     '@nuxtjs/color-mode',
     '@vueuse/nuxt',

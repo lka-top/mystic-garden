@@ -27,8 +27,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: T): void
-  (e: 'change', value: T): void
+  (e: 'update:modelValue' | 'change', value: T): void
 }>()
 
 const isOpen = ref(false)

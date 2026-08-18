@@ -8,6 +8,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "typecheck": "nuxt typecheck",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "postinstall": "nuxt prepare && prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
@@ -42,6 +44,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@nuxt/eslint": "^1.17.0",
     "@nuxt/icon": "^2.5.0",
     "@nuxtjs/color-mode": "^3.5.0",
     "@nuxtjs/tailwindcss": "^6.12.2",
@@ -52,6 +55,7 @@
     "@types/markdown-it-container": "^4.0.0",
     "@types/node": "^20.17.0",
     "autoprefixer": "^10.4.20",
+    "eslint": "^10.8.1",
     "nuxt": "^3.13.2",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
@@ -59,5 +63,14 @@
     "typescript": "^5.6.3",
     "vue": "^3.5.12",
     "vue-router": "^4.4.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "bcryptjs",
+      "prisma",
+      "unrs-resolver"
+    ]
   }
 }

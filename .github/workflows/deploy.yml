@@ -46,9 +46,6 @@ jobs:
       - name: 极速安装项目依赖 (Install dependencies)
         run: pnpm install --frozen-lockfile
 
-      - name: 生成 Prisma Client 声明 (Generate Prisma Client)
-        run: npx prisma generate
-
       - name: 全局安装 Vercel CLI 官方工具 (Install Vercel CLI)
         run: pnpm add -g vercel@latest
 

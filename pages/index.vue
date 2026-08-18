@@ -47,11 +47,10 @@ const filteredArticles = computed(() => {
   return articles.value.filter(a => a.category?.slug === activeCategory.value)
 })
 
-// 置顶或首篇精选文章
-const heroArticle = computed(() => articles.value.find(a => a.isPinned) || articles.value[0])
-const regularArticles = computed(() => {
-  if (!heroArticle.value) return filteredArticles.value
-  return filteredArticles.value.filter(a => a.id !== heroArticle.value?.id)
+// 统一排序：置顶文章排在最前，高度样式与全部文章卡片保持一致
+const displayArticles = computed(() => {
+  const list = [...filteredArticles.value]
+  return list.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0))
 })
 
 // 计算建站运行天数 (从 2024-10-01 启程)
@@ -154,70 +153,10 @@ useSeoMeta({
             </div>
           </div>
 
-          <!-- 置顶精选大卡片 (Featured Hero Article) -->
-          <div
-            v-if="heroArticle && !activeCategory"
-            class="md3-card-elevated group relative p-6 sm:p-7 hover:-translate-y-1 transition-all duration-300 flex flex-col sm:flex-row gap-6 items-stretch overflow-hidden"
-          >
-            <!-- 装饰微光晕 -->
-            <div class="absolute -top-16 -right-16 w-56 h-56 bg-sky-400/15 rounded-full blur-2xl pointer-events-none" />
-
-            <!-- 封面图 -->
-            <div class="w-full sm:w-60 h-44 sm:h-auto shrink-0 rounded-2xl overflow-hidden bg-sky-50 dark:bg-slate-800 relative">
-              <img
-                :src="heroArticle.coverImage || 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=800&auto=format&fit=crop&q=80'"
-                :alt="heroArticle.title"
-                class="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
-                loading="lazy"
-              />
-              <span class="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md">
-                <Pin class="w-3 h-3" />
-                精选置顶
-              </span>
-            </div>
-
-            <!-- 文本内容区 -->
-            <div class="flex-1 flex flex-col justify-between space-y-3 min-w-0">
-              <div class="space-y-2">
-                <div class="flex items-center gap-2">
-                  <span v-if="heroArticle.category" class="px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-sky-500/10 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300 border border-sky-200/50 dark:border-sky-800/50">
-                    {{ heroArticle.category.name }}
-                  </span>
-                </div>
-
-                <h3 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
-                  <NuxtLink :to="`/articles/${heroArticle.slug}`" class="focus:outline-none">
-                    <span class="absolute inset-0" aria-hidden="true" />
-                    {{ heroArticle.title }}
-                  </NuxtLink>
-                </h3>
-
-                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed font-light">
-                  {{ heroArticle.summary }}
-                </p>
-              </div>
-
-              <div class="flex items-center gap-4 text-xs text-slate-400 pt-3 border-t border-sky-100/60 dark:border-slate-800/80 font-mono">
-                <span class="flex items-center gap-1">
-                  <Calendar class="w-3.5 h-3.5 text-sky-500" />
-                  {{ dayjs(heroArticle.createdAt).format('YYYY-MM-DD') }}
-                </span>
-                <span class="flex items-center gap-1">
-                  <Clock class="w-3.5 h-3.5 text-rose-400" />
-                  {{ heroArticle.readingTime }} 分钟
-                </span>
-                <span class="flex items-center gap-1">
-                  <Eye class="w-3.5 h-3.5 text-amber-400" />
-                  {{ heroArticle.views }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 普通文章流列表 (横向卡片) -->
+          <!-- 文章流列表 (统一规格卡片，置顶文章展示在首位并带有置顶推荐徽章) -->
           <div class="space-y-4">
             <ArticleCard
-              v-for="(article, idx) in regularArticles"
+              v-for="(article, idx) in displayArticles"
               :key="article.id"
               :article="article"
               :index="idx"

@@ -7,7 +7,11 @@ useHead({
 </script>
 
 <template>
-  <NuxtLayout>
-    <NuxtPage />
-  </NuxtLayout>
+  <div>
+    <!-- 顶部流光加载进度条 (点击导航 0ms 启动) -->
+    <NuxtLoadingIndicator color="#0ea5e9" :height="3" :duration="2000" />
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+  </div>
 </template>

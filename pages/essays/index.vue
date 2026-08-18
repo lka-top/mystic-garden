@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { Feather, X, Sparkles, MessageSquare, Terminal, Eye, Sun, Cloud, Moon, BookOpen } from 'lucide-vue-next'
 import type { ApiResponse, Essay } from '~/types'
 import EssayCard from '~/components/essay/EssayCard.vue'
+import SkeletonCard from '~/components/ui/SkeletonCard.vue'
 import CommentSection from '~/components/comment/CommentSection.vue'
 import HeroBanner from '~/components/layout/HeroBanner.vue'
 
@@ -93,8 +94,13 @@ useSeoMeta({
         </div>
       </div>
 
-      <!-- 随笔时间轴流 -->
-      <div v-if="essays.length > 0" class="space-y-5">
+      <!-- 1. 随笔加载中骨架屏 (0ms 即刻呈现，彻底消除空白感) -->
+      <div v-if="pending && essays.length === 0" class="space-y-5">
+        <SkeletonCard v-for="i in 3" :key="i" type="essay" />
+      </div>
+
+      <!-- 2. 真实随笔时间轴流 -->
+      <div v-else-if="essays.length > 0" class="space-y-5">
         <EssayCard
           v-for="(essay, idx) in essays"
           :key="essay.id"

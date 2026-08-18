@@ -1,6 +1,27 @@
 <script setup lang="ts">
 import Navbar from '~/components/layout/Navbar.vue'
 import Footer from '~/components/layout/Footer.vue'
+
+// ⚡ 客户端空闲时智能静默预拉取热点数据 (提升导航点击时的 0ms 秒开率)
+onMounted(() => {
+  if (import.meta.client) {
+    const prefetchHotData = () => {
+      // 静默预热 Nitro SWR 缓存与网络通道
+      Promise.allSettled([
+        $fetch('/api/v1/articles', { params: { page: 1, pageSize: 8 } }),
+        $fetch('/api/v1/notes', { params: { page: 1, pageSize: 15 } }),
+        $fetch('/api/v1/categories')
+      ]).catch(() => {})
+    }
+
+    if ('requestIdleCallback' in window) {
+      // 在浏览器渲染空闲时静默执行
+      window.requestIdleCallback(prefetchHotData, { timeout: 2000 })
+    } else {
+      setTimeout(prefetchHotData, 1500)
+    }
+  }
+})
 </script>
 
 <template>

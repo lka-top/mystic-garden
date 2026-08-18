@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { Search, BookOpen, X, FileText, Sparkles } from 'lucide-vue-next'
 import type { ApiResponse, Article, Category, Tag } from '~/types'
 import ArticleCard from '~/components/article/ArticleCard.vue'
+import SkeletonCard from '~/components/ui/SkeletonCard.vue'
 import Button from '~/components/ui/Button.vue'
 import Pagination from '~/components/ui/Pagination.vue'
 import ProfileCard from '~/components/layout/ProfileCard.vue'
@@ -138,8 +139,13 @@ useSeoMeta({
             </button>
           </div>
 
-          <!-- 文章列表 -->
-          <div v-if="articles.length > 0" class="space-y-4">
+          <!-- 文章列表加载中骨架屏 (首次点击 0ms 瞬间铺满，彻底消除空白等待) -->
+          <div v-if="articlesPending && articles.length === 0" class="space-y-4">
+            <SkeletonCard v-for="i in 4" :key="i" type="article" />
+          </div>
+
+          <!-- 文章真实列表 -->
+          <div v-else-if="articles.length > 0" class="space-y-4">
             <ArticleCard
               v-for="(article, idx) in articles"
               :key="article.id"

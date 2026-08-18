@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import type { ApiResponse, Note, Notebook, Tag } from '~/types'
 import Button from '~/components/ui/Button.vue'
 import Badge from '~/components/ui/Badge.vue'
+import SkeletonCard from '~/components/ui/SkeletonCard.vue'
 import Pagination from '~/components/ui/Pagination.vue'
 import HeroBanner from '~/components/layout/HeroBanner.vue'
 
@@ -129,8 +130,13 @@ useSeoMeta({
         </button>
       </div>
 
-      <!-- 笔记网格卡片瀑布流 -->
-      <div v-if="notes.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <!-- 1. 加载中骨架屏瀑布流 (0ms 瞬间铺满，彻底消除空白等待) -->
+      <div v-if="notesPending && notes.length === 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <SkeletonCard v-for="i in 6" :key="i" type="note" />
+      </div>
+
+      <!-- 2. 真实笔记网格卡片瀑布流 -->
+      <div v-else-if="notes.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         <NuxtLink
           v-for="note in notes"
           :key="note.id"
@@ -172,7 +178,7 @@ useSeoMeta({
       <Pagination v-if="pagination.totalPages > 1" v-model:page="page" :total-pages="pagination.totalPages" />
 
       <!-- 空状态 -->
-      <div v-if="notes.length === 0" class="md3-card py-16 text-center space-y-3">
+      <div v-else-if="!notesPending && notes.length === 0" class="md3-card py-16 text-center space-y-3">
         <div class="w-12 h-12 rounded-2xl bg-sky-50 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
           <FileText class="w-6 h-6" />
         </div>

@@ -3,10 +3,6 @@ import type { NuxtError } from '#app'
 import { Home, ArrowLeft, Search, Compass, Sparkles, BookOpen, Bookmark, Coffee, Archive } from 'lucide-vue-next'
 import Button from '~/components/ui/Button.vue'
 import ThemeToggle from '~/components/layout/ThemeToggle.vue'
-import SearchModal from '~/components/ui/SearchModal.vue'
-import { useSearchModal } from '~/composables/useSearchModal'
-
-const searchModal = useSearchModal()
 
 const props = defineProps<{
   error: NuxtError
@@ -34,7 +30,10 @@ function handleGoBack() {
 }
 
 function handleSearch() {
-  searchModal.open()
+  if (searchKeyword.value.trim()) {
+    clearError()
+    navigateTo(`/articles?q=${encodeURIComponent(searchKeyword.value.trim())}`)
+  }
 }
 </script>
 
@@ -179,9 +178,6 @@ function handleSearch() {
         </div>
       </div>
     </main>
-
-    <!-- 全局搜索弹窗 (Ctrl+K) -->
-    <SearchModal />
 
     <!-- 4. 页脚极简版权 -->
     <footer class="relative z-10 py-6 text-center text-xs text-slate-400 font-mono">

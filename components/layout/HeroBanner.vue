@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Sparkles, Heart, ChevronDown } from 'lucide-vue-next'
 
 interface Props {
@@ -7,6 +8,7 @@ interface Props {
   bgImage?: string
   height?: 'sm' | 'md' | 'lg' | 'full'
   showWave?: boolean
+  showArrow?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -14,13 +16,21 @@ const props = withDefaults(defineProps<Props>(), {
   subtitle: '漫步夏日微风 · 记录全栈探索 · 沉淀技术与美学思考',
   bgImage: '/images/banner.png',
   height: 'lg',
-  showWave: true
+  showWave: true,
+  showArrow: undefined
+})
+
+const isLarge = computed(() => props.height === 'lg' || props.height === 'full')
+
+const shouldShowArrow = computed(() => {
+  if (props.showArrow !== undefined) return props.showArrow
+  return isLarge.value
 })
 
 const heightClass = computed(() => {
   switch (props.height) {
-    case 'sm': return 'h-56 sm:h-64'
-    case 'md': return 'h-72 sm:h-88'
+    case 'sm': return 'h-60 sm:h-72 min-h-[260px]'
+    case 'md': return 'h-[44vh] sm:h-[48vh] min-h-[360px] sm:min-h-[400px]'
     case 'full': return 'h-screen min-h-[640px]'
     case 'lg':
     default:
@@ -47,52 +57,62 @@ function scrollToContent() {
     />
 
     <!-- 2. 半透明玻璃遮罩与主色调微光渐变 -->
-    <div class="absolute inset-0 bg-gradient-to-b from-sky-950/40 via-transparent to-sky-950/60" />
+    <div class="absolute inset-0 bg-gradient-to-b from-sky-950/45 via-transparent to-sky-950/60" />
 
     <!-- 3. 光晕装饰微粒 (蔚蓝 + 珊瑚粉双色光晕) -->
-    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-sky-400/25 rounded-full blur-3xl pointer-events-none" />
-    <div class="absolute top-1/3 right-1/4 w-80 h-80 bg-rose-400/20 rounded-full blur-3xl pointer-events-none" />
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-sky-400/20 rounded-full blur-3xl pointer-events-none" />
+    <div class="absolute top-1/3 right-1/4 w-80 h-80 bg-rose-400/15 rounded-full blur-3xl pointer-events-none" />
 
-    <!-- 4. 居中文案内容 -->
-    <div class="relative h-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center text-center pb-16 sm:pb-24 z-10">
+    <!-- 4. 居中文案内容 (增加 pt-24 sm:pt-28 顶部避让区，确保文字绝对不被顶部导航栏遮挡) -->
+    <div class="relative h-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center text-center pt-24 sm:pt-28 pb-14 sm:pb-20 z-10">
       <div
         v-motion
-        :initial="{ opacity: 0, y: 30 }"
-        :enter="{ opacity: 1, y: 0, transition: { duration: 700, ease: 'easeOut' } }"
-        class="space-y-4 text-white max-w-2xl"
+        :initial="{ opacity: 0, y: 24 }"
+        :enter="{ opacity: 1, y: 0, transition: { duration: 600, ease: 'easeOut' } }"
+        class="space-y-3 text-white max-w-2xl"
       >
-        <div class="inline-flex items-center gap-1.5 px-4 py-1 rounded-full text-xs font-mono bg-white/20 dark:bg-black/40 backdrop-blur-md border border-white/30 text-white shadow-md">
+        <!-- 标签气泡 -->
+        <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-mono bg-white/20 dark:bg-black/40 backdrop-blur-md border border-white/30 text-white shadow-md">
           <Sparkles class="w-3.5 h-3.5 text-sky-300 animate-pulse" />
-          <span class="tracking-widest font-semibold">MYSTIC GARDEN · AZURE SUMMER</span>
+          <span class="tracking-widest font-semibold">MYSTIC GARDEN · AZURE POP</span>
           <Heart class="w-3 h-3 text-rose-400 fill-rose-400" />
         </div>
 
-        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight drop-shadow-xl text-white">
+        <!-- 标题 -->
+        <h1
+          :class="[
+            'font-black tracking-tight drop-shadow-xl text-white',
+            isLarge
+              ? 'text-3xl sm:text-5xl lg:text-6xl'
+              : 'text-2xl sm:text-3xl lg:text-4xl'
+          ]"
+        >
           <span class="bg-gradient-to-r from-white via-sky-100 to-rose-100 bg-clip-text text-transparent">
             {{ title }}
           </span>
         </h1>
 
-        <p class="text-sm sm:text-base text-sky-50/95 font-light drop-shadow-md tracking-wider max-w-xl mx-auto">
+        <!-- 副标题 / 描述 -->
+        <p class="text-xs sm:text-sm text-sky-50/90 font-light drop-shadow-md tracking-wider max-w-xl mx-auto leading-relaxed">
           {{ subtitle }}
         </p>
 
-        <!-- 向下滚动指引箭头 -->
-        <div class="pt-4">
+        <!-- 向下滚动指引箭头 (仅在大型 Hero 时显示) -->
+        <div v-if="shouldShowArrow" class="pt-3">
           <button
             type="button"
-            class="p-2.5 rounded-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-md transition-all duration-300 hover:scale-110 animate-bounce"
+            class="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-md transition-all duration-300 hover:scale-110 animate-bounce"
             title="向下浏览"
             @click="scrollToContent"
           >
-            <ChevronDown class="w-5 h-5" />
+            <ChevronDown class="w-4 h-4" />
           </button>
         </div>
       </div>
     </div>
 
     <!-- 5. Mizuki 风格动态波浪过渡层 (Animated SVG Waves) -->
-    <div v-if="showWave" class="absolute bottom-0 inset-x-0 w-full h-14 sm:h-20 lg:h-24 pointer-events-none z-20 overflow-hidden leading-none">
+    <div v-if="showWave" class="absolute bottom-0 inset-x-0 w-full h-12 sm:h-18 lg:h-20 pointer-events-none z-20 overflow-hidden leading-none">
       <svg
         class="waves w-full h-full"
         xmlns="http://www.w3.org/2000/svg"

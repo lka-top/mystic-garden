@@ -13,6 +13,21 @@ export default defineNuxtConfig({
     appManifest: false
   },
 
+  // 全站 SWR 内存高速缓存与路由性能规则
+  routeRules: {
+    // 1. 公开数据接口开启 SWR 内存缓存 (Stale-While-Revalidate)
+    '/api/v1/stats/**': { swr: 60, cache: { maxAge: 60 } },
+    '/api/v1/categories/**': { swr: 120, cache: { maxAge: 120 } },
+    '/api/v1/notebooks/**': { swr: 120, cache: { maxAge: 120 } },
+    '/api/v1/tags/**': { swr: 120, cache: { maxAge: 120 } },
+    '/api/v1/articles/**': { swr: 30, cache: { maxAge: 30 } },
+    '/api/v1/notes/**': { swr: 30, cache: { maxAge: 30 } },
+    '/api/v1/essays/**': { swr: 30, cache: { maxAge: 30 } },
+
+    // 2. 后台管理面板走纯客户端 SPA 模式，确保实时管理
+    '/admin/**': { ssr: false }
+  },
+
   vite: {
     server: {
       allowedHosts: true

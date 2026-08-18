@@ -9,7 +9,9 @@ import HeroBanner from '~/components/layout/HeroBanner.vue'
 const selectedMood = ref('')
 const activeEssayForComment = ref<Essay | null>(null)
 
-const { data: res } = await useFetch<ApiResponse<{ list: Essay[]; pagination: any }>>('/api/v1/essays', {
+// 0ms 非阻塞获取随笔列表
+const { data: res, pending } = await useLazyFetch<ApiResponse<{ list: Essay[]; pagination: any }>>('/api/v1/essays', {
+  key: 'essays-list',
   query: computed(() => ({
     pageSize: 20,
     mood: selectedMood.value || undefined

@@ -144,6 +144,7 @@ onUnmounted(() => {
             v-for="item in navLinks"
             :key="item.path"
             :to="item.path"
+            :prefetch="true"
             :class="[
               'px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 flex items-center gap-1.5',
               isActive(item.path)
@@ -199,6 +200,7 @@ onUnmounted(() => {
             v-for="item in navLinks"
             :key="item.path"
             :to="item.path"
+            :prefetch="true"
             :class="[
               'flex items-center gap-2.5 px-4 py-2.5 rounded-2xl text-xs font-medium transition-colors',
               isActive(item.path)

@@ -20,8 +20,9 @@ import Badge from '~/components/ui/Badge.vue'
 import Button from '~/components/ui/Button.vue'
 import HeroBanner from '~/components/layout/HeroBanner.vue'
 
-// SSR 预取全部文章 (不限分页获取所有已发布文章进行全量归档)
-const { data: res } = await useFetch<ApiResponse<{ list: Article[] }>>('/api/v1/articles', {
+// 0ms 非阻塞预取归档文章
+const { data: res, pending } = await useLazyFetch<ApiResponse<{ list: Article[] }>>('/api/v1/articles', {
+  key: 'archive-articles',
   params: { pageSize: 200 },
   transform: (response) => {
     if (response?.data?.list) {

@@ -16,13 +16,16 @@ const selectedTag = ref((route.query.tag as string) || '')
 const searchKeyword = ref((route.query.q as string) || '')
 const page = ref(1)
 
-// 获取分类与标签数据
-const { data: catRes } = await useFetch<ApiResponse<{ categories: Category[]; tags: Tag[] }>>('/api/v1/categories')
+// 0ms 非阻塞获取分类与标签数据
+const { data: catRes } = await useLazyFetch<ApiResponse<{ categories: Category[]; tags: Tag[] }>>('/api/v1/categories', {
+  key: 'articles-categories'
+})
 const categories = computed(() => catRes.value?.data?.categories || [])
 const tags = computed(() => catRes.value?.data?.tags || [])
 
-// 获取文章列表
-const { data: articlesRes } = await useFetch<ApiResponse<{ list: Article[]; pagination: any }>>('/api/v1/articles', {
+// 0ms 非阻塞获取文章列表
+const { data: articlesRes, pending: articlesPending } = await useLazyFetch<ApiResponse<{ list: Article[]; pagination: any }>>('/api/v1/articles', {
+  key: 'articles-list',
   query: computed(() => ({
     page: page.value,
     pageSize: 8,

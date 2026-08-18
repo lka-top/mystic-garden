@@ -24,15 +24,21 @@ import HeroBanner from '~/components/layout/HeroBanner.vue'
 import ProfileCard from '~/components/layout/ProfileCard.vue'
 import SidebarWidgets from '~/components/layout/SidebarWidgets.vue'
 
-// SSR 预取全站数据
-const { data: statsRes } = await useFetch<ApiResponse<any>>('/api/v1/stats/overview')
-const { data: articlesRes } = await useFetch<ApiResponse<{ list: Article[] }>>('/api/v1/articles', {
+// 0ms 非阻塞预取全站数据 (兼顾 SSR 首屏与客户端极速切换)
+const { data: statsRes } = await useLazyFetch<ApiResponse<any>>('/api/v1/stats/overview', {
+  key: 'home-stats'
+})
+const { data: articlesRes } = await useLazyFetch<ApiResponse<{ list: Article[] }>>('/api/v1/articles', {
+  key: 'home-articles',
   params: { pageSize: 6 }
 })
-const { data: essaysRes } = await useFetch<ApiResponse<{ list: Essay[] }>>('/api/v1/essays', {
+const { data: essaysRes } = await useLazyFetch<ApiResponse<{ list: Essay[] }>>('/api/v1/essays', {
+  key: 'home-essays',
   params: { pageSize: 4 }
 })
-const { data: catRes } = await useFetch<ApiResponse<{ categories: Category[]; tags: Tag[] }>>('/api/v1/categories')
+const { data: catRes } = await useLazyFetch<ApiResponse<{ categories: Category[]; tags: Tag[] }>>('/api/v1/categories', {
+  key: 'home-categories'
+})
 
 const stats = computed(() => statsRes.value?.data?.stats || { articles: 0, essays: 0, categories: 0, totalViews: 0 })
 const articles = computed(() => articlesRes.value?.data?.list || [])

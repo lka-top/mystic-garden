@@ -14,12 +14,15 @@ const selectedNotebook = ref((route.query.notebook as string) || '')
 const searchKeyword = ref((route.query.q as string) || '')
 const page = ref(1)
 
-// 获取笔记本列表
-const { data: notebooksRes } = await useFetch<ApiResponse<Notebook[]>>('/api/v1/notebooks')
+// 0ms 非阻塞获取笔记本列表
+const { data: notebooksRes } = await useLazyFetch<ApiResponse<Notebook[]>>('/api/v1/notebooks', {
+  key: 'notes-notebooks'
+})
 const notebooks = computed(() => notebooksRes.value?.data || [])
 
-// 获取笔记列表
-const { data: notesRes } = await useFetch<ApiResponse<{ list: Note[]; pagination: any }>>('/api/v1/notes', {
+// 0ms 非阻塞获取笔记列表
+const { data: notesRes, pending: notesPending } = await useLazyFetch<ApiResponse<{ list: Note[]; pagination: any }>>('/api/v1/notes', {
+  key: 'notes-list',
   query: computed(() => ({
     page: page.value,
     pageSize: 15,

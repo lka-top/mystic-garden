@@ -27,12 +27,12 @@ jobs:
       - name: 安装 pnpm 包管理器 (Setup pnpm)
         uses: pnpm/action-setup@v3
         with:
-          version: 11.20.0
+          version: 9
 
-      - name: 配置 Node.js 20 运行时与依赖缓存 (Setup Node.js)
+      - name: 配置 Node.js 22 运行时与依赖缓存 (Setup Node.js)
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'pnpm'
 
       - name: 极速安装项目依赖 (Install dependencies)

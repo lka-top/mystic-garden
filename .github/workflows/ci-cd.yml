@@ -26,6 +26,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# 遵循最小特权安全原则 (参考 Mizuki 规范)
+permissions:
+  contents: read
+
 jobs:
   # ==========================================
   # 阶段 1: CI 自动化质量门禁 (必须 100% 绿灯通过)
@@ -36,11 +40,14 @@ jobs:
     timeout-minutes: 10 # 10分钟超时熔断保护
 
     steps:
-      - name: 检出仓库代码 (Checkout)
+      - name: 检出仓库代码 (Checkout with submodules)
         uses: actions/checkout@v4
+        with:
+          submodules: true # 支持 Git Submodule 模式 (文章/静态资源子仓库)
+          fetch-depth: 0   # 完整 Git 历史记录
 
-      - name: 安装 pnpm 包管理器 (Setup pnpm)
-        uses: pnpm/action-setup@v3
+      - name: 安装 pnpm 包管理器 (Setup pnpm v4)
+        uses: pnpm/action-setup@v4
         with:
           version: 9
 
@@ -72,7 +79,7 @@ jobs:
   # ==========================================
   cd-deploy-production:
     name: 2. CD 生产部署 (Deploy to Vercel)
-    needs: ci-build-and-verify # 👈 核心关键：必须等待 CI 阶段 1 跑完且 100% 成功！
+    needs: ci-build-and-verify # 👈 必须等待 CI 阶段 1 跑完且 100% 成功！
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' # 仅在 main 分支推送时部署
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -82,11 +89,14 @@ jobs:
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
     steps:
-      - name: 检出仓库代码 (Checkout)
+      - name: 检出仓库代码 (Checkout with submodules)
         uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
 
-      - name: 安装 pnpm 包管理器 (Setup pnpm)
-        uses: pnpm/action-setup@v3
+      - name: 安装 pnpm 包管理器 (Setup pnpm v4)
+        uses: pnpm/action-setup@v4
         with:
           version: 9
 

@@ -126,6 +126,27 @@ onMounted(async () => {
   }
 })
 
+async function handleUploadImg(files: File[], callback: (urls: string[]) => void) {
+  const uploadedUrls: string[] = []
+  for (const file of files) {
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await $fetch<ApiResponse<{ url: string }>>('/api/v1/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token.value}` },
+        body: formData
+      })
+      if (res.code === 200 && res.data?.url) {
+        uploadedUrls.push(res.data.url)
+      }
+    } catch (err: any) {
+      alert(err?.data?.statusMessage || '图片上传失败')
+    }
+  }
+  callback(uploadedUrls)
+}
+
 async function handleSave() {
   if (!form.value.title.trim()) {
     alert('请输入文章标题')
@@ -277,6 +298,7 @@ async function handleSave() {
           code-theme="atom"
           style="height: 640px;"
           :show-code-row-number="true"
+          @on-upload-img="handleUploadImg"
         />
         <template #fallback>
           <div class="p-12 text-center text-xs text-slate-400 font-mono">

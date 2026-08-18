@@ -1,8 +1,8 @@
-import fs from 'node:fs/promises'
 import path from 'node:path'
 import crypto from 'node:crypto'
 import { requireAdminUser } from '~/server/utils/auth'
 import { successResponse } from '~/server/utils/response'
+import { uploadFileToStorage } from '~/server/utils/storage'
 
 export default defineEventHandler(async (event) => {
   requireAdminUser(event)
@@ -24,14 +24,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const randomName = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`
-  
-  const uploadDir = path.resolve(process.cwd(), 'public/uploads')
-  await fs.mkdir(uploadDir, { recursive: true })
 
-  const filePath = path.join(uploadDir, randomName)
-  await fs.writeFile(filePath, file.data)
-
-  const publicUrl = `/uploads/${randomName}`
+  // 上传至 OSS / S3 或本地存储
+  const publicUrl = await uploadFileToStorage(file.data, randomName, file.type)
 
   return successResponse({
     url: publicUrl,

@@ -18,10 +18,6 @@ concurrency:
 permissions:
   contents: read
 
-env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
 jobs:
   deploy-production:
     name: Deploy to Vercel Production
@@ -48,6 +44,11 @@ jobs:
 
       - name: 全局安装 Vercel CLI 官方工具 (Install Vercel CLI)
         run: pnpm add -g vercel@latest
+
+      - name: 自动链接 Vercel 项目指针 (Link Vercel Project)
+        run: |
+          mkdir -p .vercel
+          echo '{"projectId":"${{ secrets.VERCEL_PROJECT_ID }}","orgId":"${{ secrets.VERCEL_ORG_ID }}"}' > .vercel/project.json
 
       - name: 拉取 Vercel 生产环境变量 (Pull Vercel Environment)
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}

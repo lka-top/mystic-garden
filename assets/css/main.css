@@ -32,21 +32,24 @@
   @apply bg-zinc-300 dark:bg-zinc-700 rounded-full hover:bg-zinc-400 dark:hover:bg-zinc-600 transition-colors;
 }
 
-/* 全局页面切换平滑过渡 (Page Enter / Leave Transition) */
-.page-enter-active,
+/* Mizuki 风格右侧平滑滑入/淡出全局页面转场 (Slide-in from Right) */
+.page-enter-active {
+  transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
 .page-leave-active {
-  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
+  transition: transform 0.22s cubic-bezier(0.4, 0, 1, 1), opacity 0.22s cubic-bezier(0.4, 0, 1, 1);
+  will-change: transform, opacity;
 }
 
 .page-enter-from {
   opacity: 0;
-  transform: translateY(12px) scale(0.99);
+  transform: translate3d(40px, 0, 0) scale(0.985);
 }
 
 .page-leave-to {
   opacity: 0;
-  transform: translateY(-12px) scale(0.99);
+  transform: translate3d(-24px, 0, 0) scale(0.985);
 }
 
 /* 布局级别切换过渡 */

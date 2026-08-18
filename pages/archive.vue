@@ -164,7 +164,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="space-y-8 max-w-6xl mx-auto">
+  <div class="space-y-8 max-w-6xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
     <!-- 1. 顶部 Header 标题 -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-zinc-200/80 dark:border-zinc-800/80">
       <div>

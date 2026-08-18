@@ -48,7 +48,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="space-y-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 space-y-8">
     <!-- 头部说明与搜索框 -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200/80 dark:border-zinc-800/80">
       <div>

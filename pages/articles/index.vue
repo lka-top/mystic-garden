@@ -53,11 +53,12 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-    <!-- ========================================================================= -->
-    <!-- 1. 左侧边栏 (MD3 粘性个人名片 + 分类/标签云微件) -->
-    <!-- ========================================================================= -->
-    <aside class="lg:col-span-4 space-y-6 lg:sticky lg:top-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <!-- ========================================================================= -->
+      <!-- 1. 左侧边栏 (MD3 粘性个人名片 + 分类/标签云微件) -->
+      <!-- ========================================================================= -->
+      <aside class="lg:col-span-4 space-y-6 lg:sticky lg:top-20">
       <ProfileCard />
       <SidebarWidgets />
     </aside>
@@ -162,4 +163,5 @@ useSeoMeta({
       </div>
     </main>
   </div>
+</div>
 </template>

@@ -219,7 +219,7 @@ const skillCategories: SkillCategory[] = [
 </script>
 
 <template>
-  <div class="space-y-12 max-w-4xl mx-auto">
+  <div class="space-y-12 max-w-4xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
     <!-- 头部关于介绍 -->
     <div class="pb-4 border-b border-zinc-200/80 dark:border-zinc-800/80">
       <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">

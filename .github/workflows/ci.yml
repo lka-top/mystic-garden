@@ -6,10 +6,21 @@ on:
       - main
       - master
       - dev
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
   pull_request:
     branches:
       - main
       - master
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
+  workflow_dispatch: # 支持在 GitHub Actions 界面一键手动触发
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -19,6 +30,7 @@ jobs:
   build-and-verify:
     name: Build & Verify
     runs-on: ubuntu-latest
+    timeout-minutes: 10 # 10分钟超时熔断保护
 
     steps:
       - name: 检出仓库代码 (Checkout)

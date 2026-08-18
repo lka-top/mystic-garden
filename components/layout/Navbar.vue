@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useWindowScroll } from '@vueuse/core'
 import {
   Compass,
   BookOpen,
@@ -15,6 +16,7 @@ import {
 import ThemeToggle from './ThemeToggle.vue'
 
 const isMobileMenuOpen = ref(false)
+const route = useRoute()
 
 const navLinks = [
   { name: '首页', path: '/', icon: Compass },
@@ -25,37 +27,120 @@ const navLinks = [
   { name: '关于', path: '/about', icon: User }
 ]
 
-const route = useRoute()
 function isActive(path: string) {
   if (path === '/') return route.path === '/'
   return route.path.startsWith(path)
 }
+
+// 滚动监听与进度计算
+const { y } = useWindowScroll()
+const isScrolled = computed(() => y.value > 60)
+const isHomePage = computed(() => route.path === '/')
+
+// 判断是否处于顶部透明全宽模式
+const isTransparentMode = computed(() => isHomePage.value && !isScrolled.value)
+
+// 全局滚动进度条百分比
+const scrollProgress = ref(0)
+function updateScrollProgress() {
+  if (typeof window === 'undefined') return
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight
+  if (docHeight > 0) {
+    scrollProgress.value = Math.min(100, Math.max(0, (window.scrollY / docHeight) * 100))
+  } else {
+    scrollProgress.value = 0
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', updateScrollProgress, { passive: true })
+  updateScrollProgress()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', updateScrollProgress)
+})
 </script>
 
 <template>
-  <header class="sticky top-3 z-50 px-3 sm:px-6 select-none transition-all duration-300">
-    <div class="max-w-5xl mx-auto">
+  <!-- 1. 全局顶部动态蓝色阅读进度条 -->
+  <div
+    v-show="scrollProgress > 0"
+    class="fixed top-0 left-0 h-[3px] bg-gradient-to-r from-sky-400 via-sky-500 to-rose-400 z-[60] transition-all duration-100 ease-out shadow-xs pointer-events-none"
+    :style="{ width: `${scrollProgress}%` }"
+  />
+
+  <!-- 2. Mizuki 风格动态响应式导航栏 -->
+  <header
+    :class="[
+      'fixed top-0 inset-x-0 z-50 select-none transition-all duration-500 ease-out',
+      isTransparentMode
+        ? 'py-3 sm:py-4 px-4 sm:px-10 bg-gradient-to-b from-black/60 via-black/25 to-transparent backdrop-blur-[2px]'
+        : 'pt-3 px-3 sm:px-6 pointer-events-none'
+    ]"
+  >
+    <div
+      :class="[
+        'transition-all duration-500 ease-out',
+        isTransparentMode
+          ? 'w-full max-w-7xl mx-auto flex items-center justify-between pointer-events-auto'
+          : 'max-w-5xl mx-auto pointer-events-auto'
+      ]"
+    >
       <nav
-        class="flex items-center justify-between px-3 sm:px-5 h-14 rounded-full border border-sky-100/60 dark:border-slate-800/80 bg-white/80 dark:bg-[#131c31]/80 backdrop-blur-xl shadow-lg shadow-sky-950/[0.04] dark:shadow-black/30 transition-all duration-300 hover:border-sky-400/40"
+        :class="[
+          'flex items-center justify-between transition-all duration-500 ease-out',
+          isTransparentMode
+            ? 'w-full h-12 bg-transparent border-transparent shadow-none px-2'
+            : 'px-3 sm:px-5 h-14 rounded-full border border-sky-100/60 dark:border-slate-800/80 bg-white/85 dark:bg-[#131c31]/85 backdrop-blur-xl shadow-lg shadow-sky-950/[0.05] dark:shadow-black/40 hover:border-sky-400/40'
+        ]"
       >
-        <!-- 品牌标识 (晴空蓝与珊瑚粉双色渐变 Logo) -->
+        <!-- 品牌标识 Logo -->
         <NuxtLink to="/" class="flex items-center gap-2.5 group">
-          <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-sky-500 via-sky-400 to-rose-400 flex items-center justify-center text-white shadow-md shadow-sky-500/25 transition-all duration-300 group-hover:scale-105 group-hover:rotate-3">
-            <Sparkles class="w-4 h-4" />
+          <div
+            :class="[
+              'w-9 h-9 rounded-2xl flex items-center justify-center text-white shadow-md transition-all duration-300 group-hover:scale-105 group-hover:rotate-3',
+              isTransparentMode
+                ? 'bg-white/25 backdrop-blur-md border border-white/30 text-white'
+                : 'bg-gradient-to-tr from-sky-500 via-sky-400 to-rose-400 shadow-sky-500/25'
+            ]"
+          >
+            <Sparkles class="w-4 h-4 text-sky-200" />
           </div>
 
           <div class="flex flex-col">
-            <span class="font-bold text-sm tracking-tight text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+            <span
+              :class="[
+                'font-bold text-sm tracking-tight transition-colors',
+                isTransparentMode
+                  ? 'text-white drop-shadow-md group-hover:text-sky-200'
+                  : 'text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400'
+              ]"
+            >
               神秘花园
             </span>
-            <span class="text-[9px] font-mono text-sky-600/70 dark:text-sky-400/70 uppercase tracking-widest leading-none font-semibold">
+            <span
+              :class="[
+                'text-[9px] font-mono uppercase tracking-widest leading-none font-semibold transition-colors',
+                isTransparentMode
+                  ? 'text-white/80 drop-shadow-xs'
+                  : 'text-sky-600/70 dark:text-sky-400/70'
+              ]"
+            >
               Azure Garden
             </span>
           </div>
         </NuxtLink>
 
-        <!-- 桌面端导航链接 (MD3 药丸激活状态) -->
-        <div class="hidden md:flex items-center gap-1 bg-sky-50/60 dark:bg-slate-900/60 p-1 rounded-full border border-sky-100/50 dark:border-slate-800/50">
+        <!-- 桌面端导航链接 -->
+        <div
+          :class="[
+            'hidden md:flex items-center gap-1 p-1 rounded-full transition-all duration-300',
+            isTransparentMode
+              ? 'bg-black/20 backdrop-blur-md border border-white/15'
+              : 'bg-sky-50/60 dark:bg-slate-900/60 border border-sky-100/50 dark:border-slate-800/50'
+          ]"
+        >
           <NuxtLink
             v-for="item in navLinks"
             :key="item.path"
@@ -63,8 +148,12 @@ function isActive(path: string) {
             :class="[
               'px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 flex items-center gap-1.5',
               isActive(item.path)
-                ? 'bg-white dark:bg-[#1a2542] text-sky-600 dark:text-sky-300 font-bold shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-300'
+                ? (isTransparentMode
+                    ? 'bg-white/25 text-white font-bold backdrop-blur-md shadow-xs'
+                    : 'bg-white dark:bg-[#1a2542] text-sky-600 dark:text-sky-300 font-bold shadow-xs')
+                : (isTransparentMode
+                    ? 'text-white/85 hover:text-white hover:bg-white/10'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-300')
             ]"
           >
             <component :is="item.icon" class="w-3.5 h-3.5" />
@@ -76,17 +165,27 @@ function isActive(path: string) {
         <div class="flex items-center gap-1.5 sm:gap-2">
           <NuxtLink
             to="/articles"
-            class="p-2 rounded-full text-slate-600 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-slate-800/80 transition-colors"
+            :class="[
+              'p-2 rounded-full transition-colors',
+              isTransparentMode
+                ? 'text-white/90 hover:text-white hover:bg-white/20'
+                : 'text-slate-600 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-slate-800/80'
+            ]"
             title="搜索文章"
           >
             <Search class="w-4 h-4" />
           </NuxtLink>
 
-          <ThemeToggle />
+          <ThemeToggle :is-transparent="isTransparentMode" />
 
           <button
             type="button"
-            class="md:hidden p-2 rounded-full text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-sky-50 dark:hover:bg-slate-800 transition-colors"
+            :class="[
+              'md:hidden p-2 rounded-full transition-colors',
+              isTransparentMode
+                ? 'text-white hover:bg-white/20'
+                : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-sky-50 dark:hover:bg-slate-800'
+            ]"
             @click="isMobileMenuOpen = !isMobileMenuOpen"
           >
             <component :is="isMobileMenuOpen ? X : Menu" class="w-4 h-4" />

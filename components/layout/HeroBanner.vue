@@ -12,19 +12,19 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   title: '神秘花园 · 晴空之下',
   subtitle: '漫步夏日微风 · 记录全栈探索 · 沉淀技术与美学思考',
-  bgImage: '/images/banner.jpg',
+  bgImage: '/images/banner.png',
   height: 'lg',
   showWave: true
 })
 
 const heightClass = computed(() => {
   switch (props.height) {
-    case 'sm': return 'h-52 sm:h-64'
-    case 'md': return 'h-64 sm:h-80'
-    case 'full': return 'h-screen min-h-[600px]'
+    case 'sm': return 'h-56 sm:h-64'
+    case 'md': return 'h-72 sm:h-88'
+    case 'full': return 'h-screen min-h-[640px]'
     case 'lg':
     default:
-      return 'h-[55vh] sm:h-[65vh] lg:h-[72vh] min-h-[480px]'
+      return 'h-[65vh] sm:h-[75vh] lg:h-[82vh] min-h-[520px]'
   }
 })
 
@@ -33,7 +33,7 @@ function scrollToContent() {
   if (contentEl) {
     contentEl.scrollIntoView({ behavior: 'smooth' })
   } else {
-    window.scrollTo({ top: window.innerHeight * 0.65, behavior: 'smooth' })
+    window.scrollTo({ top: window.innerHeight * 0.75, behavior: 'smooth' })
   }
 }
 </script>
@@ -42,8 +42,8 @@ function scrollToContent() {
   <div :class="['relative w-full overflow-hidden select-none transition-all duration-500', heightClass]">
     <!-- 1. 背景壁纸大图 + 视差微缩放 -->
     <div
-      class="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 ease-out transform scale-100"
-      :style="{ backgroundImage: `url(${bgImage})`, backgroundPosition: 'center 35%' }"
+      class="absolute inset-0 bg-cover bg-no-repeat transition-transform duration-1000 ease-out transform scale-100"
+      :style="{ backgroundImage: `url(${bgImage})`, backgroundPosition: 'center 25%' }"
     />
 
     <!-- 2. 半透明玻璃遮罩与主色调微光渐变 -->

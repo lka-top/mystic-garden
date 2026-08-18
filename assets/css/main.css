@@ -59,3 +59,21 @@
   opacity: 0;
   transform: translateY(4px);
 }
+
+/* 全局暗黑/明亮模式切换平滑渐变过渡 (Theme Transition) */
+body,
+header,
+nav,
+aside,
+main,
+footer,
+.md3-card,
+.md3-card-elevated,
+input,
+textarea,
+button {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 280ms;
+}
+

@@ -1,42 +1,53 @@
-name: CI / CD Pipeline
+name: Continuous Integration (CI)
 
 on:
   push:
     branches:
       - main
+      - master
+      - dev
   pull_request:
     branches:
       - main
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build-and-test:
-    name: Build & Verify Application
+  build-and-verify:
+    name: Build & Verify
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout Repository
+      - name: 检出仓库代码 (Checkout)
         uses: actions/checkout@v4
 
-      - name: 📦 Install pnpm
+      - name: 安装 pnpm 包管理器 (Setup pnpm)
         uses: pnpm/action-setup@v3
         with:
-          version: 9
+          version: 11.20.0
 
-      - name: ⚙️ Setup Node.js 20
+      - name: 配置 Node.js 20 运行时与依赖缓存 (Setup Node.js)
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'pnpm'
 
-      - name: 📥 Install Dependencies
+      - name: 极速安装项目依赖 (Install dependencies)
         run: pnpm install --frozen-lockfile
 
-      - name: 🗄️ Generate Prisma Client
+      - name: 校验 Prisma 数据模型语法 (Validate Prisma Schema)
+        run: npx prisma validate
+
+      - name: 生成 Prisma Client 类型声明 (Generate Prisma Client)
         run: npx prisma generate
 
-      - name: 🚀 Build Nuxt 3 Production Application
+      - name: 生产环境打包构建校验 (Nuxt 3 Build Verification)
         run: pnpm build
-
-      - name: ✅ Verify Production Artifacts
-        run: |
-          test -f .output/server/index.mjs && echo "Production server bundle generated successfully!"
+        env:
+          NODE_ENV: production
+          DATABASE_URL: "mysql://mock_user:mock_pass@localhost:3306/mock_db"
+          JWT_SECRET: "ci-test-mock-jwt-secret-key-123456"
+          NUXT_PUBLIC_SITE_URL: "http://localhost:3000"

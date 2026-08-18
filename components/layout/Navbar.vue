@@ -35,10 +35,8 @@ function isActive(path: string) {
 // 滚动监听与进度计算
 const { y } = useWindowScroll()
 const isScrolled = computed(() => y.value > 60)
-const isHomePage = computed(() => route.path === '/')
-
-// 判断是否处于顶部透明全宽模式
-const isTransparentMode = computed(() => isHomePage.value && !isScrolled.value)
+// 判断是否处于顶部透明全宽模式 (全站所有页面在顶部未滚动时均生效)
+const isTransparentMode = computed(() => !isScrolled.value)
 
 // 全局滚动进度条百分比
 const scrollProgress = ref(0)

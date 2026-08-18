@@ -12,6 +12,7 @@ import {
 } from 'lucide-vue-next'
 import Card from '~/components/ui/Card.vue'
 import BrandIcon, { type BrandName } from '~/components/ui/BrandIcon.vue'
+import HeroBanner from '~/components/layout/HeroBanner.vue'
 
 useSeoMeta({
   title: '关于神秘花园',
@@ -219,7 +220,16 @@ const skillCategories: SkillCategory[] = [
 </script>
 
 <template>
-  <div class="space-y-12 max-w-4xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
+  <div>
+    <!-- 顶部全宽 HeroBanner + 动态波浪 -->
+    <HeroBanner
+      title="关于「神秘花园」"
+      subtitle="Digital Garden · 全栈架构设计、现代 Web 美学与极客探索"
+      height="md"
+      :show-wave="true"
+    />
+
+    <div class="space-y-12 max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
     <!-- 头部关于介绍 -->
     <div class="pb-4 border-b border-zinc-200/80 dark:border-zinc-800/80">
       <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2.5">
@@ -344,4 +354,5 @@ const skillCategories: SkillCategory[] = [
       </div>
     </div>
   </div>
+</div>
 </template>

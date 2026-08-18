@@ -18,6 +18,7 @@ import dayjs from 'dayjs'
 import type { ApiResponse, Article } from '~/types'
 import Badge from '~/components/ui/Badge.vue'
 import Button from '~/components/ui/Button.vue'
+import HeroBanner from '~/components/layout/HeroBanner.vue'
 
 // SSR 预取全部文章 (不限分页获取所有已发布文章进行全量归档)
 const { data: res } = await useFetch<ApiResponse<{ list: Article[] }>>('/api/v1/articles', {
@@ -164,7 +165,16 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="space-y-8 max-w-6xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
+  <div>
+    <!-- 顶部全宽 HeroBanner + 动态波浪 -->
+    <HeroBanner
+      title="时光归档与日历检索"
+      subtitle="Interactive Chronological Matrix · 按时间维度与交互式日历检索全量技术沉淀"
+      height="md"
+      :show-wave="true"
+    />
+
+    <div class="space-y-8 max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
     <!-- 1. 顶部 Header 标题 -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-zinc-200/80 dark:border-zinc-800/80">
       <div>
@@ -467,4 +477,5 @@ useSeoMeta({
       </div>
     </div>
   </div>
+</div>
 </template>

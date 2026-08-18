@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Calendar, Eye, ArrowLeft, BookMarked, Layers, Terminal, Folder } from 'lucide-vue-next'
 import dayjs from 'dayjs'
 import type { ApiResponse, Note } from '~/types'
 import MarkdownRenderer from '~/components/article/MarkdownRenderer.vue'
 import Badge from '~/components/ui/Badge.vue'
+import HeroBanner from '~/components/layout/HeroBanner.vue'
 
 const route = useRoute()
 const slug = route.params.slug as string
@@ -29,50 +30,50 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto space-y-6">
-    <!-- 返回按钮 -->
-    <div>
-      <NuxtLink to="/notes" class="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors font-mono">
-        <ArrowLeft class="w-3.5 h-3.5" />
-        返回知识库
-      </NuxtLink>
-    </div>
+  <div>
+    <!-- 顶部全宽 HeroBanner + 动态波浪 -->
+    <HeroBanner
+      :title="note.title"
+      :subtitle="note.summary || `${dayjs(note.createdAt).format('YYYY-MM-DD')} · 知识库速查备忘`"
+      height="md"
+      :show-wave="true"
+    />
 
-    <!-- 笔记正文卡片 -->
-    <article class="p-8 rounded-3xl border border-zinc-200/80 bg-white/70 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-900/60 shadow-xs space-y-6">
-      <header class="space-y-3 pb-6 border-b border-zinc-200/80 dark:border-zinc-800/80">
-        <div class="flex flex-wrap items-center gap-2">
-          <span v-if="note.notebook" class="text-[11px] font-mono px-2.5 py-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200/50 dark:border-zinc-700 flex items-center gap-1">
-            <BookMarked class="w-3.5 h-3.5 text-zinc-500" />
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 space-y-6">
+      <!-- 返回按钮与笔记本元信息卡片 -->
+      <div class="md3-card p-4 sm:p-5 flex items-center justify-between gap-4 flex-wrap">
+        <NuxtLink
+          to="/notes"
+          class="inline-flex items-center gap-1.5 text-xs font-bold text-sky-600 dark:text-sky-400 hover:text-rose-500 transition-colors font-mono"
+        >
+          <ArrowLeft class="w-3.5 h-3.5" />
+          <span>返回知识库列表</span>
+        </NuxtLink>
+
+        <div class="flex items-center gap-2">
+          <span v-if="note.notebook" class="text-xs font-semibold px-3 py-1 rounded-full bg-sky-500/10 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300 border border-sky-200/50 flex items-center gap-1.5">
+            <BookMarked class="w-3.5 h-3.5 text-sky-500" />
             {{ note.notebook.name }}
           </span>
           <span
             v-for="tag in note.tags"
             :key="tag.id"
-            class="text-xs text-zinc-400 font-mono"
+            class="text-xs text-slate-400 font-mono"
           >
             #{{ tag.name }}
           </span>
         </div>
+      </div>
 
-        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 leading-tight">
-          {{ note.title }}
-        </h1>
+      <!-- 笔记正文卡片 -->
+      <article class="md3-card p-6 sm:p-10 space-y-6">
+        <MarkdownRenderer :content="note.content || ''" />
 
-        <div class="flex items-center gap-4 text-xs text-zinc-400 font-mono">
-          <span class="flex items-center gap-1">
-            <Calendar class="w-3.5 h-3.5" />
-            {{ dayjs(note.createdAt).format('YYYY-MM-DD') }}
-          </span>
-          <span class="flex items-center gap-1">
-            <Eye class="w-3.5 h-3.5" />
-            {{ note.views }} 次查看
-          </span>
+        <div class="pt-4 border-t border-sky-100/60 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-400 font-mono">
+          <span>记录于 {{ dayjs(note.createdAt).format('YYYY-MM-DD HH:mm') }}</span>
+          <span v-if="note.views !== undefined">{{ note.views }} 次查看</span>
         </div>
-      </header>
-
-      <!-- Markdown 渲染 -->
-      <MarkdownRenderer :content="note.content || ''" />
-    </article>
+      </article>
+    </div>
   </div>
 </template>

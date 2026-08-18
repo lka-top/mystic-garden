@@ -86,7 +86,7 @@ useSeoMeta({
         <!-- 2.1 左侧边栏 (MD3 个人名片 + 实时时钟 + 分类标签微件) -->
         <aside class="lg:col-span-4 space-y-6 lg:sticky lg:top-20">
           <!-- 个人名片 -->
-          <ProfileCard />
+
 
           <!-- 实时时钟微件 -->
           <div class="md3-card p-5 space-y-3">

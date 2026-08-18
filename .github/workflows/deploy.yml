@@ -1,0 +1,65 @@
+name: Continuous Deployment (CD - Vercel)
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
+  workflow_dispatch: # 支持在 GitHub Actions 界面一键手动触发部署
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  deploy-production:
+    name: Deploy to Vercel Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 检出仓库代码 (Checkout)
+        uses: actions/checkout@v4
+
+      - name: 安装 pnpm 包管理器 (Setup pnpm v4)
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: 配置 Node.js 22 运行时与依赖缓存 (Setup Node.js)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: 极速安装项目依赖 (Install dependencies)
+        run: pnpm install --frozen-lockfile
+
+      - name: 生成 Prisma Client 声明 (Generate Prisma Client)
+        run: npx prisma generate
+
+      - name: 全局安装 Vercel CLI 官方工具 (Install Vercel CLI)
+        run: pnpm add -g vercel@latest
+
+      - name: 拉取 Vercel 生产环境变量 (Pull Vercel Environment)
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: 预编译生产制品 (Build Project Artifacts)
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: 发布至 Vercel 全球生产边缘网络 (Deploy to Vercel)
+        run: |
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "🎉 生产环境部署成功！"
+          echo "🌐 线上公网访问地址: $DEPLOYMENT_URL"

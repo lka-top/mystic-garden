@@ -1,0 +1,68 @@
+name: Continuous Integration (CI)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - dev
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
+  pull_request:
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-verify:
+    name: Build & Verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 检出仓库代码 (Checkout)
+        uses: actions/checkout@v4
+
+      - name: 安装 pnpm 包管理器 (Setup pnpm v4)
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: 配置 Node.js 22 运行时与依赖缓存 (Setup Node.js)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: 极速安装项目依赖 (Install dependencies)
+        run: pnpm install --frozen-lockfile
+
+      - name: 校验 Prisma 数据模型语法 (Validate Prisma Schema)
+        run: npx prisma validate
+
+      - name: 生成 Prisma Client 类型声明 (Generate Prisma Client)
+        run: npx prisma generate
+
+      - name: 生产环境打包构建校验 (Nuxt 3 Build Verification)
+        run: pnpm build
+        env:
+          NODE_ENV: production
+          DATABASE_URL: "mysql://mock_user:mock_pass@localhost:3306/mock_db"
+          JWT_SECRET: "ci-test-mock-jwt-secret-key-123456"
+          NUXT_PUBLIC_SITE_URL: "http://localhost:3000"

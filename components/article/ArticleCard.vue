@@ -31,7 +31,7 @@ const props = withDefaults(defineProps<Props>(), {
   >
     <!-- 1. 封面图 (左侧大图 / 渐变回退) -->
     <div
-      class="w-full sm:w-60 h-44 sm:h-auto shrink-0 rounded-2xl overflow-hidden relative bg-sky-50 dark:bg-slate-800 shadow-xs"
+      class="w-full sm:w-56 h-40 sm:h-36 shrink-0 rounded-2xl overflow-hidden relative bg-sky-50 dark:bg-slate-800 shadow-xs"
     >
       <img
         v-if="article.coverImage"

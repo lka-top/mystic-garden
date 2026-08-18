@@ -141,7 +141,6 @@ useSeoMeta({
         <!-- 右侧侧边栏 (4列): TOC 文章目录 + 简短个人卡片 -->
         <aside class="hidden lg:block lg:col-span-4 space-y-6 lg:sticky lg:top-20">
           <TableOfContents :items="toc" />
-          <ProfileCard />
         </aside>
       </div>
     </div>

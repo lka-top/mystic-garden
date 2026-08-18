@@ -66,14 +66,9 @@ useSeoMeta({
     <!-- 主体双栏内容区 -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <!-- 1. 左侧边栏 (MD3 个人名片 + 分类/标签云微件) -->
-        <aside class="lg:col-span-4 space-y-6 lg:sticky lg:top-20">
-          <ProfileCard />
-          <SidebarWidgets />
-        </aside>
-
+        
         <!-- 2. 右侧主体文章流 -->
-        <main class="lg:col-span-8 space-y-6">
+        <main class="lg:col-span-12 space-y-6">
           <!-- 头部控制栏 (标题 + 搜索框) -->
           <div class="md3-card p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>

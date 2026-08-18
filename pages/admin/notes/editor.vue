@@ -3,10 +3,13 @@ import { ref, onMounted } from 'vue'
 import { Save, ArrowLeft, BookMarked, Plus, X, FolderPlus } from 'lucide-vue-next'
 import type { ApiResponse, Note, Notebook } from '~/types'
 import { useAuth } from '~/composables/useAuth'
-import MarkdownRenderer from '~/components/article/MarkdownRenderer.vue'
+import { MdEditor } from 'md-editor-v3'
+import 'md-editor-v3/lib/style.css'
 import Button from '~/components/ui/Button.vue'
 import Select from '~/components/ui/Select.vue'
 import TagSelect from '~/components/ui/TagSelect.vue'
+
+const colorMode = useColorMode()
 
 definePageMeta({
   layout: 'admin'
@@ -253,26 +256,23 @@ async function handleSave() {
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[550px]">
-      <div class="flex flex-col rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
-        <div class="p-3 bg-zinc-50 dark:bg-zinc-800/60 border-b border-zinc-200 dark:border-zinc-800 text-xs font-bold text-zinc-500 font-mono">
-          Markdown 源码编辑
-        </div>
-        <textarea
+    <!-- 现代 Markdown 富文本全功能编辑器 (MdEditor) -->
+    <div class="rounded-3xl border border-sky-100 dark:border-slate-800 bg-white dark:bg-[#131c31] overflow-hidden shadow-card">
+      <ClientOnly>
+        <MdEditor
           v-model="form.content"
-          class="flex-1 w-full p-4 text-sm font-mono bg-transparent focus:outline-none resize-none leading-relaxed"
-          placeholder="输入 Markdown 笔记内容..."
+          :theme="colorMode.value === 'dark' ? 'dark' : 'light'"
+          preview-theme="default"
+          code-theme="atom"
+          style="height: 640px;"
+          :show-code-row-number="true"
         />
-      </div>
-
-      <div class="flex flex-col rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
-        <div class="p-3 bg-zinc-50 dark:bg-zinc-800/60 border-b border-zinc-200 dark:border-zinc-800 text-xs font-bold text-zinc-500 font-mono">
-          实时排版预览
-        </div>
-        <div class="flex-1 p-6 overflow-y-auto max-h-[600px]">
-          <MarkdownRenderer :content="form.content" />
-        </div>
-      </div>
+        <template #fallback>
+          <div class="p-12 text-center text-xs text-slate-400 font-mono">
+            正在加载编辑器组件...
+          </div>
+        </template>
+      </ClientOnly>
     </div>
 
     <!-- 快速新建笔记本分区弹窗 -->

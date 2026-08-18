@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Navbar from '~/components/layout/Navbar.vue'
 import Footer from '~/components/layout/Footer.vue'
+import SearchModal from '~/components/ui/SearchModal.vue'
 </script>
 
 <template>
@@ -15,6 +16,9 @@ import Footer from '~/components/layout/Footer.vue'
     <main class="relative z-10 flex-1 w-full pb-16">
       <slot />
     </main>
+
+    <!-- 全局 Mizuki 风格搜索弹窗 (Ctrl+K) -->
+    <SearchModal />
 
     <Footer />
   </div>

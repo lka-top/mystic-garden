@@ -6,10 +6,11 @@ export default defineEventHandler(async (event) => {
   const q = (query.q as string || '').trim()
 
   if (!q) {
-    return successResponse({ articles: [], essays: [] })
+    return successResponse({ articles: [], notes: [], essays: [] })
   }
 
-  const [articles, essays] = await Promise.all([
+  const [articles, notes, essays] = await Promise.all([
+    // 1. 检索公开文章
     prisma.article.findMany({
       where: {
         isPublished: true,
@@ -19,7 +20,7 @@ export default defineEventHandler(async (event) => {
           { content: { contains: q } }
         ]
       },
-      take: 10,
+      take: 8,
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
@@ -30,12 +31,34 @@ export default defineEventHandler(async (event) => {
         category: { select: { name: true, slug: true } }
       }
     }),
+    // 2. 检索公开笔记
+    prisma.note.findMany({
+      where: {
+        isPublished: true,
+        OR: [
+          { title: { contains: q } },
+          { summary: { contains: q } },
+          { content: { contains: q } }
+        ]
+      },
+      take: 8,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        summary: true,
+        createdAt: true,
+        notebook: { select: { name: true, slug: true } }
+      }
+    }),
+    // 3. 检索公开随笔
     prisma.essay.findMany({
       where: {
         isPublished: true,
         content: { contains: q }
       },
-      take: 10,
+      take: 6,
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
@@ -46,5 +69,5 @@ export default defineEventHandler(async (event) => {
     })
   ])
 
-  return successResponse({ articles, essays })
+  return successResponse({ articles, notes, essays })
 })

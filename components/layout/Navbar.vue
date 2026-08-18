@@ -14,7 +14,9 @@ import {
   Sparkles
 } from 'lucide-vue-next'
 import ThemeToggle from './ThemeToggle.vue'
+import { useSearchModal } from '~/composables/useSearchModal'
 
+const searchModal = useSearchModal()
 const isMobileMenuOpen = ref(false)
 const route = useRoute()
 
@@ -161,18 +163,19 @@ onUnmounted(() => {
 
         <!-- 右侧操作区 (搜索入口、主题切换、移动端汉堡菜单) -->
         <div class="flex items-center gap-1.5 sm:gap-2">
-          <NuxtLink
-            to="/articles"
+          <button
+            type="button"
             :class="[
-              'p-2 rounded-full transition-colors',
+              'p-2 rounded-full transition-colors cursor-pointer',
               isTransparentMode
                 ? 'text-white/90 hover:text-white hover:bg-white/20'
                 : 'text-slate-600 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-slate-800/80'
             ]"
-            title="搜索文章"
+            title="搜索 (Ctrl + K)"
+            @click="searchModal.open()"
           >
             <Search class="w-4 h-4" />
-          </NuxtLink>
+          </button>
 
           <ThemeToggle :is-transparent="isTransparentMode" />
 

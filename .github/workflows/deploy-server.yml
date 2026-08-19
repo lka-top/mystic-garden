@@ -16,10 +16,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # 步骤 1: 自动将 GitHub 仓库 2 秒镜像同步至 Gitee (国内专线)
+  sync-to-gitee:
+    name: Sync Repository to Gitee
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 同步代码至 Gitee 镜像仓库
+        uses: Yikun/hub-mirror-action@v1.2
+        with:
+          src: github/lka-top
+          dst: gitee/${{ secrets.GITEE_USER }}
+          dst_token: ${{ secrets.GITEE_TOKEN }}
+          static_list: 'mystic-garden'
+          force_update: true
+          debug: true
+
+  # 步骤 2: 登录阿里云服务器，从 Gitee 国内极速拉取并热启动容器
   deploy-to-aliyun:
     name: Deploy to Aliyun Ubuntu Server
+    needs: sync-to-gitee
     runs-on: ubuntu-latest
-    timeout-minutes: 10 # 10分钟超时熔断保护
+    timeout-minutes: 10
 
     steps:
       - name: 远程 SSH 连接阿里云服务器并自动化部署
@@ -33,14 +51,15 @@ jobs:
           script_stop: true
           script: |
             echo "=================================================="
-            echo "🚀 收到 GitHub 最新提交，开始在阿里云服务器执行热部署..."
+            echo "🚀 Gitee 国内镜像已同步，开始在阿里云服务器执行极速部署..."
             echo "=================================================="
             
             # 1. 进入项目目录
             cd /app/mystic-garden || exit 1
             
-            # 2. 强制同步 GitHub 远端最新代码 (消除本地分支分叉冲突)
-            echo "📥 正在拉取 GitHub 仓库最新代码..."
+            # 2. 配置/强制拉取 Gitee 国内源最新代码
+            echo "📥 从 Gitee 国内源拉取最新代码 (速度 50MB/s)..."
+            git remote set-url origin https://${{ secrets.GITEE_USER }}:${{ secrets.GITEE_TOKEN }}@gitee.com/${{ secrets.GITEE_USER }}/mystic-garden.git || true
             git fetch origin main
             git reset --hard origin/main
             
@@ -55,4 +74,4 @@ jobs:
             docker compose ps
             
             echo ""
-            echo "🎉 恭喜！阿里云服务器全栈服务已成功完成自动化热更新！"
+            echo "🎉 恭喜！阿里云服务器全栈服务已通过 Gitee 国内专线成功完成热更新！"

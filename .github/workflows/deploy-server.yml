@@ -1,0 +1,57 @@
+name: Continuous Deployment (CD - Aliyun Server)
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
+  workflow_dispatch: # 支持在 GitHub Actions 界面一键手动点击部署
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-to-aliyun:
+    name: Deploy to Aliyun Ubuntu Server
+    runs-on: ubuntu-latest
+    timeout-minutes: 10 # 10分钟超时熔断保护
+
+    steps:
+      - name: 远程 SSH 连接阿里云服务器并自动化部署
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER || 'root' }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          script_stop: true
+          script: |
+            echo "=================================================="
+            echo "🚀 收到 GitHub 最新提交，开始在阿里云服务器执行热部署..."
+            echo "=================================================="
+            
+            # 1. 进入项目目录
+            cd /app/mystic-garden || exit 1
+            
+            # 2. 拉取最新代码
+            echo "📥 正在拉取 GitHub 仓库最新代码..."
+            git pull
+            
+            # 3. 构建并后台热重载容器
+            echo "⚙️ 正在重新构建并热启动 Docker 容器..."
+            docker compose up -d --build --remove-orphans
+            
+            # 4. 健康检查与状态展示
+            echo "=================================================="
+            echo "📊 检查容器当前运行状态:"
+            echo "=================================================="
+            docker compose ps
+            
+            echo ""
+            echo "🎉 恭喜！阿里云服务器全栈服务已成功完成自动化热更新！"

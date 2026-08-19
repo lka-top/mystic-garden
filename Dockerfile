@@ -2,8 +2,14 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-RUN apk add --no-cache openssl
-RUN npm install -g pnpm@9
+# 1. 替换为阿里云 Alpine 软件源与 npm 淘宝镜像加速 (提升国内构建速度 100 倍)
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+    apk add --no-cache openssl && \
+    npm config set registry https://registry.npmmirror.com && \
+    npm install -g pnpm@9 && \
+    pnpm config set registry https://registry.npmmirror.com
+
+ENV PRISMA_ENGINES_MIRROR=https://registry.npmmirror.com/-/binary/prisma
 
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
 COPY prisma ./prisma/
@@ -21,9 +27,12 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOST=0.0.0.0
+ENV PRISMA_ENGINES_MIRROR=https://registry.npmmirror.com/-/binary/prisma
 
-RUN apk add --no-cache openssl
-RUN npm install -g tsx prisma
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+    apk add --no-cache openssl && \
+    npm config set registry https://registry.npmmirror.com && \
+    npm install -g tsx prisma
 
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nuxtjs

@@ -39,9 +39,10 @@ jobs:
             # 1. 进入项目目录
             cd /app/mystic-garden || exit 1
             
-            # 2. 拉取最新代码
+            # 2. 强制同步 GitHub 远端最新代码 (消除本地分支分叉冲突)
             echo "📥 正在拉取 GitHub 仓库最新代码..."
-            git pull
+            git fetch origin main
+            git reset --hard origin/main
             
             # 3. 构建并后台热重载容器
             echo "⚙️ 正在重新构建并热启动 Docker 容器..."

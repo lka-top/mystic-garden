@@ -1,4 +1,4 @@
-export function successResponse<T = any>(data: T, message = 'success') {
+export function successResponse<T>(data: T, message = 'success') {
   return {
     code: 200,
     message,
@@ -6,7 +6,14 @@ export function successResponse<T = any>(data: T, message = 'success') {
   }
 }
 
-export function paginationResponse<T = any>(
+export interface PaginationMeta {
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+export function paginationResponse<T>(
   list: T[],
   total: number,
   page: number,
@@ -22,7 +29,7 @@ export function paginationResponse<T = any>(
         page,
         pageSize,
         totalPages: Math.ceil(total / pageSize)
-      }
+      } satisfies PaginationMeta
     }
   }
 }

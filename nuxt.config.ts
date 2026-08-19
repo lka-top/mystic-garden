@@ -74,7 +74,9 @@ export default defineNuxtConfig({
         { name: 'keywords', content: '神秘人, 博客, Nuxt3, Vue3, 前端开发, 全栈开发, 技术随笔, Bento Grid' }
       ],
       link: [
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        { rel: 'alternate', type: 'application/rss+xml', title: '神秘花园 RSS Feed', href: '/feed.xml' },
+        { rel: 'sitemap', type: 'application/xml', title: 'Sitemap', href: '/sitemap.xml' }
       ]
     }
   }

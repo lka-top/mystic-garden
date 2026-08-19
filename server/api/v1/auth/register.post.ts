@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '~/server/utils/prisma'
 import { successResponse } from '~/server/utils/response'
 import { signAuthToken } from '~/server/utils/auth'
@@ -47,7 +48,17 @@ export default defineEventHandler(async (event) => {
   const userAgent = (getRequestHeader(event, 'user-agent') || '').toString().substring(0, 250)
 
   // 4. 检查是否需要无缝升级现有的游客记录
-  let user: any = null
+  const userSelect = {
+    id: true,
+    username: true,
+    nickname: true,
+    avatar: true,
+    email: true,
+    role: true,
+    createdAt: true
+  } satisfies Prisma.UserSelect
+
+  let user: Prisma.UserGetPayload<{ select: typeof userSelect }> | null = null
 
   if (guestUuid) {
     const existingGuest = await prisma.user.findUnique({
@@ -68,15 +79,7 @@ export default defineEventHandler(async (event) => {
           ipAddress,
           userAgent
         },
-        select: {
-          id: true,
-          username: true,
-          nickname: true,
-          avatar: true,
-          email: true,
-          role: true,
-          createdAt: true
-        }
+        select: userSelect
       })
     }
   }
@@ -95,15 +98,7 @@ export default defineEventHandler(async (event) => {
         ipAddress,
         userAgent
       },
-      select: {
-        id: true,
-        username: true,
-        nickname: true,
-        avatar: true,
-        email: true,
-        role: true,
-        createdAt: true
-      }
+      select: userSelect
     })
   }
 

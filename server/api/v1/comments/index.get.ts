@@ -1,17 +1,24 @@
+import type { Prisma } from '@prisma/client'
+import { z } from 'zod'
 import { prisma } from '~/server/utils/prisma'
 import { paginationResponse } from '~/server/utils/response'
 
+const QuerySchema = z.object({
+  targetType: z.enum(['article', 'essay', 'guestbook']).default('article'),
+  articleId: z.coerce.number().int().positive().optional(),
+  essayId: z.coerce.number().int().positive().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(50),
+  all: z.string().optional()
+})
+
 export default defineEventHandler(async (event) => {
-  const query = getQuery(event)
-  const targetType = (query.targetType as string) || 'article'
-  const articleId = query.articleId ? parseInt(query.articleId as string) : undefined
-  const essayId = query.essayId ? parseInt(query.essayId as string) : undefined
-  const page = Math.max(1, parseInt(query.page as string) || 1)
-  const pageSize = Math.min(100, Math.max(1, parseInt(query.pageSize as string) || 50))
+  const query = await getValidatedQuery(event, QuerySchema.parse)
+  const { targetType, articleId, essayId, page, pageSize } = query
   const isAdmin = !!tryGetAdminUser(event)
   const isAll = isAdmin && query.all === 'true'
 
-  const whereCondition: any = {
+  const whereCondition: Prisma.CommentWhereInput = {
     targetType,
     parentId: null
   }

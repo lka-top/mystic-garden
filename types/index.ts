@@ -135,3 +135,53 @@ export interface ApiResponse<T> {
   message: string
   data: T
 }
+
+/** 统一分页元数据，与服务端 paginationResponse 的 pagination 结构对齐 */
+export interface Pagination {
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+/** 分页列表响应结构 */
+export interface PaginatedList<T> {
+  list: T[]
+  pagination: Pagination
+}
+
+/** 登录/注册成功后返回的用户精简信息 */
+export interface AuthUser {
+  id: number
+  username: string
+  nickname: string
+  avatar?: string | null
+  email?: string | null
+  role: 'admin' | 'user' | 'guest'
+  createdAt: string
+}
+
+/** 全站统计数据概览 */
+export interface StatsOverview {
+  articles: number
+  essays: number
+  notes: number
+  notebooks: number
+  categories: number
+  tags: number
+  comments: number
+  totalUsers: number
+  guestUsers: number
+  registeredUsers: number
+  totalViews: number
+}
+
+/** `$fetch` 抛出的标准错误结构，用于安全提取后端 statusMessage */
+export interface FetchErrorLike {
+  data?: {
+    statusMessage?: string
+    message?: string
+  }
+  statusMessage?: string
+  message?: string
+}

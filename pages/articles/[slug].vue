@@ -54,6 +54,42 @@ useSeoMeta({
   ogImage: article.value.coverImage || undefined,
   ogType: 'article'
 })
+
+const config = useRuntimeConfig()
+const siteUrl = config.public.siteUrl || 'http://localhost:3000'
+
+useHead(() => ({
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: article.value.title,
+        description: article.value.summary,
+        image: article.value.coverImage ? [article.value.coverImage] : [],
+        datePublished: article.value.createdAt,
+        dateModified: article.value.updatedAt || article.value.createdAt,
+        author: {
+          '@type': 'Person',
+          name: article.value.author?.nickname || config.public.authorName || '神秘人'
+        },
+        publisher: {
+          '@type': 'Organization',
+          name: config.public.siteName || '神秘花园',
+          logo: {
+            '@type': 'ImageObject',
+            url: `${siteUrl}/favicon.svg`
+          }
+        },
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': `${siteUrl}/articles/${article.value.slug}`
+        }
+      })
+    }
+  ]
+}))
 </script>
 
 <template>

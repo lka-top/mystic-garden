@@ -28,7 +28,7 @@ export function requireAdminUser(event: H3Event): AuthPayload {
       })
     }
     return decoded
-  } catch (err: any) {
+  } catch {
     throw createError({
       statusCode: 401,
       statusMessage: '令牌无效或已过期，请重新登录'

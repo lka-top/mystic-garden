@@ -28,9 +28,10 @@ RUN npm install -g tsx prisma
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nuxtjs
 
+# 仅复制独立构建产物与必要的数据库迁移文件，避免复制臃肿的开发阶段 node_modules
 COPY --from=builder /app/.output ./
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 COPY docker-entrypoint.sh ./
 
 RUN chmod +x ./docker-entrypoint.sh && \

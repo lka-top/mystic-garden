@@ -16,21 +16,23 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # 步骤 1: 自动将 GitHub 仓库 2 秒镜像同步至 Gitee (国内专线)
+  # 步骤 1: 自动将 GitHub 仓库 1 秒原生镜像同步至 Gitee (国内专线)
   sync-to-gitee:
     name: Sync Repository to Gitee
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: 同步代码至 Gitee 镜像仓库
-        uses: Yikun/hub-mirror-action@v1.2
+      - name: 检出完整仓库代码 (Checkout)
+        uses: actions/checkout@v4
         with:
-          src: github/lka-top
-          dst: gitee/${{ secrets.GITEE_USER }}
-          dst_token: ${{ secrets.GITEE_TOKEN }}
-          static_list: 'mystic-garden'
-          force_update: true
-          debug: true
+          fetch-depth: 0
+
+      - name: 极速镜像推送至 Gitee 仓库
+        run: |
+          echo "🚀 正在向 Gitee 推送最新镜像分支..."
+          git remote add gitee "https://${{ secrets.GITEE_USER }}:${{ secrets.GITEE_TOKEN }}@gitee.com/${{ secrets.GITEE_USER }}/mystic-garden.git"
+          git push -f gitee main:main
+          echo "🎉 Gitee 镜像仓库已成功同步！"
 
   # 步骤 2: 登录阿里云服务器，从 Gitee 国内极速拉取并热启动容器
   deploy-to-aliyun:
@@ -59,7 +61,7 @@ jobs:
             
             # 2. 配置/强制拉取 Gitee 国内源最新代码
             echo "📥 从 Gitee 国内源拉取最新代码 (速度 50MB/s)..."
-            git remote set-url origin https://${{ secrets.GITEE_USER }}:${{ secrets.GITEE_TOKEN }}@gitee.com/${{ secrets.GITEE_USER }}/mystic-garden.git || true
+            git remote set-url origin "https://${{ secrets.GITEE_USER }}:${{ secrets.GITEE_TOKEN }}@gitee.com/${{ secrets.GITEE_USER }}/mystic-garden.git" || true
             git fetch origin main
             git reset --hard origin/main
             

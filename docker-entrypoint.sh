@@ -5,7 +5,7 @@ echo "Starting LuoKai Garden..."
 
 if [ -n "$DATABASE_URL" ]; then
   echo "Applying database migrations with Prisma..."
-  npx prisma migrate deploy || echo "Warning: Migration failed, continuing startup..."
+  npx prisma db push || echo "Warning: DB push failed, continuing startup..."
 
   # 仅在首次部署时运行 seed（通过标记文件判断）
   if [ ! -f /app/.seed_done ] && [ "$RUN_SEED" = "true" ]; then

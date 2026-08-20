@@ -32,7 +32,7 @@ ENV PRISMA_ENGINES_MIRROR=https://registry.npmmirror.com/-/binary/prisma
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
     apk add --no-cache openssl && \
     npm config set registry https://registry.npmmirror.com && \
-    npm install -g tsx prisma
+    npm install -g tsx prisma@5
 
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nuxtjs

@@ -41,6 +41,8 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
+          provenance: false
+          sbom: false
           tags: |
             ${{ secrets.ACR_IMAGE }}:latest
             ${{ secrets.ACR_IMAGE }}:${{ github.sha }}

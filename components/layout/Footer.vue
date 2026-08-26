@@ -11,8 +11,17 @@ import { Code2, ShieldCheck, Github, Radio } from 'lucide-vue-next'
           <span class="text-zinc-300 dark:text-zinc-700">/</span>
           <span>Digital Garden</span>
         </div>
-        <p class="text-[11px] text-zinc-400">
-          © 2025 神秘人. Built with Nuxt 3, Tailwind CSS & MySQL.
+        <p class="text-[11px] text-zinc-400 flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1">
+          <span>© 2026 神秘花园. All rights reserved.</span>
+          <span class="hidden sm:inline text-zinc-300 dark:text-zinc-700">·</span>
+          <a
+            href="https://beian.miit.gov.cn/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors underline-offset-4 hover:underline"
+          >
+            蜀ICP备2026049694号
+          </a>
         </p>
       </div>
 

@@ -16,14 +16,11 @@ export default defineNuxtConfig({
 
   // 全站 SWR 内存高速缓存与路由性能规则
   routeRules: {
-    // 1. 公开数据接口开启 SWR 内存缓存 (Stale-While-Revalidate)
+    // ⚠️ 仅可对「纯 GET 只读」接口开启 SWR：
+    // Nitro 的 routeRules 缓存不区分 HTTP 方法（POST/PUT 会读到 GET 的缓存体），
+    // 且会剥离请求头（Authorization 丢失 → 写接口恒 401）。
+    // articles/notes/essays/categories/tags/notebooks 等带写方法的资源路径禁止配置缓存。
     '/api/v1/stats/**': { swr: 60, cache: { maxAge: 60 } },
-    '/api/v1/categories/**': { swr: 120, cache: { maxAge: 120 } },
-    '/api/v1/notebooks/**': { swr: 120, cache: { maxAge: 120 } },
-    '/api/v1/tags/**': { swr: 120, cache: { maxAge: 120 } },
-    '/api/v1/articles/**': { swr: 30, cache: { maxAge: 30 } },
-    '/api/v1/notes/**': { swr: 30, cache: { maxAge: 30 } },
-    '/api/v1/essays/**': { swr: 30, cache: { maxAge: 30 } },
 
     // 2. 后台管理面板走纯客户端 SPA 模式，确保实时管理
     '/admin/**': { ssr: false }
@@ -44,12 +41,13 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
-    jwtSecret: process.env.JWT_SECRET || 'luokai-garden-secret-jwt-key-2025',
+    jwtSecret: process.env.JWT_SECRET,
     databaseUrl: process.env.DATABASE_URL,
     public: {
       siteName: '神秘花园',
       siteDescription: '记录思考、探索技术、沉淀生活的一方数字花园',
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://mysgarden.top',
+      icpNumber: process.env.NUXT_PUBLIC_ICP_NUMBER || '蜀ICP备2026049694号',
       authorName: '神秘人',
       authorBio: '全栈开发者 / 探索 Web 现代美学与工程架构'
     }

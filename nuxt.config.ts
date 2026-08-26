@@ -49,7 +49,8 @@ export default defineNuxtConfig({
     public: {
       siteName: '神秘花园',
       siteDescription: '记录思考、探索技术、沉淀生活的一方数字花园',
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://mysgarden.top',
+      icpNumber: process.env.NUXT_PUBLIC_ICP_NUMBER || '蜀ICP备2026049694号',
       authorName: '神秘人',
       authorBio: '全栈开发者 / 探索 Web 现代美学与工程架构'
     }

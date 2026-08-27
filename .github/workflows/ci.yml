@@ -56,6 +56,16 @@ jobs:
       - name: 代码规范与语法质量检测 (ESLint Check)
         run: pnpm lint
 
+      - name: 单元测试 (Vitest)
+        run: pnpm test
+
+      - name: TypeScript 严格类型检查 (Typecheck)
+        run: pnpm typecheck
+        env:
+          NODE_ENV: production
+          DATABASE_URL: "mysql://mock_user:mock_pass@localhost:3306/mock_db"
+          JWT_SECRET: "ci-test-mock-jwt-secret-key-123456"
+
       - name: 生产环境打包构建全量校验 (Nuxt 3 Build Verification)
         run: pnpm build
         env:

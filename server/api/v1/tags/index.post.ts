@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { prisma } from '~/server/utils/prisma'
 import { requireAdminUser } from '~/server/utils/auth'
 import { successResponse } from '~/server/utils/response'
+import { readValidated } from '~/server/utils/validate'
 
 const CreateTagSchema = z.object({
   name: z.string().min(1, '标签名称不能为空').max(50),
@@ -10,17 +11,8 @@ const CreateTagSchema = z.object({
 
 export default defineEventHandler(async (event) => {
   requireAdminUser(event)
-  const body = await readBody(event)
-
-  const parseResult = CreateTagSchema.safeParse(body)
-  if (!parseResult.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: parseResult.error.errors[0]?.message || '参数校验失败'
-    })
-  }
-
-  const { name } = parseResult.data
+  const data = await readValidated(event, CreateTagSchema)
+  const { name } = data
   const cleanName = name.trim()
 
   // 检查是否已有同名标签
@@ -33,7 +25,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // 自动生成 slug
-  let slug = parseResult.data.slug?.trim() || cleanName.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, '-')
+  let slug = data.slug?.trim() || cleanName.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, '-')
   if (!slug) slug = `tag-${Date.now()}`
 
   // 检查 slug 是否冲突

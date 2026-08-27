@@ -8,6 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "typecheck": "nuxt typecheck",
+    "test": "vitest run",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "postinstall": "nuxt prepare && prisma generate",
@@ -61,8 +62,10 @@
     "tailwindcss": "^3.4.14",
     "tsx": "^4.19.1",
     "typescript": "^5.6.3",
+    "vitest": "^4.1.11",
     "vue": "^3.5.12",
-    "vue-router": "^4.4.5"
+    "vue-router": "^4.4.5",
+    "vue-tsc": "^3.3.10"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

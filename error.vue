@@ -10,7 +10,7 @@ const props = defineProps<{
 
 const searchKeyword = ref('')
 
-const is404 = computed(() => props.error?.statusCode === 404 || props.error?.statusCode === '404')
+const is404 = computed(() => String(props.error?.statusCode) === '404')
 
 useSeoMeta({
   title: is404.value ? '404 · 迷失的秘境 - 神秘花园' : '系统异常 - 神秘花园',
@@ -54,7 +54,7 @@ function handleSearch() {
       <NuxtLink
         to="/"
         class="inline-flex items-center gap-2 text-sm font-extrabold tracking-tight bg-gradient-to-r from-sky-600 to-rose-500 bg-clip-text text-transparent group"
-        @click="clearError"
+        @click="clearError()"
       >
         <span class="w-2.5 h-2.5 rounded-full bg-gradient-to-tr from-sky-400 to-rose-500 group-hover:scale-125 transition-transform" />
         神秘花园 · LUOKAI GARDEN
@@ -142,7 +142,7 @@ function handleSearch() {
             <NuxtLink
               to="/articles"
               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/70 dark:bg-slate-800/60 hover:bg-sky-50 dark:hover:bg-slate-700 border border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 transition-all hover:scale-105"
-              @click="clearError"
+              @click="clearError()"
             >
               <BookOpen class="w-3 h-3 text-sky-500" />
               技术文章
@@ -151,7 +151,7 @@ function handleSearch() {
             <NuxtLink
               to="/notes"
               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/70 dark:bg-slate-800/60 hover:bg-sky-50 dark:hover:bg-slate-700 border border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 transition-all hover:scale-105"
-              @click="clearError"
+              @click="clearError()"
             >
               <Bookmark class="w-3 h-3 text-emerald-500" />
               速查笔记
@@ -160,7 +160,7 @@ function handleSearch() {
             <NuxtLink
               to="/essays"
               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/70 dark:bg-slate-800/60 hover:bg-sky-50 dark:hover:bg-slate-700 border border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 transition-all hover:scale-105"
-              @click="clearError"
+              @click="clearError()"
             >
               <Coffee class="w-3 h-3 text-amber-500" />
               即时随笔
@@ -169,7 +169,7 @@ function handleSearch() {
             <NuxtLink
               to="/archive"
               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/70 dark:bg-slate-800/60 hover:bg-sky-50 dark:hover:bg-slate-700 border border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 transition-all hover:scale-105"
-              @click="clearError"
+              @click="clearError()"
             >
               <Archive class="w-3 h-3 text-rose-500" />
               时空归档

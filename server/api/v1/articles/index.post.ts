@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { prisma } from '~/server/utils/prisma'
 import { requireAdminUser } from '~/server/utils/auth'
 import { successResponse } from '~/server/utils/response'
+import { readValidated } from '~/server/utils/validate'
 
 const CreateArticleSchema = z.object({
   slug: z.string().min(2, 'Slug 长度至少 2 个字符'),
@@ -18,17 +19,7 @@ const CreateArticleSchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const authUser = requireAdminUser(event)
-  const body = await readBody(event)
-
-  const parseResult = CreateArticleSchema.safeParse(body)
-  if (!parseResult.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: parseResult.error.errors[0]?.message || '参数校验失败'
-    })
-  }
-
-  const data = parseResult.data
+  const data = await readValidated(event, CreateArticleSchema)
 
   const existing = await prisma.article.findUnique({
     where: { slug: data.slug }

@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { prisma } from '~/server/utils/prisma'
 import { requireAdminUser } from '~/server/utils/auth'
 import { successResponse } from '~/server/utils/response'
+import { readValidated, parseIdParam } from '~/server/utils/validate'
 
 const UpdateArticleSchema = z.object({
   slug: z.string().min(2).optional(),
@@ -18,20 +19,9 @@ const UpdateArticleSchema = z.object({
 
 export default defineEventHandler(async (event) => {
   requireAdminUser(event)
-  const idStr = getRouterParam(event, 'id')
-  const id = parseInt(idStr || '0')
-  if (!id) throw createError({ statusCode: 400, statusMessage: '无效的文章 ID' })
+  const id = parseIdParam(event)
 
-  const body = await readBody(event)
-  const parseResult = UpdateArticleSchema.safeParse(body)
-  if (!parseResult.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: parseResult.error.errors[0]?.message || '参数校验失败'
-    })
-  }
-
-  const data = parseResult.data
+  const data = await readValidated(event, UpdateArticleSchema)
 
   if (data.slug) {
     const existing = await prisma.article.findFirst({

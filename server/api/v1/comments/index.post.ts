@@ -1,8 +1,8 @@
 import { z } from 'zod'
-import jwt from 'jsonwebtoken'
 import { prisma } from '~/server/utils/prisma'
 import { successResponse } from '~/server/utils/response'
-import type { AuthPayload } from '~/server/utils/auth'
+import { tryGetAuthUser } from '~/server/utils/auth'
+import { readValidated, getClientIp, getClientUa } from '~/server/utils/validate'
 
 const CreateCommentSchema = z.object({
   targetType: z.enum(['article', 'essay', 'guestbook']).default('article'),
@@ -14,37 +14,20 @@ const CreateCommentSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody(event)
-  const parseResult = CreateCommentSchema.safeParse(body)
-  if (!parseResult.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: parseResult.error.errors[0]?.message || '参数校验失败'
-    })
-  }
-
-  const data = parseResult.data
-  const ipAddress = (getRequestHeader(event, 'x-forwarded-for') || getRequestHeader(event, 'x-real-ip') || '127.0.0.1').toString().split(',')[0].trim()
-  const userAgent = (getRequestHeader(event, 'user-agent') || '').toString().substring(0, 250)
+  const data = await readValidated(event, CreateCommentSchema)
+  const ipAddress = getClientIp(event)
+  const userAgent = getClientUa(event)
 
   // 1. 尝试识别是否为已登录的管理员/正式用户
   let userId: number | null = null
-  const authHeader = getRequestHeader(event, 'authorization')
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.substring(7)
-    const config = useRuntimeConfig(event)
-    try {
-      const decoded = jwt.verify(token, config.jwtSecret) as AuthPayload
-      if (decoded && decoded.userId) {
-        const loggedInUser = await prisma.user.findUnique({
-          where: { id: decoded.userId }
-        })
-        if (loggedInUser) {
-          userId = loggedInUser.id
-        }
-      }
-    } catch {
-      // Token 无效或过期时作为游客处理
+  const authPayload = tryGetAuthUser(event)
+  const isLoggedIn = !!authPayload
+  if (authPayload?.userId) {
+    const loggedInUser = await prisma.user.findUnique({
+      where: { id: authPayload.userId }
+    })
+    if (loggedInUser) {
+      userId = loggedInUser.id
     }
   }
 
@@ -90,7 +73,7 @@ export default defineEventHandler(async (event) => {
       content: data.content,
       ipAddress,
       userAgent,
-      isApproved: !!authHeader
+      isApproved: isLoggedIn
     },
     include: {
       user: {

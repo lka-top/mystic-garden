@@ -3,7 +3,6 @@ import { ref, computed } from 'vue'
 import { Feather, Send, Trash2, Tag, MapPin, Sparkles } from 'lucide-vue-next'
 import dayjs from 'dayjs'
 import type { ApiResponse, Essay } from '~/types'
-import { useAuth } from '~/composables/useAuth'
 import Button from '~/components/ui/Button.vue'
 import Badge from '~/components/ui/Badge.vue'
 
@@ -11,7 +10,7 @@ definePageMeta({
   layout: 'admin'
 })
 
-const { token } = useAuth()
+const api = useApi()
 const { data: res, refresh } = await useFetch<ApiResponse<{ list: Essay[] }>>('/api/v1/essays', {
   query: { all: 'true', pageSize: 50 }
 })
@@ -38,9 +37,8 @@ async function publishEssay() {
 
   publishing.value = true
   try {
-    const r = await $fetch<ApiResponse<Essay>>('/api/v1/essays', {
+    const r = await api<Essay>('/api/v1/essays', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token.value}` },
       body: form.value
     })
     if (r.code === 200) {
@@ -57,9 +55,8 @@ async function publishEssay() {
 async function deleteEssay(id: number) {
   if (!confirm('确定要删除这条随笔吗？')) return
   try {
-    const r = await $fetch<ApiResponse<any>>(`/api/v1/essays/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token.value}` }
+    const r = await api<any>(`/api/v1/essays/${id}`, {
+      method: 'DELETE'
     })
     if (r.code === 200) {
       await refresh()

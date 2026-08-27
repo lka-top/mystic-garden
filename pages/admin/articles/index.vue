@@ -3,7 +3,6 @@ import { ref } from 'vue'
 import { Plus, Edit3, Trash2, ExternalLink } from 'lucide-vue-next'
 import dayjs from 'dayjs'
 import type { ApiResponse, Article } from '~/types'
-import { useAuth } from '~/composables/useAuth'
 import Button from '~/components/ui/Button.vue'
 import Badge from '~/components/ui/Badge.vue'
 
@@ -11,7 +10,7 @@ definePageMeta({
   layout: 'admin'
 })
 
-const { token } = useAuth()
+const api = useApi()
 const { data: res, refresh } = await useFetch<ApiResponse<{ list: Article[] }>>('/api/v1/articles', {
   query: { all: 'true', pageSize: 50 }
 })
@@ -21,9 +20,8 @@ const articles = computed(() => res.value?.data?.list || [])
 async function deleteArticle(id: number, title: string) {
   if (!confirm(`确定要删除文章《${title}》吗？`)) return
   try {
-    const r = await $fetch<ApiResponse<any>>(`/api/v1/articles/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token.value}` }
+    const r = await api<any>(`/api/v1/articles/${id}`, {
+      method: 'DELETE'
     })
     if (r.code === 200) {
       await refresh()

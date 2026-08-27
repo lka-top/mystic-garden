@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { Save, ArrowLeft, Plus, X, FolderPlus } from 'lucide-vue-next'
 import type { ApiResponse, Article, Category } from '~/types'
-import { useAuth } from '~/composables/useAuth'
+import { useImageUpload, useInlineCreate, useEditorSave, loadEditorEntity } from '~/composables/useAdminEditor'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import Button from '~/components/ui/Button.vue'
@@ -16,8 +16,6 @@ definePageMeta({
 })
 
 const route = useRoute()
-const router = useRouter()
-const { token } = useAuth()
 
 const slugQuery = route.query.slug as string | undefined
 const isEditMode = ref(!!slugQuery)
@@ -36,65 +34,26 @@ const form = ref({
 })
 
 const categories = ref<Category[]>([])
-const saving = ref(false)
 
-// 快速新建分类弹窗状态
-const showCreateCategoryModal = ref(false)
-const newCategoryForm = ref({
-  name: '',
-  slug: '',
-  description: ''
+// 快速新建分类弹窗（公共内联创建流程）
+const {
+  showModal: showCreateCategoryModal,
+  form: newCategoryForm,
+  creating: creatingCategory,
+  error: categoryError,
+  openModal: openCreateCategoryModal,
+  handleNameChange: handleCategoryNameChange,
+  handleCreate: handleCreateCategory
+} = useInlineCreate<Category>({
+  endpoint: '/api/v1/categories',
+  list: categories,
+  onCreated: (category) => {
+    form.value.categoryId = category.id
+  },
+  nameRequiredMessage: '请输入分类名称',
+  fallbackErrorMessage: '新建分类失败，请检查名称或 Slug 是否重复',
+  defaultExtra: {}
 })
-const creatingCategory = ref(false)
-const categoryError = ref('')
-
-function openCreateCategoryModal() {
-  newCategoryForm.value = { name: '', slug: '', description: '' }
-  categoryError.value = ''
-  showCreateCategoryModal.value = true
-}
-
-function handleCategoryNameChange() {
-  if (!newCategoryForm.value.slug) {
-    newCategoryForm.value.slug = newCategoryForm.value.name
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
-  }
-}
-
-async function handleCreateCategory() {
-  if (!newCategoryForm.value.name.trim()) {
-    categoryError.value = '请输入分类名称'
-    return
-  }
-  if (!newCategoryForm.value.slug.trim()) {
-    newCategoryForm.value.slug = newCategoryForm.value.name
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
-  }
-
-  creatingCategory.value = true
-  categoryError.value = ''
-  try {
-    const res = await $fetch<ApiResponse<Category>>('/api/v1/categories', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token.value}` },
-      body: newCategoryForm.value
-    })
-
-    if (res.code === 200) {
-      categories.value.push(res.data)
-      form.value.categoryId = res.data.id
-      showCreateCategoryModal.value = false
-    }
-  } catch (err: any) {
-    categoryError.value = err?.data?.statusMessage || '新建分类失败，请检查名称或 Slug 是否重复'
-  } finally {
-    creatingCategory.value = false
-  }
-}
 
 onMounted(async () => {
   const catRes = await $fetch<ApiResponse<{ categories: Category[] }>>('/api/v1/categories')
@@ -103,88 +62,38 @@ onMounted(async () => {
   }
 
   if (slugQuery) {
-    try {
-      const res = await $fetch<ApiResponse<Article>>(`/api/v1/articles/${slugQuery}`)
-      if (res.code === 200) {
-        const a = res.data
-        articleId.value = a.id
-        form.value = {
-          slug: a.slug,
-          title: a.title,
-          summary: a.summary,
-          content: a.content || '',
-          coverImage: a.coverImage || '',
-          categoryId: a.categoryId || null,
-          tagIds: (a.tags || []).map((t: any) => t.id),
-          isPublished: a.isPublished,
-          isPinned: a.isPinned
-        }
+    const a = await loadEditorEntity<Article>('/api/v1/articles', slugQuery, '加载文章失败')
+    if (a) {
+      articleId.value = a.id
+      form.value = {
+        slug: a.slug,
+        title: a.title,
+        summary: a.summary,
+        content: a.content || '',
+        coverImage: a.coverImage || '',
+        categoryId: a.categoryId || null,
+        tagIds: (a.tags || []).map((t: { id: number }) => t.id),
+        isPublished: a.isPublished,
+        isPinned: a.isPinned
       }
-    } catch (err) {
-      alert('加载文章失败')
     }
   }
 })
 
-async function handleUploadImg(files: File[], callback: (urls: string[]) => void) {
-  const uploadedUrls: string[] = []
-  for (const file of files) {
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      const res = await $fetch<ApiResponse<{ url: string }>>('/api/v1/upload', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token.value}` },
-        body: formData
-      })
-      if (res.code === 200 && res.data?.url) {
-        uploadedUrls.push(res.data.url)
-      }
-    } catch (err: any) {
-      alert(err?.data?.statusMessage || '图片上传失败')
-    }
-  }
-  callback(uploadedUrls)
-}
+const { handleUploadImg } = useImageUpload()
 
-async function handleSave() {
-  if (!form.value.title.trim()) {
-    alert('请输入文章标题')
-    return
-  }
-  if (!form.value.slug.trim()) {
-    form.value.slug = form.value.title.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, '-')
-  }
-
-  saving.value = true
-  try {
-    if (isEditMode.value && articleId.value) {
-      const res = await $fetch<ApiResponse<Article>>(`/api/v1/articles/${articleId.value}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token.value}` },
-        body: form.value
-      })
-      if (res.code === 200) {
-        alert('文章已更新')
-        router.push('/admin/articles')
-      }
-    } else {
-      const res = await $fetch<ApiResponse<Article>>('/api/v1/articles', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token.value}` },
-        body: form.value
-      })
-      if (res.code === 200) {
-        alert('文章发布成功')
-        router.push('/admin/articles')
-      }
-    }
-  } catch (err: any) {
-    alert(err?.data?.statusMessage || '保存文章失败')
-  } finally {
-    saving.value = false
-  }
-}
+const { saving, handleSave } = useEditorSave<Article>({
+  form,
+  isEditMode,
+  entityId: articleId,
+  resourceBase: '/api/v1/articles',
+  buildBody: () => ({ ...form.value }),
+  redirectTo: '/admin/articles',
+  titleRequiredMessage: '请输入文章标题',
+  updatedMessage: '文章已更新',
+  createdMessage: '文章发布成功',
+  failedMessage: '保存文章失败'
+})
 </script>
 
 <template>

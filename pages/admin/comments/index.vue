@@ -3,14 +3,13 @@ import { ref, computed } from 'vue'
 import { Trash2, Check, X, ShieldCheck, User as UserIcon } from 'lucide-vue-next'
 import dayjs from 'dayjs'
 import type { ApiResponse, Comment } from '~/types'
-import { useAuth } from '~/composables/useAuth'
 import Badge from '~/components/ui/Badge.vue'
 
 definePageMeta({
   layout: 'admin'
 })
 
-const { token } = useAuth()
+const api = useApi()
 const { data: res, refresh } = await useFetch<ApiResponse<{ list: Comment[]; pagination: { total: number } }>>('/api/v1/comments', {
   query: { all: 'true', pageSize: 100 }
 })
@@ -19,9 +18,8 @@ const comments = computed(() => res.value?.data?.list || [])
 
 async function toggleApprove(id: number, currentStatus: boolean) {
   try {
-    const r = await $fetch<ApiResponse<any>>(`/api/v1/comments/${id}/approve`, {
+    const r = await api<any>(`/api/v1/comments/${id}/approve`, {
       method: 'PATCH',
-      headers: { Authorization: `Bearer ${token.value}` },
       body: { isApproved: !currentStatus }
     })
     if (r.code === 200) {
@@ -35,9 +33,8 @@ async function toggleApprove(id: number, currentStatus: boolean) {
 async function deleteComment(id: number) {
   if (!confirm('确定要彻底删除该条留言吗？')) return
   try {
-    const r = await $fetch<ApiResponse<any>>(`/api/v1/comments/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token.value}` },
+    const r = await api<any>(`/api/v1/comments/${id}`, {
+      method: 'DELETE'
     })
     if (r.code === 200) {
       await refresh()

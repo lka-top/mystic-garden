@@ -1,12 +1,11 @@
 import { prisma } from '~/server/utils/prisma'
 import { requireAdminUser } from '~/server/utils/auth'
 import { successResponse } from '~/server/utils/response'
+import { parseIdParam } from '~/server/utils/validate'
 
 export default defineEventHandler(async (event) => {
   requireAdminUser(event)
-  const idStr = getRouterParam(event, 'id')
-  const id = parseInt(idStr || '0')
-  if (!id) throw createError({ statusCode: 400, statusMessage: '无效的文章 ID' })
+  const id = parseIdParam(event)
 
   await prisma.article.delete({
     where: { id }

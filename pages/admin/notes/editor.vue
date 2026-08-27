@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { Save, ArrowLeft, BookMarked, Plus, X, FolderPlus } from 'lucide-vue-next'
 import type { ApiResponse, Note, Notebook } from '~/types'
-import { useAuth } from '~/composables/useAuth'
+import { useImageUpload, useInlineCreate, useEditorSave, loadEditorEntity } from '~/composables/useAdminEditor'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import Button from '~/components/ui/Button.vue'
@@ -16,8 +16,6 @@ definePageMeta({
 })
 
 const route = useRoute()
-const router = useRouter()
-const { token } = useAuth()
 
 const slugQuery = route.query.slug as string | undefined
 const isEditMode = ref(!!slugQuery)
@@ -35,66 +33,26 @@ const form = ref({
 })
 
 const notebooks = ref<Notebook[]>([])
-const saving = ref(false)
 
-// 快速新建笔记本分区弹窗状态
-const showCreateNotebookModal = ref(false)
-const newNotebookForm = ref({
-  name: '',
-  slug: '',
-  description: '',
-  isPrivate: false
+// 快速新建笔记本分区弹窗（公共内联创建流程）
+const {
+  showModal: showCreateNotebookModal,
+  form: newNotebookForm,
+  creating: creatingNotebook,
+  error: notebookError,
+  openModal: openCreateNotebookModal,
+  handleNameChange: handleNotebookNameChange,
+  handleCreate: handleCreateNotebook
+} = useInlineCreate<Notebook, { isPrivate: boolean }>({
+  endpoint: '/api/v1/notebooks',
+  list: notebooks,
+  onCreated: (notebook) => {
+    form.value.notebookId = notebook.id
+  },
+  nameRequiredMessage: '请输入笔记本分区名称',
+  fallbackErrorMessage: '新建笔记本分区失败，请检查名称或 Slug 是否重复',
+  defaultExtra: { isPrivate: false }
 })
-const creatingNotebook = ref(false)
-const notebookError = ref('')
-
-function openCreateNotebookModal() {
-  newNotebookForm.value = { name: '', slug: '', description: '', isPrivate: false }
-  notebookError.value = ''
-  showCreateNotebookModal.value = true
-}
-
-function handleNotebookNameChange() {
-  if (!newNotebookForm.value.slug) {
-    newNotebookForm.value.slug = newNotebookForm.value.name
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
-  }
-}
-
-async function handleCreateNotebook() {
-  if (!newNotebookForm.value.name.trim()) {
-    notebookError.value = '请输入笔记本分区名称'
-    return
-  }
-  if (!newNotebookForm.value.slug.trim()) {
-    newNotebookForm.value.slug = newNotebookForm.value.name
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
-  }
-
-  creatingNotebook.value = true
-  notebookError.value = ''
-  try {
-    const res = await $fetch<ApiResponse<Notebook>>('/api/v1/notebooks', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token.value}` },
-      body: newNotebookForm.value
-    })
-
-    if (res.code === 200) {
-      notebooks.value.push(res.data)
-      form.value.notebookId = res.data.id
-      showCreateNotebookModal.value = false
-    }
-  } catch (err: any) {
-    notebookError.value = err?.data?.statusMessage || '新建笔记本分区失败，请检查名称或 Slug 是否重复'
-  } finally {
-    creatingNotebook.value = false
-  }
-}
 
 onMounted(async () => {
   const nbRes = await $fetch<ApiResponse<Notebook[]>>('/api/v1/notebooks')
@@ -103,87 +61,37 @@ onMounted(async () => {
   }
 
   if (slugQuery) {
-    try {
-      const res = await $fetch<ApiResponse<Note>>(`/api/v1/notes/${slugQuery}`)
-      if (res.code === 200) {
-        const n = res.data
-        noteId.value = n.id
-        form.value = {
-          slug: n.slug,
-          title: n.title,
-          summary: n.summary || '',
-          content: n.content || '',
-          notebookId: n.notebookId || null,
-          tagIds: (n.tags || []).map((t: any) => t.id),
-          isPublished: n.isPublished,
-          isPinned: n.isPinned
-        }
+    const n = await loadEditorEntity<Note>('/api/v1/notes', slugQuery, '加载笔记失败')
+    if (n) {
+      noteId.value = n.id
+      form.value = {
+        slug: n.slug,
+        title: n.title,
+        summary: n.summary || '',
+        content: n.content || '',
+        notebookId: n.notebookId || null,
+        tagIds: (n.tags || []).map((t: { id: number }) => t.id),
+        isPublished: n.isPublished,
+        isPinned: n.isPinned
       }
-    } catch (err) {
-      alert('加载笔记失败')
     }
   }
 })
 
-async function handleUploadImg(files: File[], callback: (urls: string[]) => void) {
-  const uploadedUrls: string[] = []
-  for (const file of files) {
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      const res = await $fetch<ApiResponse<{ url: string }>>('/api/v1/upload', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token.value}` },
-        body: formData
-      })
-      if (res.code === 200 && res.data?.url) {
-        uploadedUrls.push(res.data.url)
-      }
-    } catch (err: any) {
-      alert(err?.data?.statusMessage || '图片上传失败')
-    }
-  }
-  callback(uploadedUrls)
-}
+const { handleUploadImg } = useImageUpload()
 
-async function handleSave() {
-  if (!form.value.title.trim()) {
-    alert('请输入笔记标题')
-    return
-  }
-  if (!form.value.slug.trim()) {
-    form.value.slug = form.value.title.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, '-')
-  }
-
-  saving.value = true
-  try {
-    if (isEditMode.value && noteId.value) {
-      const res = await $fetch<ApiResponse<Note>>(`/api/v1/notes/${noteId.value}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token.value}` },
-        body: form.value
-      })
-      if (res.code === 200) {
-        alert('笔记已更新')
-        router.push('/admin/notes')
-      }
-    } else {
-      const res = await $fetch<ApiResponse<Note>>('/api/v1/notes', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token.value}` },
-        body: form.value
-      })
-      if (res.code === 200) {
-        alert('笔记创建成功')
-        router.push('/admin/notes')
-      }
-    }
-  } catch (err: any) {
-    alert(err?.data?.statusMessage || '保存笔记失败')
-  } finally {
-    saving.value = false
-  }
-}
+const { saving, handleSave } = useEditorSave<Note>({
+  form,
+  isEditMode,
+  entityId: noteId,
+  resourceBase: '/api/v1/notes',
+  buildBody: () => ({ ...form.value }),
+  redirectTo: '/admin/notes',
+  titleRequiredMessage: '请输入笔记标题',
+  updatedMessage: '笔记已更新',
+  createdMessage: '笔记创建成功',
+  failedMessage: '保存笔记失败'
+})
 </script>
 
 <template>

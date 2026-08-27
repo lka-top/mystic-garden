@@ -4,6 +4,7 @@ import type { Prisma } from '@prisma/client'
 import { prisma } from '~/server/utils/prisma'
 import { successResponse } from '~/server/utils/response'
 import { signAuthToken } from '~/server/utils/auth'
+import { readValidated, getClientIp, getClientUa } from '~/server/utils/validate'
 
 const RegisterSchema = z.object({
   username: z.string().min(3, '用户名至少 3 个字符').max(30, '用户名最多 30 个字符').regex(/^[a-zA-Z0-9_-]+$/, '用户名仅支持字母、数字、下划线及连字符'),
@@ -15,17 +16,7 @@ const RegisterSchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
-  const body = await readBody(event)
-  const parseResult = RegisterSchema.safeParse(body)
-  
-  if (!parseResult.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: parseResult.error.errors[0]?.message || '注册信息校验失败'
-    })
-  }
-
-  const { username, password, nickname, email, guestUuid } = parseResult.data
+  const { username, password, nickname, email, guestUuid } = await readValidated(event, RegisterSchema)
 
   // 1. 查重用户名
   const existingUsername = await prisma.user.findUnique({
@@ -44,8 +35,8 @@ export default defineEventHandler(async (event) => {
 
   // 3. 生成默认 DiceBear 头像
   const defaultAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`
-  const ipAddress = (getRequestHeader(event, 'x-forwarded-for') || getRequestHeader(event, 'x-real-ip') || '127.0.0.1').toString().split(',')[0].trim()
-  const userAgent = (getRequestHeader(event, 'user-agent') || '').toString().substring(0, 250)
+  const ipAddress = getClientIp(event)
+  const userAgent = getClientUa(event)
 
   // 4. 检查是否需要无缝升级现有的游客记录
   const userSelect = {

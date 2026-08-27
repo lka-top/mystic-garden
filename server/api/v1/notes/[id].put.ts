@@ -1,7 +1,9 @@
 import { z } from 'zod'
+import bcrypt from 'bcryptjs'
 import { prisma } from '~/server/utils/prisma'
 import { requireAdminUser } from '~/server/utils/auth'
 import { successResponse } from '~/server/utils/response'
+import { readValidated, parseIdParam } from '~/server/utils/validate'
 
 const UpdateNoteSchema = z.object({
   title: z.string().min(1).optional(),
@@ -18,20 +20,9 @@ const UpdateNoteSchema = z.object({
 
 export default defineEventHandler(async (event) => {
   requireAdminUser(event)
-  const idStr = getRouterParam(event, 'id')
-  const id = parseInt(idStr || '0')
-  if (!id) throw createError({ statusCode: 400, statusMessage: '无效的笔记 ID' })
+  const id = parseIdParam(event)
 
-  const body = await readBody(event)
-  const parseResult = UpdateNoteSchema.safeParse(body)
-  if (!parseResult.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: parseResult.error.errors[0]?.message || '参数校验失败'
-    })
-  }
-
-  const data = parseResult.data
+  const data = await readValidated(event, UpdateNoteSchema)
 
   if (data.slug) {
     const existing = await prisma.note.findFirst({
@@ -62,7 +53,7 @@ export default defineEventHandler(async (event) => {
         ...(data.isPinned !== undefined && { isPinned: data.isPinned }),
         ...(data.isPublished !== undefined && { isPublished: data.isPublished }),
         ...(data.isEncrypted !== undefined && { isEncrypted: data.isEncrypted }),
-        ...(data.password !== undefined && { password: data.password }),
+        ...(data.password !== undefined && { password: data.password ? await bcrypt.hash(data.password, 10) : null }),
         ...(data.notebookId !== undefined && { notebookId: data.notebookId })
       },
       include: {

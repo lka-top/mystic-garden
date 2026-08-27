@@ -2,6 +2,7 @@ import type { Prisma } from '@prisma/client'
 import { z } from 'zod'
 import { prisma } from '~/server/utils/prisma'
 import { paginationResponse } from '~/server/utils/response'
+import { applyApprovalFilter, isAdminAllRequest } from '~/server/utils/pagination'
 
 const QuerySchema = z.object({
   targetType: z.enum(['article', 'essay', 'guestbook']).default('article'),
@@ -15,17 +16,12 @@ const QuerySchema = z.object({
 export default defineEventHandler(async (event) => {
   const query = await getValidatedQuery(event, QuerySchema.parse)
   const { targetType, articleId, essayId, page, pageSize } = query
-  const isAdmin = !!tryGetAdminUser(event)
-  const isAll = isAdmin && query.all === 'true'
+  const isAll = isAdminAllRequest(event, query.all)
 
-  const whereCondition: Prisma.CommentWhereInput = {
+  const whereCondition = applyApprovalFilter<Prisma.CommentWhereInput>(event, query.all, {
     targetType,
     parentId: null
-  }
-
-  if (!isAll) {
-    whereCondition.isApproved = true
-  }
+  })
 
   if (targetType === 'article' && articleId) {
     whereCondition.articleId = articleId

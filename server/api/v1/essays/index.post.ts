@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { prisma } from '~/server/utils/prisma'
 import { requireAdminUser } from '~/server/utils/auth'
 import { successResponse } from '~/server/utils/response'
+import { readValidated } from '~/server/utils/validate'
 
 const CreateEssaySchema = z.object({
   content: z.string().min(1, '随笔内容不能为空'),
@@ -15,17 +16,7 @@ const CreateEssaySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const authUser = requireAdminUser(event)
-  const body = await readBody(event)
-
-  const parseResult = CreateEssaySchema.safeParse(body)
-  if (!parseResult.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: parseResult.error.errors[0]?.message || '参数校验失败'
-    })
-  }
-
-  const data = parseResult.data
+  const data = await readValidated(event, CreateEssaySchema)
 
   const essay = await prisma.essay.create({
     data: {

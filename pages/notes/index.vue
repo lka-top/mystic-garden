@@ -116,7 +116,7 @@ useSeoMeta({
         >
           <Folder class="w-3.5 h-3.5" />
           {{ nb.name }}
-          <span class="text-[10px] opacity-75">({{ nb.notesCount }})</span>
+          <span class="text-[10px] opacity-75">({{ nb.noteCount }})</span>
         </button>
 
         <button

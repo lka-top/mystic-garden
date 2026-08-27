@@ -18,7 +18,6 @@ import {
   Check
 } from 'lucide-vue-next'
 import type { ApiResponse, Notebook } from '~/types'
-import { useAuth } from '~/composables/useAuth'
 import Button from '~/components/ui/Button.vue'
 import Card from '~/components/ui/Card.vue'
 import Select from '~/components/ui/Select.vue'
@@ -27,7 +26,7 @@ definePageMeta({
   layout: 'admin'
 })
 
-const { token } = useAuth()
+const api = useApi()
 const { data: res, refresh } = await useFetch<ApiResponse<any>>('/api/v1/stats/overview')
 
 const stats = computed(() => res.value?.data?.stats || {})
@@ -98,9 +97,8 @@ async function handleSaveQuickNote() {
   savingQuickNote.value = true
   quickNoteError.value = ''
   try {
-    const r = await $fetch<ApiResponse<any>>('/api/v1/notes', {
+    const r = await api<any>('/api/v1/notes', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token.value}` },
       body: quickNoteForm.value
     })
     if (r.code === 200) {

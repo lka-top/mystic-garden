@@ -1,7 +1,9 @@
 import { z } from 'zod'
+import bcrypt from 'bcryptjs'
 import { prisma } from '~/server/utils/prisma'
 import { requireAdminUser } from '~/server/utils/auth'
 import { successResponse } from '~/server/utils/response'
+import { readValidated } from '~/server/utils/validate'
 
 const CreateNoteSchema = z.object({
   title: z.string().min(1, '标题不能为空').max(200),
@@ -18,17 +20,7 @@ const CreateNoteSchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const authUser = requireAdminUser(event)
-  const body = await readBody(event)
-
-  const parseResult = CreateNoteSchema.safeParse(body)
-  if (!parseResult.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: parseResult.error.errors[0]?.message || '参数校验失败'
-    })
-  }
-
-  const data = parseResult.data
+  const data = await readValidated(event, CreateNoteSchema)
   const existing = await prisma.note.findUnique({
     where: { slug: data.slug }
   })
@@ -48,7 +40,7 @@ export default defineEventHandler(async (event) => {
       isPinned: data.isPinned,
       isPublished: data.isPublished,
       isEncrypted: data.isEncrypted,
-      password: data.password,
+      password: data.password ? await bcrypt.hash(data.password, 10) : null,
       notebookId: data.notebookId,
       authorId: authUser.userId,
       tags: {

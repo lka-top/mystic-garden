@@ -11,7 +11,7 @@ export interface SelectOption<V = string | number | null> {
 }
 
 interface Props {
-  modelValue?: T
+  modelValue?: T | null
   options?: SelectOption<T>[]
   placeholder?: string
   disabled?: boolean
@@ -107,7 +107,7 @@ function handleSelect(opt: SelectOption<T>) {
               ? 'bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 font-medium'
               : 'text-zinc-400 dark:text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/60'
           )"
-          @click="handleSelect({ label: placeholder, value: null })"
+          @click="handleSelect({ label: placeholder, value: null as T })"
         >
           <span>{{ placeholder }}</span>
           <Check v-if="modelValue === null" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />

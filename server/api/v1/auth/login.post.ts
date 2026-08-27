@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '~/server/utils/prisma'
 import { signAuthToken } from '~/server/utils/auth'
 import { successResponse } from '~/server/utils/response'
+import { readValidated } from '~/server/utils/validate'
 
 const LoginSchema = z.object({
   username: z.string().min(1, '请输入用户名'),
@@ -10,17 +11,7 @@ const LoginSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody(event)
-  const parseResult = LoginSchema.safeParse(body)
-
-  if (!parseResult.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: parseResult.error.errors[0]?.message || '参数校验失败'
-    })
-  }
-
-  const { username, password } = parseResult.data
+  const { username, password } = await readValidated(event, LoginSchema)
 
   const user = await prisma.user.findUnique({
     where: { username }

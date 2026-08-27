@@ -13,7 +13,8 @@ const props = defineProps<{
   targetId?: number
 }>()
 
-const { token, currentUser: loggedInUser } = useAuth()
+const api = useApi()
+const { currentUser: loggedInUser } = useAuth()
 const { getGuestUuid } = useGuestUser()
 
 const comments = ref<Comment[]>([])
@@ -76,14 +77,8 @@ async function submitComment() {
     if (props.targetType === 'article') payload.articleId = props.targetId
     if (props.targetType === 'essay') payload.essayId = props.targetId
 
-    const headers: Record<string, string> = {}
-    if (token.value) {
-      headers.Authorization = `Bearer ${token.value}`
-    }
-
-    const res = await $fetch<ApiResponse<Comment>>('/api/v1/comments', {
+    const res = await api<Comment>('/api/v1/comments', {
       method: 'POST',
-      headers,
       body: payload
     })
 

@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { Tag as TagIcon, Plus, X, Check, Loader2 } from 'lucide-vue-next'
 import type { ApiResponse, Tag } from '~/types'
-import { useAuth } from '~/composables/useAuth'
 
 const props = withDefaults(
   defineProps<{
     modelValue: number[] // 选中的 tag ID 列表
     placeholder?: string
+    /** 外部注入的标签列表（推荐传入）；不传时组件内部自行拉取全量标签 */
+    tags?: Tag[]
   }>(),
   {
     modelValue: () => [],
-    placeholder: '输入新标签并回车添加...'
+    placeholder: '输入新标签并回车添加...',
+    tags: undefined
   }
 )
 
@@ -19,7 +21,7 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: number[]): void
 }>()
 
-const { token } = useAuth()
+const api = useApi()
 const availableTags = ref<Tag[]>([])
 const loading = ref(false)
 const addingNewTag = ref(false)
@@ -31,8 +33,14 @@ const selectedTags = computed(() => {
   return availableTags.value.filter(t => props.modelValue.includes(t.id))
 })
 
-// 获取全量标签列表
+// 外部注入标签时以 props 为准，并同步到内部列表
+watch(() => props.tags, (tags) => {
+  if (tags) availableTags.value = tags
+}, { immediate: true })
+
+// 获取全量标签列表（仅未通过 props 注入时）
 async function fetchTags() {
+  if (props.tags) return
   loading.value = true
   try {
     const res = await $fetch<ApiResponse<Tag[]>>('/api/v1/tags')
@@ -86,9 +94,8 @@ async function handleAddNewTag() {
   // 2. 如果不存在，调用接口创建新标签并自动选中
   addingNewTag.value = true
   try {
-    const res = await $fetch<ApiResponse<Tag>>('/api/v1/tags', {
+    const res = await api<Tag>('/api/v1/tags', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token.value}` },
       body: { name }
     })
     if (res.data) {

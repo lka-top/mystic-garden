@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { prisma } from '~/server/utils/prisma'
 import { requireAdminUser } from '~/server/utils/auth'
 import { successResponse } from '~/server/utils/response'
+import { readValidated } from '~/server/utils/validate'
 
 const CreateNotebookSchema = z.object({
   name: z.string().min(1, '名称不能为空').max(50),
@@ -14,17 +15,7 @@ const CreateNotebookSchema = z.object({
 
 export default defineEventHandler(async (event) => {
   requireAdminUser(event)
-  const body = await readBody(event)
-
-  const parseResult = CreateNotebookSchema.safeParse(body)
-  if (!parseResult.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: parseResult.error.errors[0]?.message || '参数校验失败'
-    })
-  }
-
-  const data = parseResult.data
+  const data = await readValidated(event, CreateNotebookSchema)
   const existing = await prisma.notebook.findUnique({
     where: { slug: data.slug }
   })

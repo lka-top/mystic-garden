@@ -2,6 +2,7 @@ import type { Prisma } from '@prisma/client'
 import { z } from 'zod'
 import { prisma } from '~/server/utils/prisma'
 import { paginationResponse } from '~/server/utils/response'
+import { applyPublishFilter } from '~/server/utils/pagination'
 
 const QuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -15,14 +16,8 @@ const QuerySchema = z.object({
 export default defineEventHandler(async (event) => {
   const query = await getValidatedQuery(event, QuerySchema.parse)
   const { page, pageSize, notebook: notebookSlug, tag: tagSlug, keyword } = query
-  const isAdmin = !!tryGetAdminUser(event)
-  const isAll = isAdmin && query.all === 'true'
 
-  const whereCondition: Prisma.NoteWhereInput = {}
-
-  if (!isAll) {
-    whereCondition.isPublished = true
-  }
+  const whereCondition = applyPublishFilter<Prisma.NoteWhereInput>(event, query.all, {})
 
   if (notebookSlug) {
     whereCondition.notebook = { slug: notebookSlug }

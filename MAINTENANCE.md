@@ -116,8 +116,12 @@ cd /app/mystic-garden
 # 3. 登录 ACR 镜像仓库
 docker login --username=您的ACR用户名 crpi-81wstmjlihs5q8t3.cn-chengdu.personal.cr.aliyuncs.com
 
-# 4. 创建 docker-compose.yml（直接复用现有生产配置）
-# 5. 启动服务
+# 4. 获取 docker-compose.yml 配置文件
+# 🔗 GitHub 源码链接：https://github.com/lka-top/mystic-garden/blob/main/docker-compose.yml
+# 可直接从 GitHub 极速下载：
+curl -o docker-compose.yml https://raw.githubusercontent.com/lka-top/mystic-garden/main/docker-compose.yml
+
+# 5. 启动全部服务
 docker compose up -d
 ```
 

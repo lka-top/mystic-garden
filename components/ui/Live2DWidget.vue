@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const isHidden = ref(false)
@@ -7,7 +7,7 @@ let oml2dInstance: any = null
 onMounted(async () => {
   if (!import.meta.client) return
 
-  // 1. 彻底清理旧版可能残留的死锁 localStorage 状态
+  // 1. 彻底清理旧版可能残留的死锁 localStorage 状态（增加严格异常兜底与调试日志）
   try {
     for (let i = localStorage.length - 1; i >= 0; i--) {
       const key = localStorage.key(i)
@@ -15,7 +15,10 @@ onMounted(async () => {
         localStorage.removeItem(key)
       }
     }
-  } catch {}
+  } catch (error) {
+    // 针对隐私模式（如 Safari/Firefox 禁用 localStorage）输出警告，不阻塞后续组件渲染
+    console.warn('[Live2D] Failed to clean up legacy localStorage keys (likely in private browsing mode):', error)
+  }
 
   // 2. 🛡️ SPA 与开发热重载防多实例冲突守卫
   if ((window as any).__OML2D_MOUNTED__) return

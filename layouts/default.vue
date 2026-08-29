@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Navbar from '~/components/layout/Navbar.vue'
 import Footer from '~/components/layout/Footer.vue'
+import Live2DWidget from '~/components/ui/Live2DWidget.vue'
 
 // ⚡ 客户端空闲时智能静默预拉取热点数据 (提升导航点击时的 0ms 秒开率)
 onMounted(() => {
@@ -38,5 +39,10 @@ onMounted(() => {
     </main>
 
     <Footer />
+
+    <!-- 🎭 Live2D 客户端看板娘 (SSR 水合安全) -->
+    <ClientOnly>
+      <Live2DWidget />
+    </ClientOnly>
   </div>
 </template>

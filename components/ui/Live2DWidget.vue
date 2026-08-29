@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const isHidden = ref(false)
@@ -7,7 +7,7 @@ let oml2dInstance: any = null
 onMounted(async () => {
   if (!import.meta.client) return
 
-  // 1. 彻底清理旧版可能残留的死锁 localStorage 状态（增加严格异常兜底与调试日志）
+  // 1. 彻底清理旧版可能残留的死锁 localStorage 状态
   try {
     for (let i = localStorage.length - 1; i >= 0; i--) {
       const key = localStorage.key(i)
@@ -16,51 +16,54 @@ onMounted(async () => {
       }
     }
   } catch (error) {
-    // 针对隐私模式（如 Safari/Firefox 禁用 localStorage）输出警告，不阻塞后续组件渲染
-    console.warn('[Live2D] Failed to clean up legacy localStorage keys (likely in private browsing mode):', error)
+    console.warn('[Live2D] Failed to clean up legacy localStorage keys:', error)
   }
 
-  // 2. 🛡️ SPA 与开发热重载防多实例冲突守卫
-  if ((window as any).__OML2D_MOUNTED__) return
-  (window as any).__OML2D_MOUNTED__ = true
+  // 2. 清理页面上已存在的 DOM 节点（确保热重载或重新挂载时 100% 刷新）
+  const existingDom = document.getElementById('oml2d')
+  if (existingDom) {
+    existingDom.remove()
+  }
 
+  // 3. 动态加载 oh-my-live2d
   try {
+    console.log('[Live2D] 🚀 正在初始化 Live2D 看板娘...')
     const { loadOml2d } = await import('oh-my-live2d')
 
     oml2dInstance = loadOml2d({
       dockedPosition: 'left',
       mobileDisplay: false, // 移动端自动优雅隐藏
       primaryColor: '#0ea5e9', // 博客主题青蓝色
-      sayHello: false,
+      sayHello: true,
       models: [
         {
-          name: '雫 Shizuku (经典看板娘)',
+          name: '雫 Shizuku',
           path: 'https://fastly.jsdelivr.net/gh/hacxy/l2d-models@main/models/shizuku/shizuku.model.json',
           scale: 0.2,
-          position: [0, 0],
+          position: [70, 70],
           stageStyle: {
-            width: 280,
-            height: 320
+            width: 380,
+            height: 380
           }
         },
         {
-          name: '提亚 Tia (萌系萝莉)',
+          name: '小黑猫 Cat',
+          path: 'https://fastly.jsdelivr.net/gh/hacxy/l2d-models@main/models/cat-black/model.json',
+          scale: 0.15,
+          position: [0, 20],
+          stageStyle: {
+            width: 320,
+            height: 350
+          }
+        },
+        {
+          name: '提亚 Tia',
           path: 'https://fastly.jsdelivr.net/gh/hacxy/l2d-models@main/models/tia/model.json',
           scale: 0.22,
           position: [0, 10],
           stageStyle: {
-            width: 280,
-            height: 320
-          }
-        },
-        {
-          name: '小黑猫 Cat (超萌宠物)',
-          path: 'https://fastly.jsdelivr.net/gh/hacxy/l2d-models@main/models/cat-black/model.json',
-          scale: 0.16,
-          position: [0, 20],
-          stageStyle: {
-            width: 280,
-            height: 320
+            width: 320,
+            height: 350
           }
         }
       ],
@@ -77,7 +80,6 @@ onMounted(async () => {
       },
       menus: {
         disable: false,
-        // ⚡ 点击收起时通知 Vue 状态，触发舞台滑出
         items: (defaultItems) => {
           return defaultItems.map((item) => {
             if (item.id === 'Rest' || item.title === '休息' || item.title?.includes('休息')) {
@@ -93,13 +95,15 @@ onMounted(async () => {
             return item
           })
         }
-      },
-      statusBar: {
-        disable: true // 禁用第三方容易报错的状态栏，改由我们原生 Vue 胶囊接管
       }
     })
+
+    // 监听模型加载事件
+    oml2dInstance.onLoad((status: string) => {
+      console.log(`[Live2D] 📢 模型加载状态: ${status}`)
+    })
   } catch (error) {
-    console.warn('[Live2D] Failed to initialize oh-my-live2d:', error)
+    console.error('[Live2D] ❌ 初始化看板娘失败:', error)
   }
 })
 
@@ -113,7 +117,10 @@ const handleWakeUp = () => {
 
 onUnmounted(() => {
   if (import.meta.client) {
-    (window as any).__OML2D_MOUNTED__ = false
+    const existingDom = document.getElementById('oml2d')
+    if (existingDom) {
+      existingDom.remove()
+    }
   }
 })
 </script>

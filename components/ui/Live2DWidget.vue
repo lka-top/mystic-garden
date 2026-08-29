@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const isHidden = ref(false)
@@ -37,6 +37,16 @@ onMounted(async () => {
       sayHello: true,
       models: [
         {
+          name: '小黑猫 Cat (本地秒开·零网络依赖)',
+          path: '/live2d/cat-black/model.json',
+          scale: 0.15,
+          position: [0, 20],
+          stageStyle: {
+            width: 320,
+            height: 350
+          }
+        },
+        {
           name: '雫 Shizuku',
           path: 'https://fastly.jsdelivr.net/gh/hacxy/l2d-models@main/models/shizuku/shizuku.model.json',
           scale: 0.2,
@@ -47,19 +57,9 @@ onMounted(async () => {
           }
         },
         {
-          name: '小黑猫 Cat',
-          path: 'https://fastly.jsdelivr.net/gh/hacxy/l2d-models@main/models/cat-black/model.json',
-          scale: 0.15,
-          position: [0, 20],
-          stageStyle: {
-            width: 320,
-            height: 350
-          }
-        },
-        {
           name: '提亚 Tia',
-          path: 'https://fastly.jsdelivr.net/gh/hacxy/l2d-models@main/models/tia/model.json',
-          scale: 0.22,
+          path: 'https://model.hacxy.cn/Senko_Normals/senko.model3.json',
+           scale: 1.00,
           position: [0, 10],
           stageStyle: {
             width: 320,

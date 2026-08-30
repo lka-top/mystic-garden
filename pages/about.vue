@@ -245,7 +245,7 @@ const skillCategories: SkillCategory[] = [
     <Card className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-6 sm:p-8">
       <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm">
         <img
-          src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80"
+          src=""
           alt="神秘人"
           class="w-full h-full object-cover"
         >

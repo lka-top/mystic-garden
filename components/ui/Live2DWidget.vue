@@ -65,6 +65,16 @@ onMounted(async () => {
             width: 380,
             height: 380
           }
+        },
+        {
+          name: '小埋 Umaru',
+          path: 'https://fastly.jsdelivr.net/gh/hacxy/l2d-models@main/models/umaru/model.json',
+          scale: 0.18,
+          position: [0, 0],
+          stageStyle: {
+            width: 320,
+            height: 350
+          }
         }
       ],
       tips: {

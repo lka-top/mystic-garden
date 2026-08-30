@@ -8,7 +8,10 @@ import {
   Layers,
   Database,
   Terminal,
-  Compass
+  Compass,
+  Globe,
+  Mail,
+  Rss
 } from 'lucide-vue-next'
 import Card from '~/components/ui/Card.vue'
 import BrandIcon, { type BrandName } from '~/components/ui/BrandIcon.vue'
@@ -267,6 +270,110 @@ const skillCategories: SkillCategory[] = [
         </p>
       </div>
     </Card>
+
+    <!-- 🌐 社交与创作平台矩阵 (GitHub / Bilibili / Email / RSS) -->
+    <div class="space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-zinc-200/80 dark:border-zinc-800/80">
+        <h2 class="text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+          <Globe class="w-4 h-4 text-brand-600 dark:text-brand-400" />
+          社交与创作阵地
+        </h2>
+        <span class="text-xs font-mono text-zinc-400">Find Me Across the Web</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <!-- 1. GitHub -->
+        <a
+          href="https://github.com/lka-top"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex items-center justify-between p-4 rounded-2xl border border-zinc-200/80 bg-white/70 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-900/60 hover:border-zinc-400 dark:hover:border-zinc-600 hover:shadow-md transition-all duration-200 group"
+        >
+          <div class="flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-zinc-900 text-white dark:bg-zinc-800 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+              <BrandIcon name="github" :size="20" className="text-white" />
+            </div>
+            <div>
+              <div class="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                <span>GitHub</span>
+                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500">@lka-top</span>
+              </div>
+              <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                开源代码库、神秘花园项目与全栈工程
+              </p>
+            </div>
+          </div>
+          <ExternalLink class="w-4 h-4 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 group-hover:translate-x-0.5 transition-all" />
+        </a>
+
+        <!-- 2. 哔哩哔哩 (B站) -->
+        <a
+          href="https://space.bilibili.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex items-center justify-between p-4 rounded-2xl border border-pink-100 dark:border-pink-950/40 bg-pink-50/40 dark:bg-pink-950/20 hover:border-pink-300 dark:hover:border-pink-800 hover:shadow-md transition-all duration-200 group"
+        >
+          <div class="flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-[#FB7299] text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+              <BrandIcon name="bilibili" :size="20" className="text-white" />
+            </div>
+            <div>
+              <div class="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                <span>哔哩哔哩</span>
+                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-pink-100 dark:bg-pink-900/60 text-[#FB7299]">Bilibili</span>
+              </div>
+              <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                技术视频分享、开发记录与动态交流
+              </p>
+            </div>
+          </div>
+          <ExternalLink class="w-4 h-4 text-pink-400 group-hover:text-[#FB7299] group-hover:translate-x-0.5 transition-all" />
+        </a>
+
+        <!-- 3. 联系邮箱 -->
+        <a
+          href="mailto:admin@mysgarden.top"
+          class="flex items-center justify-between p-4 rounded-2xl border border-zinc-200/80 bg-white/70 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-900/60 hover:border-sky-300 dark:hover:border-sky-800 hover:shadow-md transition-all duration-200 group"
+        >
+          <div class="flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-sky-500 text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+              <Mail class="w-5 h-5" />
+            </div>
+            <div>
+              <div class="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                电子邮箱
+              </div>
+              <p class="text-xs text-zinc-500 dark:text-zinc-400 font-mono">
+                admin@mysgarden.top
+              </p>
+            </div>
+          </div>
+          <ExternalLink class="w-4 h-4 text-zinc-400 group-hover:text-sky-500 group-hover:translate-x-0.5 transition-all" />
+        </a>
+
+        <!-- 4. RSS 订阅 -->
+        <a
+          href="/feed.xml"
+          target="_blank"
+          class="flex items-center justify-between p-4 rounded-2xl border border-zinc-200/80 bg-white/70 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-900/60 hover:border-amber-300 dark:hover:border-amber-800 hover:shadow-md transition-all duration-200 group"
+        >
+          <div class="flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+              <Rss class="w-5 h-5" />
+            </div>
+            <div>
+              <div class="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                RSS Feed 订阅
+              </div>
+              <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                即时获取全站深度文章最新推送
+              </p>
+            </div>
+          </div>
+          <ExternalLink class="w-4 h-4 text-zinc-400 group-hover:text-amber-500 group-hover:translate-x-0.5 transition-all" />
+        </a>
+      </div>
+    </div>
 
     <!-- 数字花园的理念 -->
     <div class="space-y-4">

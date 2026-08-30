@@ -10,6 +10,7 @@ import {
   Tag as TagIcon,
   Heart
 } from 'lucide-vue-next'
+import BrandIcon from '~/components/ui/BrandIcon.vue'
 import type { ApiResponse } from '~/types'
 
 const config = useRuntimeConfig()
@@ -87,28 +88,38 @@ const stats = computed(() => statsRes.value?.data || { articles: 0, categories: 
     <!-- 4. 社交图标栏 (MD3 药丸图标按钮) -->
     <div class="flex items-center justify-center gap-2">
       <a
-        href="https://github.com"
+        href="https://github.com/lka-top"
         target="_blank"
         rel="noopener noreferrer"
         class="p-2.5 rounded-full bg-sky-50 dark:bg-slate-800/80 text-slate-600 hover:text-white hover:bg-slate-900 dark:text-slate-400 dark:hover:text-slate-900 dark:hover:bg-white transition-all duration-200 hover:scale-110 shadow-xs"
-        title="GitHub"
+        title="GitHub (@lka-top)"
       >
         <Github class="w-4 h-4" />
       </a>
       <a
-        href="mailto:contact@example.com"
+        href="https://space.bilibili.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="p-2.5 rounded-full bg-pink-50 dark:bg-pink-950/40 text-[#FB7299] hover:text-white hover:bg-[#FB7299] transition-all duration-200 hover:scale-110 shadow-xs"
+        title="哔哩哔哩 (Bilibili)"
+      >
+        <BrandIcon name="bilibili" :size="16" />
+      </a>
+      <a
+        href="mailto:admin@mysgarden.top"
         class="p-2.5 rounded-full bg-rose-50 dark:bg-slate-800/80 text-rose-500 hover:text-white hover:bg-rose-500 dark:text-rose-400 dark:hover:text-white dark:hover:bg-rose-500 transition-all duration-200 hover:scale-110 shadow-xs"
-        title="Email"
+        title="Email (admin@mysgarden.top)"
       >
         <Mail class="w-4 h-4" />
       </a>
-      <NuxtLink
-        to="/archive"
-        class="p-2.5 rounded-full bg-sky-50 dark:bg-slate-800/80 text-sky-600 hover:text-white hover:bg-sky-500 dark:text-sky-400 dark:hover:text-white dark:hover:bg-sky-500 transition-all duration-200 hover:scale-110 shadow-xs"
-        title="RSS 订阅 / 归档"
+      <a
+        href="/feed.xml"
+        target="_blank"
+        class="p-2.5 rounded-full bg-amber-50 dark:bg-slate-800/80 text-amber-600 hover:text-white hover:bg-amber-500 dark:text-amber-400 dark:hover:text-white dark:hover:bg-amber-500 transition-all duration-200 hover:scale-110 shadow-xs"
+        title="RSS 订阅"
       >
         <Rss class="w-4 h-4" />
-      </NuxtLink>
+      </a>
     </div>
   </div>
 </template>

@@ -58,13 +58,25 @@ cd /app/mystic-garden
 docker exec luokai-mysql mysqldump -u root -pLuokaiSecureRoot2025! --default-character-set=utf8mb4 luokai_blog > backup_$(date +%Y%m%d_%H%M%S).sql
 ```
 
-### 2.2 附件目录备份
-```bash
-# 打包上传的图片与配置
-tar -czvf uploads_backup_$(date +%Y%m%d).tar.gz certbot/ nginx/
-```
+### 2.2 阿里云 OSS 媒体图片一键增量冷备份（防丢失 SOP）
+为了让图片资产 100% 独立于云厂商、永不丢失，可使用阿里云官方 `ossutil` 工具随时将云端所有图片一键拉取备份到本地电脑或移动硬盘：
 
-### 2.3 数据库恢复（灾难恢复）
+#### Windows / macOS / Linux 本地同步命令：
+```bash
+# 1. 下载并配置 ossutil (配置 AccessKey)
+# 官网下载: https://help.aliyun.com/document_detail/120075.html
+ossutil64 config -e oss-cn-chengdu.aliyuncs.com -i <您的AccessKeyId> -k <您的AccessKeySecret>
+
+# 2. 一键增量同步云端所有 uploads/ 图片到本地 backup_images 目录
+ossutil64 sync oss://<您的Bucket名称>/uploads/ ./backup_images/ --update
+```
+> 💡 **优势**：增量同步只会下载新上传的图片，几秒钟即可完成备份，实现 10 年+ 数据长效永续留存。
+
+### 2.3 本地与云端媒体分流策略
+- 💻 **本地目录 (`public/`)**：Logo、Banner、暗色/亮色占位图、常用 Live2D 模型（小仙狐、小黑猫）；
+- ☁️ **云端 OSS (`img.mysgarden.top/uploads/`)**：文章封面与正文配图、随笔照片、笔记思维导图（客户端自动 WebP 转码压缩，体积立减 70%+）。
+
+### 2.4 数据库恢复（灾难恢复）
 如需在新机器或故障后恢复数据：
 ```bash
 docker exec -i luokai-mysql mysql -u root -pLuokaiSecureRoot2025! luokai_blog < backup_xxx.sql

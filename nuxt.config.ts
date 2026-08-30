@@ -51,7 +51,7 @@ export default defineNuxtConfig({
       siteDescription: '记录思考、探索技术、沉淀生活的一方数字花园',
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://mysgarden.top',
       icpNumber: process.env.NUXT_PUBLIC_ICP_NUMBER || '蜀ICP备2026049694号',
-      authorName: '神秘人',
+      authorName: 'lka',
       authorBio: '全栈开发者 / 探索 Web 现代美学与工程架构'
     }
   },
@@ -72,7 +72,7 @@ export default defineNuxtConfig({
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'description', content: '神秘花园 - 记录思考、探索技术、沉淀生活的一方数字花园' },
-        { name: 'keywords', content: '神秘人, 博客, Nuxt3, Vue3, 前端开发, 全栈开发, 技术随笔, Bento Grid' }
+        { name: 'keywords', content: 'lka, 博客, Nuxt3, Vue3, 前端开发, 全栈开发, 技术随笔, Bento Grid' }
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },

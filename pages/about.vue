@@ -246,14 +246,14 @@ const skillCategories: SkillCategory[] = [
       <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm">
         <img
           src=""
-          alt="神秘人"
+          alt="lka"
           class="w-full h-full object-cover"
         >
       </div>
       <div class="space-y-2 text-center sm:text-left flex-1">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <h2 class="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-            神秘人 (Mystic Developer)
+            lka (Mystic Developer)
           </h2>
           <span class="text-xs font-mono px-2.5 py-1 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 self-center sm:self-auto">
             Full-Stack Software Engineer

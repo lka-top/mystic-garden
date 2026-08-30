@@ -69,14 +69,14 @@ async function handleLike() {
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
           <img
-            :src="essay.author?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'"
-            :alt="essay.author?.nickname || '神秘人'"
+            :src="essay.author?.avatar || ''"
+            :alt="essay.author?.nickname || 'lka'"
             class="w-full h-full object-cover"
           >
         </div>
         <div>
           <div class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
-            {{ essay.author?.nickname || '神秘人' }}
+            {{ essay.author?.nickname || 'lka' }}
             <Badge v-if="essay.isPinned" variant="brand" class="text-[10px] py-0 px-1.5 font-mono">
               <Pin class="w-2.5 h-2.5 mr-0.5" />
               置顶

@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
   const itemsXml = articles.map(item => {
     const link = `${siteUrl}/articles/${item.slug}`
     const pubDate = new Date(item.createdAt).toUTCString()
-    const author = item.author?.nickname || config.public.authorName || '神秘人'
+    const author = item.author?.nickname || config.public.authorName || 'lka'
     const category = item.category?.name ? `<category><![CDATA[${item.category.name}]]></category>` : ''
 
     return `

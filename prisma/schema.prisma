@@ -14,10 +14,10 @@ model User {
   id           Int       @id @default(autoincrement())                 // 用户唯一主键 ID
   username     String    @unique @db.VarChar(50)                      // 登录用户名/自动生成标识 (唯一索引)
   passwordHash String?   @map("password_hash") @db.VarChar(255)       // 加盐哈希加密后的登录密码 (bcrypt, 游客免密注册时为 NULL)
-  nickname     String    @default("洛凯") @db.VarChar(50)             // 前台展示昵称 (如: 洛凯、漫步花友_7a2b)
+  nickname     String    @default("lka") @db.VarChar(50)              // 前台展示昵称 (如: lka、漫步花友_7a2b)
   avatar       String?   @db.VarChar(255)                             // 个人头像图片 URL (支持 DiceBear 动态生成)
   email        String?   @db.VarChar(100)                             // 联系与通知邮箱 (可选)
-  bio          String?   @default("欢迎来到洛凯花园，这里记录思考与生活。") @db.VarChar(255) // 个人个性签名 / 简介
+  bio          String?   @default("欢迎来到神秘花园，这里记录思考与生活。") @db.VarChar(255) // 个人个性签名 / 简介
   role         String    @default("guest") @db.VarChar(20)            // 角色权限 (admin: 超级管理员, user: 注册用户, guest: 免登录游客)
   guestUuid    String?   @unique @map("guest_uuid") @db.VarChar(64)   // 访客设备持久化唯一指纹 UUID (免登录评论自动识别归档)
   ipAddress    String?   @map("ip_address") @db.VarChar(50)          // 用户首次注册/留言时的 IP 地址

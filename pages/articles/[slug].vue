@@ -72,7 +72,7 @@ useHead(() => ({
         dateModified: article.value.updatedAt || article.value.createdAt,
         author: {
           '@type': 'Person',
-          name: article.value.author?.nickname || config.public.authorName || '神秘人'
+          name: article.value.author?.nickname || config.public.authorName || 'lka'
         },
         publisher: {
           '@type': 'Organization',
@@ -147,7 +147,7 @@ useHead(() => ({
               :alt="article.author.nickname"
               class="w-4 h-4 rounded-full object-cover"
             />
-            <span>{{ article.author?.nickname || '神秘人' }}</span>
+            <span>{{ article.author?.nickname || 'lka' }}</span>
           </span>
           <span class="flex items-center gap-1">
             <Calendar class="w-3.5 h-3.5 text-sky-500" />

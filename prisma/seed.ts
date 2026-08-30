@@ -16,10 +16,10 @@ async function main() {
     create: {
       username: "admin",
       passwordHash,
-      nickname: "神秘人",
+      nickname: "lka",
       avatar:
         "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
-      email: "admin@luokai.me",
+      email: "admin@mysgarden.top",
       bio: "全栈开发者 / 探索 Web 现代美学与工程架构。",
       role: "admin",
     },

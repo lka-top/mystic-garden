@@ -13,7 +13,7 @@ import {
 import type { ApiResponse } from '~/types'
 
 const config = useRuntimeConfig()
-const authorName = config.public.authorName || '神秘人'
+const authorName = config.public.authorName || 'lka'
 const authorBio = config.public.authorBio || '全栈开发者 · 晴空之下探索现代 Web 架构与设计'
 
 // 预取文章、分类、标签统计概览

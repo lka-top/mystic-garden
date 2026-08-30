@@ -14,7 +14,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   title: '神秘花园 · 晴空之下',
   subtitle: '漫步夏日微风 · 记录全栈探索 · 沉淀技术与美学思考',
-  bgImage: '/images/banner.png',
+  bgImage: '',
   height: 'lg',
   showWave: true,
   showArrow: undefined
@@ -38,6 +38,9 @@ const heightClass = computed(() => {
   }
 })
 
+// 判断是否传入了特定自定义封面 (如文章特有封面)；若无则直接透出全局无缝壁纸
+const isCustomCover = computed(() => Boolean(props.bgImage && props.bgImage !== '/images/bg-main.png'))
+
 function scrollToContent() {
   const contentEl = document.getElementById('main-content')
   if (contentEl) {
@@ -50,20 +53,21 @@ function scrollToContent() {
 
 <template>
   <div :class="['relative w-full overflow-hidden select-none transition-all duration-500', heightClass]">
-    <!-- 1. 背景壁纸大图 + 视差微缩放 -->
+    <!-- 1. 背景层 (仅在文章拥有专属特色大图时渲染独立封面并带柔和渐隐；默认透出全局壁纸) -->
     <div
-      class="absolute inset-0 bg-cover bg-no-repeat transition-transform duration-1000 ease-out transform scale-100"
-      :style="{ backgroundImage: `url(${bgImage})`, backgroundPosition: 'center 25%' }"
+      v-if="isCustomCover"
+      class="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 ease-out transform scale-100"
+      :style="{ backgroundImage: `url(${props.bgImage})` }"
     />
 
-    <!-- 2. 半透明玻璃遮罩与主色调微光渐变 -->
-    <div class="absolute inset-0 bg-gradient-to-b from-sky-950/45 via-transparent to-sky-950/60" />
+    <!-- 2. 半透明通透遮罩与微光光晕 (柔和融入全局壁纸) -->
+    <div class="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/35 dark:from-black/45 dark:via-transparent dark:to-black/60" />
 
     <!-- 3. 光晕装饰微粒 (蔚蓝 + 珊瑚粉双色光晕) -->
-    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-sky-400/20 rounded-full blur-3xl pointer-events-none" />
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-sky-400/15 rounded-full blur-3xl pointer-events-none" />
     <div class="absolute top-1/3 right-1/4 w-80 h-80 bg-rose-400/15 rounded-full blur-3xl pointer-events-none" />
 
-    <!-- 4. 居中文案内容 (增加 pt-24 sm:pt-28 顶部避让区，确保文字绝对不被顶部导航栏遮挡) -->
+    <!-- 4. 居中文案内容 -->
     <div class="relative h-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center text-center pt-24 sm:pt-28 pb-14 sm:pb-20 z-10">
       <div
         v-motion
@@ -97,7 +101,7 @@ function scrollToContent() {
           {{ subtitle }}
         </p>
 
-        <!-- 向下滚动指引箭头 (仅在大型 Hero 时显示) -->
+        <!-- 向下滚动指引箭头 -->
         <div v-if="shouldShowArrow" class="pt-3">
           <button
             type="button"
@@ -111,7 +115,7 @@ function scrollToContent() {
       </div>
     </div>
 
-    <!-- 5. Mizuki 风格动态波浪过渡层 (Animated SVG Waves) -->
+    <!-- 5. 通透毛玻璃动态波浪过渡层 (半透光材质，告别实体纯色遮挡，与全局壁纸无缝融为一体) -->
     <div v-if="showWave" class="absolute bottom-0 inset-x-0 w-full h-12 sm:h-18 lg:h-20 pointer-events-none z-20 overflow-hidden leading-none">
       <svg
         class="waves w-full h-full"
@@ -128,33 +132,33 @@ function scrollToContent() {
           />
         </defs>
         <g class="parallax">
-          <!-- 波浪层 1 -->
+          <!-- 波浪层 1 (透光微波) -->
           <use
             xlink:href="#gentle-wave"
             x="48"
             y="0"
-            class="fill-[#f6f9fc] dark:fill-[#0b1120] opacity-25 wave-layer-1"
+            class="fill-white/10 dark:fill-white/5 wave-layer-1"
           />
           <!-- 波浪层 2 -->
           <use
             xlink:href="#gentle-wave"
             x="48"
             y="3"
-            class="fill-[#f6f9fc] dark:fill-[#0b1120] opacity-50 wave-layer-2"
+            class="fill-white/15 dark:fill-slate-900/20 wave-layer-2"
           />
           <!-- 波浪层 3 -->
           <use
             xlink:href="#gentle-wave"
             x="48"
             y="5"
-            class="fill-[#f6f9fc] dark:fill-[#0b1120] opacity-75 wave-layer-3"
+            class="fill-white/25 dark:fill-slate-900/35 wave-layer-3"
           />
-          <!-- 波浪层 4 (100% 实体无缝衔接底色) -->
+          <!-- 波浪层 4 (柔和半透光毛玻璃层) -->
           <use
             xlink:href="#gentle-wave"
             x="48"
             y="7"
-            class="fill-[#f6f9fc] dark:fill-[#0b1120] opacity-100 wave-layer-4"
+            class="fill-white/35 dark:fill-slate-900/50 wave-layer-4"
           />
         </g>
       </svg>

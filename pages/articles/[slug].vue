@@ -104,7 +104,7 @@ useHead(() => ({
     <HeroBanner
       :title="article.title"
       :subtitle="article.summary || `${dayjs(article.createdAt).format('YYYY-MM-DD')} · ${article.readingTime} 分钟阅读 · ${article.views} 次浏览`"
-      :bg-image="article.coverImage || '/images/banner.png'"
+      :bg-image="article.coverImage || ''"
       height="md"
       :show-wave="true"
     />

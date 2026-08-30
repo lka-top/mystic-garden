@@ -26,9 +26,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col transition-colors selection:bg-brand-500/20 selection:text-brand-600 dark:selection:bg-brand-500/30 dark:selection:text-brand-300">
-    <!-- 背景轻微点阵装饰 -->
-    <div class="fixed inset-0 pointer-events-none bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-40 z-0" />
+  <div class="min-h-screen flex flex-col relative selection:bg-brand-500/20 selection:text-brand-600 dark:selection:bg-brand-500/30 dark:selection:text-brand-300">
+    <!-- 🖼️ 全局主视觉壁纸背景 (固定视口平铺) -->
+    <div
+      class="fixed inset-0 pointer-events-none bg-cover bg-center bg-no-repeat bg-fixed z-0 transition-opacity duration-700"
+      style="background-image: url('/images/bg-main.png');"
+    />
+
+    <!-- 🌌 通透毛玻璃与光影滤镜蒙层 (亮色晶莹通透 / 暗色深邃沉浸) -->
+    <div class="fixed inset-0 pointer-events-none z-0 bg-white/45 dark:bg-[#070c18]/75 backdrop-blur-[2px] transition-colors duration-500" />
+    <div class="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-400/10 via-transparent to-rose-400/10 dark:from-sky-900/20 dark:to-transparent" />
 
     <!-- 悬浮吸顶导航栏 (内置 Mizuki 原地伸缩搜索框与下拉联想) -->
     <Navbar />

@@ -14,8 +14,8 @@ const props = withDefaults(defineProps<Props>(), {
 <template>
   <div
     :class="cn(
-      'rounded-3xl border border-zinc-200/80 bg-white/70 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-900/60 p-6 transition-all duration-200 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.04)] dark:shadow-none',
-      props.hoverable && 'hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-lg dark:hover:bg-zinc-900/80',
+      'rounded-3xl border border-white/70 bg-white/75 backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/65 p-6 transition-all duration-300 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)]',
+      props.hoverable && 'hover:border-sky-300/60 dark:hover:border-sky-500/40 hover:shadow-xl hover:bg-white/85 dark:hover:bg-slate-900/80 hover:-translate-y-0.5',
       props.className
     )"
   >

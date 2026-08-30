@@ -37,7 +37,17 @@ onMounted(async () => {
       sayHello: true,
       models: [
         {
-          name: '小黑猫 Cat (本地秒开·零网络依赖)',
+          name: '小仙狐 Senko (高清动作·本地秒开)',
+          path: '/live2d/Senko_Normals/senko.model3.json',
+          scale: 0.12,
+          position: [-10, 20],
+          stageStyle: {
+            width: 320,
+            height: 380
+          }
+        },
+        {
+          name: '小黑猫 Cat (超萌宠物·本地秒开)',
           path: '/live2d/cat-black/model.json',
           scale: 0.15,
           position: [0, 20],
@@ -47,23 +57,13 @@ onMounted(async () => {
           }
         },
         {
-          name: '雫 Shizuku',
+          name: '雫 Shizuku (经典和服少女)',
           path: 'https://fastly.jsdelivr.net/gh/hacxy/l2d-models@main/models/shizuku/shizuku.model.json',
           scale: 0.2,
           position: [70, 70],
           stageStyle: {
             width: 380,
             height: 380
-          }
-        },
-        {
-          name: '提亚 Tia',
-          path: 'https://model.hacxy.cn/Senko_Normals/senko.model3.json',
-           scale: 1.00,
-          position: [0, 10],
-          stageStyle: {
-            width: 320,
-            height: 350
           }
         }
       ],

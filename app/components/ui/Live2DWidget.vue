@@ -22,28 +22,9 @@ onMounted(async () => {
       transitionDuration: 800,
       model: [
         {
-          path: '/live2d/Senko_Normals/senko.model3.json',
-          scale: 0.12,
-          offset: [-0.05, 0.05],
-          tips: {
-            welcomeMessage: [
-              '欢迎来到神秘花园！',
-              '今天也是充满美好的一天呢~',
-              '漫步在数字花园中，记录全栈探索与生活思考。'
-            ],
-            messages: [
-              '漫步在数字花园中，享受技术与美学吧~',
-              '博客采用 Nuxt 4 + TailwindCSS 架构构建哦~',
-              '累了的话就稍微喝杯红茶休息一下吧~'
-            ],
-            duration: 3500,
-            interval: 6000
-          }
-        },
-        {
-          path: '/live2d/cat-black/model.json',
+          path: 'https://model.hacxy.cn/cat-black/model.json',
           scale: 0.15,
-          offset: [0, 0.05],
+          offset: [0, 0],
           tips: {
             welcomeMessage: ['喵呜~ 欢迎来到神秘花园！', '蹭蹭你的手手~'],
             messages: [
@@ -56,12 +37,21 @@ onMounted(async () => {
           }
         },
         {
-          path: 'https://fastly.jsdelivr.net/gh/hacxy/l2d-models@main/models/shizuku/shizuku.model.json',
+          path: 'https://model.hacxy.cn/shizuku/shizuku.model.json',
           scale: 0.2,
-          offset: [0.15, 0.15],
+          offset: [0, 0],
           tips: {
             welcomeMessage: ['你好呀，欢迎来到神秘花园！'],
             messages: ['今天也要元气满满哦~', '有任何想了解的技术都可以去关于页面看看呢~']
+          }
+        },
+        {
+          path: 'https://model.hacxy.cn/umaru/model.json',
+          scale: 0.18,
+          offset: [0, 0],
+          tips: {
+            welcomeMessage: ['可乐！薯片！还有神秘花园！'],
+            messages: ['今天也要开开心心！', '累了就去读读博主的随笔吧~']
           }
         }
       ],

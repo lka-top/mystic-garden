@@ -1,45 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
-import type { Widget } from 'l2d-widget'
 
-let widgetInstance: Widget | null = null
-let currentModelIndex = 0
-
-const models = [
-  {
-    path: 'https://model.hacxy.cn/cat-black/model.json',
-    scale: 0.15,
-    offset: [0, 0] as [number, number],
-    tips: {
-      welcomeMessage: ['喵呜~ 欢迎来到神秘花园！', '蹭蹭你的手手~'],
-      messages: [
-        '呼噜呼噜~',
-        '今天也抓到小鱼干了吗？',
-        '喵喵~ 今天也要元气满满哦！'
-      ],
-      duration: 3500,
-      interval: 6000
-    }
-  },
-  {
-    path: 'https://model.hacxy.cn/shizuku/shizuku.model.json',
-    scale: 0.2,
-    offset: [0, 0] as [number, number],
-    tips: {
-      welcomeMessage: ['你好呀，欢迎来到神秘花园！'],
-      messages: ['今天也要元气满满哦~', '有任何想了解的技术都可以去关于页面看看呢~']
-    }
-  },
-  {
-    path: 'https://model.hacxy.cn/umaru/model.json',
-    scale: 0.18,
-    offset: [0, 0] as [number, number],
-    tips: {
-      welcomeMessage: ['可乐！薯片！还有神秘花园！'],
-      messages: ['今天也要开开心心！', '累了就去读读博主的随笔吧~']
-    }
-  }
-]
+let oml2dInstance: any = null
 
 onMounted(async () => {
   if (!import.meta.client) return
@@ -48,66 +10,119 @@ onMounted(async () => {
   if (window.innerWidth < 768) return
 
   try {
-    console.log('[Live2D] 🚀 正在按全量接管规范加载 l2d-widget...')
-    const { createWidget } = await import('l2d-widget')
+    console.log('[Live2D] 🚀 正在按官方规范加载 oh-my-live2d...')
+    const { loadOml2d } = await import('oh-my-live2d')
 
-    widgetInstance = createWidget({
-      position: 'bottom-left',
-      size: { width: 300, height: 360 },
+    oml2dInstance = loadOml2d({
+      dockedPosition: 'left',
+      mobileDisplay: false,
       primaryColor: '#0ea5e9',
-      transitionType: 'slide',
-      transitionDuration: 800,
-      model: models,
-      menus: {
-        align: 'right',
-        items: [
-          {
-            icon: 'mdi:shuffle-variant',
-            label: '切换模型',
-            onClick(widget) {
-              currentModelIndex = (currentModelIndex + 1) % models.length
-              widget.switchModel(currentModelIndex)
-            }
-          },
-          {
-            icon: 'mdi:bed',
-            label: '休眠',
-            onClick(widget) {
-              widget.sleep()
-            }
-          },
-          {
-            icon: 'mdi:github',
-            label: 'GitHub 仓库',
-            onClick() {
-              window.open('https://github.com/hacxy/l2d-widget', '_blank')
-            }
-          },
-          {
-            icon: 'mdi:information-outline',
-            label: '官方文档',
-            onClick() {
-              window.open('https://oml2d.hacxy.cn/', '_blank')
-            }
+      sayHello: true,
+      models: [
+        {
+          name: 'shizuku',
+          path: 'https://registry.npmmirror.com/oml2d-models/latest/files/models/shizuku/shizuku.model.json',
+          scale: 0.2,
+          position: [0, 0],
+          stageStyle: {
+            width: 320,
+            height: 350
           }
-        ]
+        },
+        {
+          name: 'senko',
+          path: 'https://registry.npmmirror.com/oml2d-models/latest/files/models/Senko_Normals/senko.model3.json',
+          scale: 0.12,
+          position: [-10, 20],
+          stageStyle: {
+            width: 320,
+            height: 380
+          }
+        },
+        {
+          name: 'pio',
+          path: 'https://registry.npmmirror.com/oml2d-models/latest/files/models/Pio/model.json',
+          scale: 0.4,
+          position: [0, 50],
+          stageStyle: {
+            width: 320,
+            height: 350
+          }
+        },
+        {
+          name: 'cat-black',
+          path: 'https://registry.npmmirror.com/oml2d-models/latest/files/models/cat-black/model.json',
+          scale: 0.15,
+          position: [0, 20],
+          stageStyle: {
+            width: 320,
+            height: 350
+          }
+        }
+      ],
+      tips: {
+        idleTips: {
+          wordTheDay: true
+        }
+      },
+      menus: {
+        disable: false,
+        items: (defaultItems) => {
+          // 官方默认 4 个标准按钮：
+          // 1. Rest (休息)
+          // 2. SwitchTexture (切换衣服)
+          // 3. SwitchModel (切换模型)
+          // 4. About (关于) -> 精准跳转至官方文档主页
+          return defaultItems.map((item) => {
+            if (item.id === 'About' || item.title === '关于' || item.title?.includes('关于')) {
+              return {
+                ...item,
+                onClick: () => {
+                  window.open('https://oml2d.hacxy.cn/', '_blank')
+                }
+              }
+            }
+            return item
+          })
+        }
       }
     })
   } catch (error) {
-    console.warn('[Live2D] Failed to initialize l2d-widget:', error)
+    console.warn('[Live2D] Failed to initialize oh-my-live2d:', error)
   }
 })
 
 onUnmounted(() => {
-  if (widgetInstance) {
-    try {
-      widgetInstance.destroy()
-    } catch (_) {}
-    widgetInstance = null
+  if (import.meta.client) {
+    const existingDom = document.getElementById('oml2d')
+    if (existingDom) {
+      existingDom.remove()
+    }
+    oml2dInstance = null
   }
 })
 </script>
 
 <template>
-  <div class="live2d-widget-container select-none pointer-events-none" />
+  <div class="live2d-wrapper" />
 </template>
+
+<style>
+/* 确保层级与暗色模式主题适配 */
+#oml2d,
+.oml2d-stage {
+  z-index: 40 !important;
+}
+
+.dark .oml2d-tips {
+  background-color: rgba(24, 24, 27, 0.92) !important;
+  color: #f4f4f5 !important;
+  border: 1px solid rgba(63, 63, 70, 0.6) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .oml2d-menu {
+  background-color: rgba(24, 24, 27, 0.85) !important;
+  border: 1px solid rgba(63, 63, 70, 0.6) !important;
+}
+</style>

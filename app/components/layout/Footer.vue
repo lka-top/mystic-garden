@@ -1,40 +1,41 @@
 <script setup lang="ts">
-import { Code2, ShieldCheck, Github, Radio } from 'lucide-vue-next'
+import { ShieldCheck, Compass, Heart } from 'lucide-vue-next'
+
+const config = useRuntimeConfig()
+const currentYear = new Date().getFullYear()
+const icpNumber = config.public.icpNumber || '蜀ICP备2026049694号'
+const authorName = config.public.authorName || 'lka'
 </script>
 
 <template>
-  <footer class="mt-20 border-t border-zinc-200/80 dark:border-zinc-800/80 py-12 px-4">
-    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-zinc-500 dark:text-zinc-400">
-      <div class="space-y-1.5 text-center sm:text-left">
+  <footer class="relative z-10 w-full mt-auto border-t border-white/60 dark:border-white/10 bg-white/70 dark:bg-[#0d1527]/75 backdrop-blur-xl py-10 px-4 transition-colors duration-300">
+    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-slate-600 dark:text-slate-400">
+      <div class="space-y-2 text-center sm:text-left">
         <div class="flex items-center justify-center sm:justify-start gap-2">
-          <span class="font-bold text-zinc-900 dark:text-zinc-100">神秘花园</span>
-          <span class="text-zinc-300 dark:text-zinc-700">/</span>
-          <span>Digital Garden</span>
+          <span class="font-bold text-slate-900 dark:text-white">神秘花园</span>
+          <span class="text-slate-300 dark:text-slate-700">/</span>
+          <span class="font-mono text-sky-600 dark:text-sky-400 font-medium">Azure Garden</span>
         </div>
-        <p class="text-[11px] text-zinc-400 flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1">
-          <span>© 2026 神秘花园. All rights reserved.</span>
-          <span class="hidden sm:inline text-zinc-300 dark:text-zinc-700">·</span>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1">
+          <span>© {{ currentYear }} {{ authorName }}. All rights reserved.</span>
+          <span class="hidden sm:inline text-slate-300 dark:text-slate-700">·</span>
           <a
             href="https://beian.miit.gov.cn/"
             target="_blank"
             rel="noopener noreferrer"
-            class="hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors underline-offset-4 hover:underline"
+            class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors underline-offset-4 hover:underline"
           >
-            蜀ICP备2026049694号
+            {{ icpNumber }}
           </a>
         </p>
       </div>
 
-      <div class="flex items-center gap-6 text-xs font-mono">
-        <NuxtLink to="/archive" class="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+      <div class="flex items-center gap-5 text-xs font-mono">
+        <NuxtLink to="/archive" class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
           归档索引
         </NuxtLink>
-        <NuxtLink to="/about" class="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+        <NuxtLink to="/about" class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
           关于博主
-        </NuxtLink>
-        <NuxtLink to="/admin/login" class="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
-          <ShieldCheck class="w-3.5 h-3.5" />
-          控制台
         </NuxtLink>
       </div>
     </div>

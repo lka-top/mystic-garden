@@ -20,19 +20,28 @@ onMounted(async () => {
       sayHello: true,
       models: [
         {
-          name: 'shizuku',
-          path: 'https://registry.npmmirror.com/oml2d-models/latest/files/models/shizuku/shizuku.model.json',
-          scale: 0.2,
-          position: [0, 0],
+          name: 'cat-black',
+          path: 'https://model.oml2d.com/cat-black/model.json',
+          scale: 0.15,
+          position: [0, 20],
           stageStyle: {
             width: 320,
             height: 350
           }
         },
         {
+          name: 'shizuku',
+          path: 'https://model.oml2d.com/shizuku/shizuku.model.json',
+          scale: 0.2,
+          position: [70, 70],
+          stageStyle: {
+            width: 400,
+            height: 370
+          }
+        },
+        {
           name: 'senko',
-          path: 'https://registry.npmmirror.com/oml2d-models/latest/files/models/Senko_Normals/senko.model3.json',
-          scale: 0.12,
+          path: 'https://model.oml2d.com/Senko_Normals/senko.model3.json',
           position: [-10, 20],
           stageStyle: {
             width: 320,
@@ -41,22 +50,12 @@ onMounted(async () => {
         },
         {
           name: 'pio',
-          path: 'https://registry.npmmirror.com/oml2d-models/latest/files/models/Pio/model.json',
+          path: 'https://model.oml2d.com/Pio/model.json',
           scale: 0.4,
           position: [0, 50],
           stageStyle: {
             width: 320,
-            height: 350
-          }
-        },
-        {
-          name: 'cat-black',
-          path: 'https://registry.npmmirror.com/oml2d-models/latest/files/models/cat-black/model.json',
-          scale: 0.15,
-          position: [0, 20],
-          stageStyle: {
-            width: 320,
-            height: 350
+            height: 300
           }
         }
       ],

@@ -250,12 +250,12 @@ const skillCategories: SkillCategory[] = [
         className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-6 sm:p-8"
       >
         <div
-          class="w-15 h-15 sm:w-24 sm:h-24 rounded-full overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800 border-2 border-sky-200/80 dark:border-sky-800/60 shadow-md"
+          class="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden shrink-0 shadow-md"
         >
           <img
             src="/images/avatar.png"
             alt="lka"
-            class="w-full h-full object-cover rounded-full"
+            class="w-full h-full object-cover rounded-[20px] bg-sky-50 dark:bg-slate-800"
           />
         </div>
         <div class="space-y-2 text-center sm:text-left flex-1">

@@ -10,8 +10,7 @@ import {
   Menu,
   X,
   User,
-  Archive,
-  Sparkles
+  Archive
 } from 'lucide-vue-next'
 import ThemeToggle from './ThemeToggle.vue'
 import NavbarSearch from './NavbarSearch.vue'
@@ -95,40 +94,27 @@ onUnmounted(() => {
         ]"
       >
         <!-- 品牌标识 Logo -->
-        <NuxtLink to="/" class="flex items-center gap-2.5 group">
-          <div
+        <NuxtLink to="/" class="flex flex-col group py-0.5">
+          <span
             :class="[
-              'w-9 h-9 rounded-2xl flex items-center justify-center text-white shadow-md transition-all duration-300 group-hover:scale-105 group-hover:rotate-3',
+              'font-bold text-sm sm:text-base tracking-tight transition-colors',
               isTransparentMode
-                ? 'bg-white/25 backdrop-blur-md border border-white/30 text-white'
-                : 'bg-gradient-to-tr from-sky-500 via-sky-400 to-rose-400 shadow-sky-500/25'
+                ? 'text-white drop-shadow-md group-hover:text-sky-200'
+                : 'text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400'
             ]"
           >
-            <Sparkles class="w-4 h-4 text-sky-200" />
-          </div>
-
-          <div class="flex flex-col">
-            <span
-              :class="[
-                'font-bold text-sm tracking-tight transition-colors',
-                isTransparentMode
-                  ? 'text-white drop-shadow-md group-hover:text-sky-200'
-                  : 'text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400'
-              ]"
-            >
-              神秘花园
-            </span>
-            <span
-              :class="[
-                'text-[9px] font-mono uppercase tracking-widest leading-none font-semibold transition-colors',
-                isTransparentMode
-                  ? 'text-white/80 drop-shadow-xs'
-                  : 'text-sky-600/70 dark:text-sky-400/70'
-              ]"
-            >
-              Azure Garden
-            </span>
-          </div>
+            神秘花园
+          </span>
+          <span
+            :class="[
+              'text-[9px] font-mono uppercase tracking-widest leading-none font-semibold transition-colors',
+              isTransparentMode
+                ? 'text-white/80 drop-shadow-xs'
+                : 'text-sky-600/70 dark:text-sky-400/70'
+            ]"
+          >
+            Azure Garden
+          </span>
         </NuxtLink>
 
         <!-- 桌面端导航链接 -->

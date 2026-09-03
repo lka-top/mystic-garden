@@ -6,6 +6,8 @@ interface Props {
   title?: string
   subtitle?: string
   bgImage?: string
+  bgImageLight?: string
+  bgImageDark?: string
   height?: 'sm' | 'md' | 'lg' | 'full'
   showWave?: boolean
   showArrow?: boolean
@@ -14,10 +16,26 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   title: '神秘花园 · 晴空之下',
   subtitle: '漫步夏日微风 · 记录全栈探索 · 沉淀技术与美学思考',
-  bgImage: '/images/banner.png',
+  bgImage: undefined,
+  bgImageLight: '/images/banner-light.png',
+  bgImageDark: '/images/banner-night.png',
   height: 'lg',
   showWave: true,
   showArrow: undefined
+})
+
+const colorMode = useColorMode()
+
+const currentBgImage = computed(() => {
+  const isDark = colorMode.value === 'dark'
+  if (isDark) {
+    if (props.bgImageDark) return props.bgImageDark
+    if (props.bgImage && props.bgImage !== '/images/banner.png') return props.bgImage
+    return '/images/banner-night.png'
+  }
+  if (props.bgImageLight) return props.bgImageLight
+  if (props.bgImage && props.bgImage !== '/images/banner.png') return props.bgImage
+  return '/images/banner-light.png'
 })
 
 const isLarge = computed(() => props.height === 'lg' || props.height === 'full')
@@ -52,9 +70,9 @@ function scrollToContent() {
   <div :class="['relative w-full overflow-hidden select-none transition-all duration-500', heightClass]">
     <!-- 1. 背景壁纸大图 + 底部渐隐羽化蒙版 (从清晰到完全透明渐隐，透出下方全局壁纸) -->
     <div
-      class="absolute inset-0 bg-cover bg-no-repeat transition-transform duration-1000 ease-out transform scale-100"
+      class="absolute inset-0 bg-cover bg-no-repeat transition-all duration-700 ease-out transform scale-100"
       :style="{
-        backgroundImage: `url(${props.bgImage || '/images/banner.png'})`,
+        backgroundImage: `url(${currentBgImage})`,
         backgroundPosition: 'center 25%',
         maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)',
         WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)'

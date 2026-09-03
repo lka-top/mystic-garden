@@ -21,7 +21,7 @@ onMounted(async () => {
       models: [
         {
           name: 'cat-black',
-          path: 'https://model.oml2d.com/cat-black/model.json',
+          path: 'https://model.hacxy.cn/cat-black/model.json',
           scale: 0.15,
           position: [0, 20],
           stageStyle: {
@@ -31,31 +31,22 @@ onMounted(async () => {
         },
         {
           name: 'shizuku',
-          path: 'https://model.oml2d.com/shizuku/shizuku.model.json',
+          path: 'https://model.hacxy.cn/shizuku/shizuku.model.json',
           scale: 0.2,
-          position: [70, 70],
+          position: [0, 0],
           stageStyle: {
-            width: 400,
-            height: 370
+            width: 320,
+            height: 350
           }
         },
         {
-          name: 'senko',
-          path: 'https://model.oml2d.com/Senko_Normals/senko.model3.json',
-          position: [-10, 20],
+          name: 'umaru',
+          path: 'https://model.hacxy.cn/umaru/model.json',
+          scale: 0.18,
+          position: [0, 0],
           stageStyle: {
             width: 320,
-            height: 380
-          }
-        },
-        {
-          name: 'pio',
-          path: 'https://model.oml2d.com/Pio/model.json',
-          scale: 0.4,
-          position: [0, 50],
-          stageStyle: {
-            width: 320,
-            height: 300
+            height: 350
           }
         }
       ],

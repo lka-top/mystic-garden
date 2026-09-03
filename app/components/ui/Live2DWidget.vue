@@ -77,8 +77,15 @@ onMounted(async () => {
             }
           },
           {
+            icon: 'mdi:github',
+            label: 'GitHub 仓库',
+            onClick() {
+              window.open('https://github.com/hacxy/l2d-widget', '_blank')
+            }
+          },
+          {
             icon: 'mdi:information-outline',
-            label: '关于看板娘',
+            label: '官方文档',
             onClick() {
               window.open('https://oml2d.hacxy.cn/', '_blank')
             }

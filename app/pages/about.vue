@@ -255,7 +255,7 @@ const skillCategories: SkillCategory[] = [
           <img
             src="/images/avatar.png"
             alt="lka"
-            class="w-full h-full object-cover rounded-[20px] bg-sky-50 dark:bg-slate-800"
+            class="w-full h-full object-cover rounded-full"
           />
         </div>
         <div class="space-y-2 text-center sm:text-left flex-1">

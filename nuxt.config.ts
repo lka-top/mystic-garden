@@ -60,7 +60,8 @@ export default defineNuxtConfig({
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://mysgarden.top',
       icpNumber: process.env.NUXT_PUBLIC_ICP_NUMBER || '蜀ICP备2026049694号',
       authorName: 'lka',
-      authorBio: '全栈开发者 / 探索 Web 现代美学与工程架构'
+      authorBio: '全栈开发者 / 探索 Web 现代美学与工程架构',
+      authorAvatar: '/images/avatar.png'
     }
   },
 

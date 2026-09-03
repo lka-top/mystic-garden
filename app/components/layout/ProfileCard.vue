@@ -32,7 +32,7 @@ const stats = computed(() => statsRes.value?.data || { articles: 0, categories: 
     <div class="relative mb-4">
       <div class="w-20 h-20 sm:w-22 sm:h-22 rounded-3xl overflow-hidden p-1 bg-gradient-to-tr from-sky-500 via-sky-300 to-rose-400 shadow-md shadow-sky-500/20 transition-transform duration-500 group-hover:scale-105 group-hover:rotate-2">
         <img
-          src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80"
+          src="/images/avatar.png"
           :alt="authorName"
           class="w-full h-full object-cover rounded-[20px] bg-sky-50 dark:bg-slate-800"
         />

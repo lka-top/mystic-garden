@@ -17,8 +17,7 @@ async function main() {
       username: "admin",
       passwordHash,
       nickname: "lka",
-      avatar:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+      avatar: "/images/avatar.png",
       email: "admin@mysgarden.top",
       bio: "全栈开发者 / 探索 Web 现代美学与工程架构。",
       role: "admin",

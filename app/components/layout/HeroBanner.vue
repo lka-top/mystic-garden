@@ -24,18 +24,14 @@ const props = withDefaults(defineProps<Props>(), {
   showArrow: undefined
 })
 
-const colorMode = useColorMode()
-
-const currentBgImage = computed(() => {
-  const isDark = colorMode.value === 'dark'
-  if (isDark) {
-    if (props.bgImageDark) return props.bgImageDark
-    if (props.bgImage && props.bgImage !== '/images/banner.png') return props.bgImage
-    return '/images/banner-night.png'
-  }
-  if (props.bgImageLight) return props.bgImageLight
+const lightBannerImage = computed(() => {
   if (props.bgImage && props.bgImage !== '/images/banner.png') return props.bgImage
-  return '/images/banner-light.png'
+  return props.bgImageLight || '/images/banner-light.png'
+})
+
+const darkBannerImage = computed(() => {
+  if (props.bgImage && props.bgImage !== '/images/banner.png') return props.bgImage
+  return props.bgImageDark || '/images/banner-night.png'
 })
 
 const isLarge = computed(() => props.height === 'lg' || props.height === 'full')
@@ -68,11 +64,22 @@ function scrollToContent() {
 
 <template>
   <div :class="['relative w-full overflow-hidden select-none transition-all duration-500', heightClass]">
-    <!-- 1. 背景壁纸大图 + 底部渐隐羽化蒙版 (从清晰到完全透明渐隐，透出下方全局壁纸) -->
+    <!-- 1. 白天/浅色模式壁纸 (纯 CSS 原生控制，0ms 响应，零水合延迟) -->
     <div
-      class="absolute inset-0 bg-cover bg-no-repeat transition-all duration-700 ease-out transform scale-100"
+      class="absolute inset-0 bg-cover bg-no-repeat transition-opacity duration-700 ease-out opacity-100 dark:opacity-0 pointer-events-none transform scale-100"
       :style="{
-        backgroundImage: `url(${currentBgImage})`,
+        backgroundImage: `url(${lightBannerImage})`,
+        backgroundPosition: 'center 25%',
+        maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)',
+        WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)'
+      }"
+    />
+
+    <!-- 2. 黑夜/深色模式壁纸 (纯 CSS 原生控制，在 Night 模式打开瞬间 0 延迟生效) -->
+    <div
+      class="absolute inset-0 bg-cover bg-no-repeat transition-opacity duration-700 ease-out opacity-0 dark:opacity-100 pointer-events-none transform scale-100"
+      :style="{
+        backgroundImage: `url(${darkBannerImage})`,
         backgroundPosition: 'center 25%',
         maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)',
         WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)'
@@ -110,14 +117,20 @@ function scrollToContent() {
               : 'text-2xl sm:text-3xl lg:text-4xl'
           ]"
         >
-          <span class="bg-gradient-to-r from-white via-sky-100 to-rose-100 bg-clip-text text-transparent">
+          <span class="bg-gradient-to-r from-white via-sky-100 to-rose-100 bg-clip-text text-transparent block dark:hidden">
             {{ title }}
+          </span>
+          <span class="bg-gradient-to-r from-white via-indigo-100 to-purple-200 bg-clip-text text-transparent hidden dark:block">
+            {{ title === '神秘花园 · 晴空之下' ? '神秘花园 · 星夜之畔' : title }}
           </span>
         </h1>
 
         <!-- 副标题 / 描述 -->
-        <p class="text-xs sm:text-sm text-sky-50/90 font-light drop-shadow-md tracking-wider max-w-xl mx-auto leading-relaxed">
+        <p class="text-xs sm:text-sm text-sky-50/90 font-light drop-shadow-md tracking-wider max-w-xl mx-auto leading-relaxed block dark:hidden">
           {{ subtitle }}
+        </p>
+        <p class="text-xs sm:text-sm text-indigo-100/90 font-light drop-shadow-md tracking-wider max-w-xl mx-auto leading-relaxed hidden dark:block">
+          {{ subtitle === '漫步夏日微风 · 记录全栈探索 · 沉淀技术与美学思考' ? '仰望浩瀚星海 · 记录全栈探索 · 沉淀技术与美学思考' : subtitle }}
         </p>
 
         <!-- 向下滚动指引箭头 -->

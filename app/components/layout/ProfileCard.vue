@@ -97,7 +97,7 @@ const stats = computed(() => statsRes.value?.data || { articles: 0, categories: 
         <Github class="w-4 h-4" />
       </a>
       <a
-        href="https://space.bilibili.com"
+        href="https://space.bilibili.com/190840886"
         target="_blank"
         rel="noopener noreferrer"
         class="p-2.5 rounded-full bg-pink-50 dark:bg-pink-950/40 text-[#FB7299] hover:text-white hover:bg-[#FB7299] transition-all duration-200 hover:scale-110 shadow-xs"

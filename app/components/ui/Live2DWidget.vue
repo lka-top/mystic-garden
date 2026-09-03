@@ -102,6 +102,15 @@ onMounted(async () => {
                 }
               }
             }
+            if (item.id === 'About' || item.title === '关于' || item.title?.includes('关于') || item.icon?.includes('about')) {
+              return {
+                ...item,
+                title: '关于 oh-my-live2d',
+                onClick: () => {
+                  window.open('https://oml2d.hacxy.cn/', '_blank')
+                }
+              }
+            }
             return item
           })
         }

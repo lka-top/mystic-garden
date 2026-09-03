@@ -297,7 +297,7 @@ const skillCategories: SkillCategory[] = [
               <BrandIcon name="github" :size="16" />
             </a>
             <a
-              href="https://space.bilibili.com"
+              href="https://space.bilibili.com/190840886"
               target="_blank"
               rel="noopener noreferrer"
               class="p-2 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-[#FB7299] hover:bg-[#FB7299] hover:text-white transition-all duration-200 hover:scale-110 shadow-xs"

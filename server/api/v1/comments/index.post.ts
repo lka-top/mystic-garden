@@ -1,8 +1,8 @@
 import { z } from 'zod'
-import { prisma } from '~/server/utils/prisma'
-import { successResponse } from '~/server/utils/response'
-import { tryGetAuthUser } from '~/server/utils/auth'
-import { readValidated, getClientIp, getClientUa } from '~/server/utils/validate'
+import { prisma } from '~~/server/utils/prisma'
+import { successResponse } from '~~/server/utils/response'
+import { tryGetAuthUser } from '~~/server/utils/auth'
+import { readValidated, getClientIp, getClientUa } from '~~/server/utils/validate'
 
 const CreateCommentSchema = z.object({
   targetType: z.enum(['article', 'essay', 'guestbook']).default('article'),

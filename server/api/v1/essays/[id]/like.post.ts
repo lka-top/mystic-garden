@@ -1,6 +1,6 @@
-import { prisma } from '~/server/utils/prisma'
-import { successResponse } from '~/server/utils/response'
-import { parseIdParam } from '~/server/utils/validate'
+import { prisma } from '~~/server/utils/prisma'
+import { successResponse } from '~~/server/utils/response'
+import { parseIdParam } from '~~/server/utils/validate'
 
 export default defineEventHandler(async (event) => {
   const id = parseIdParam(event)

@@ -1,8 +1,8 @@
 import { z } from 'zod'
-import { prisma } from '~/server/utils/prisma'
-import { requireAdminUser } from '~/server/utils/auth'
-import { successResponse } from '~/server/utils/response'
-import { readValidated } from '~/server/utils/validate'
+import { prisma } from '~~/server/utils/prisma'
+import { requireAdminUser } from '~~/server/utils/auth'
+import { successResponse } from '~~/server/utils/response'
+import { readValidated } from '~~/server/utils/validate'
 
 const CreateCategorySchema = z.object({
   name: z.string().min(1, '分类名称不能为空').max(50, '分类名称最多50个字符'),

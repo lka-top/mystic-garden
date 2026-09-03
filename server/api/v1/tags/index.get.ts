@@ -1,5 +1,5 @@
-import { prisma } from '~/server/utils/prisma'
-import { successResponse } from '~/server/utils/response'
+import { prisma } from '~~/server/utils/prisma'
+import { successResponse } from '~~/server/utils/response'
 
 export default defineEventHandler(async () => {
   const tags = await prisma.tag.findMany({

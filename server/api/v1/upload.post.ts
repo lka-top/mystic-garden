@@ -1,8 +1,8 @@
 import path from 'node:path'
 import crypto from 'node:crypto'
-import { requireAdminUser } from '~/server/utils/auth'
-import { successResponse } from '~/server/utils/response'
-import { uploadFileToStorage } from '~/server/utils/storage'
+import { requireAdminUser } from '~~/server/utils/auth'
+import { successResponse } from '~~/server/utils/response'
+import { uploadFileToStorage } from '~~/server/utils/storage'
 
 export default defineEventHandler(async (event) => {
   requireAdminUser(event)

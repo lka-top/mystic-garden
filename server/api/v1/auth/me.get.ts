@@ -1,6 +1,6 @@
-import { prisma } from '~/server/utils/prisma'
-import { requireAdminUser } from '~/server/utils/auth'
-import { successResponse } from '~/server/utils/response'
+import { prisma } from '~~/server/utils/prisma'
+import { requireAdminUser } from '~~/server/utils/auth'
+import { successResponse } from '~~/server/utils/response'
 
 export default defineEventHandler(async (event) => {
   const authUser = requireAdminUser(event)

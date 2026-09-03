@@ -1,9 +1,9 @@
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
-import { prisma } from '~/server/utils/prisma'
-import { signAuthToken } from '~/server/utils/auth'
-import { successResponse } from '~/server/utils/response'
-import { readValidated } from '~/server/utils/validate'
+import { prisma } from '~~/server/utils/prisma'
+import { signAuthToken } from '~~/server/utils/auth'
+import { successResponse } from '~~/server/utils/response'
+import { readValidated } from '~~/server/utils/validate'
 
 const LoginSchema = z.object({
   username: z.string().min(1, '请输入用户名'),

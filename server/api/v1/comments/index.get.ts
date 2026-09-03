@@ -1,8 +1,8 @@
 import type { Prisma } from '@prisma/client'
 import { z } from 'zod'
-import { prisma } from '~/server/utils/prisma'
-import { paginationResponse } from '~/server/utils/response'
-import { applyApprovalFilter, isAdminAllRequest } from '~/server/utils/pagination'
+import { prisma } from '~~/server/utils/prisma'
+import { paginationResponse } from '~~/server/utils/response'
+import { applyApprovalFilter, isAdminAllRequest } from '~~/server/utils/pagination'
 
 const QuerySchema = z.object({
   targetType: z.enum(['article', 'essay', 'guestbook']).default('article'),

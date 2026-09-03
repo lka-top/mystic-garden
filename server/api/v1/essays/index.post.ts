@@ -1,8 +1,8 @@
 import { z } from 'zod'
-import { prisma } from '~/server/utils/prisma'
-import { requireAdminUser } from '~/server/utils/auth'
-import { successResponse } from '~/server/utils/response'
-import { readValidated } from '~/server/utils/validate'
+import { prisma } from '~~/server/utils/prisma'
+import { requireAdminUser } from '~~/server/utils/auth'
+import { successResponse } from '~~/server/utils/response'
+import { readValidated } from '~~/server/utils/validate'
 
 const CreateEssaySchema = z.object({
   content: z.string().min(1, '随笔内容不能为空'),

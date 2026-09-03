@@ -1,10 +1,10 @@
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 import type { Prisma } from '@prisma/client'
-import { prisma } from '~/server/utils/prisma'
-import { successResponse } from '~/server/utils/response'
-import { signAuthToken } from '~/server/utils/auth'
-import { readValidated, getClientIp, getClientUa } from '~/server/utils/validate'
+import { prisma } from '~~/server/utils/prisma'
+import { successResponse } from '~~/server/utils/response'
+import { signAuthToken } from '~~/server/utils/auth'
+import { readValidated, getClientIp, getClientUa } from '~~/server/utils/validate'
 
 const RegisterSchema = z.object({
   username: z.string().min(3, '用户名至少 3 个字符').max(30, '用户名最多 30 个字符').regex(/^[a-zA-Z0-9_-]+$/, '用户名仅支持字母、数字、下划线及连字符'),

@@ -1,8 +1,8 @@
 import { z } from 'zod'
-import { prisma } from '~/server/utils/prisma'
-import { requireAdminUser } from '~/server/utils/auth'
-import { successResponse } from '~/server/utils/response'
-import { readValidated } from '~/server/utils/validate'
+import { prisma } from '~~/server/utils/prisma'
+import { requireAdminUser } from '~~/server/utils/auth'
+import { successResponse } from '~~/server/utils/response'
+import { readValidated } from '~~/server/utils/validate'
 
 const CreateArticleSchema = z.object({
   slug: z.string().min(2, 'Slug 长度至少 2 个字符'),

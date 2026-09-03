@@ -4,14 +4,16 @@ import typography from '@tailwindcss/typography'
 export default {
   darkMode: 'class',
   content: [
-    './components/**/*.{js,vue,ts}',
-    './layouts/**/*.vue',
-    './pages/**/*.vue',
-    './plugins/**/*.{js,ts}',
-    './app.vue',
-    './utils/**/*.{js,ts}',
-    './composables/**/*.{js,ts}',
-    './error.vue'
+    './app/**/*.{js,vue,ts}',
+    './app/components/**/*.{js,vue,ts}',
+    './app/layouts/**/*.vue',
+    './app/pages/**/*.vue',
+    './app/plugins/**/*.{js,ts}',
+    './app/app.vue',
+    './app/error.vue',
+    './app/utils/**/*.{js,ts}',
+    './app/composables/**/*.{js,ts}',
+    './shared/**/*.{js,ts}'
   ],
   theme: {
     extend: {

@@ -46,7 +46,7 @@ function handleGetCatalog(list: Array<{ text: string; level: number }>) {
         code-theme="atom"
         :marked-heading-id="headingIdGenerator"
         :show-code-row-number="true"
-        class="bg-transparent! p-0!"
+        class="!bg-transparent !p-0"
         @on-get-catalog="handleGetCatalog"
       />
       <template #fallback>
@@ -59,16 +59,26 @@ function handleGetCatalog(list: Array<{ text: string; level: number }>) {
 </template>
 
 <style>
-/* md-editor-v3 沉浸式透明背景与样式定制 */
-.md-preview-wrapper .md-editor-preview-wrapper {
+/* md-editor-v3 沉浸式透明背景与样式定制：完全融入外层 md3-card */
+.md-preview-wrapper .md-editor,
+.md-preview-wrapper .md-editor-previewOnly,
+.md-preview-wrapper .md-editor-preview-wrapper,
+.md-preview-wrapper .md-editor-preview {
   padding: 0 !important;
   background-color: transparent !important;
+  background: transparent !important;
+}
+
+.md-preview-wrapper .md-editor {
+  --md-bk-color: transparent !important;
+  --md-theme-bg-color: transparent !important;
 }
 
 .md-preview-wrapper .default-theme {
   font-family: inherit !important;
   color: inherit !important;
   line-height: 1.8 !important;
+  background-color: transparent !important;
 }
 
 .md-preview-wrapper .default-theme p {
@@ -82,6 +92,28 @@ function handleGetCatalog(list: Array<{ text: string; level: number }>) {
   scroll-margin-top: 5.5rem;
   font-weight: 800 !important;
   letter-spacing: -0.025em !important;
+}
+
+/* 引用块 Blockquote 适配轻透风格 */
+.md-preview-wrapper div.default-theme blockquote {
+  background-color: rgba(14, 165, 233, 0.05) !important;
+  border-inline-start: 4px solid #0ea5e9 !important;
+  border-radius: 0 0.75rem 0.75rem 0;
+  padding: 0.75rem 1.25rem !important;
+}
+
+.dark .md-preview-wrapper div.default-theme blockquote {
+  background-color: rgba(56, 189, 248, 0.08) !important;
+  border-inline-start-color: #38bdf8 !important;
+}
+
+/* 表格适配轻透斑马纹 */
+.md-preview-wrapper div.default-theme table tr:nth-child(2n) {
+  background-color: rgba(241, 245, 249, 0.4) !important;
+}
+
+.dark .md-preview-wrapper div.default-theme table tr:nth-child(2n) {
+  background-color: rgba(30, 41, 59, 0.3) !important;
 }
 
 /* 代码块美化与圆角 */

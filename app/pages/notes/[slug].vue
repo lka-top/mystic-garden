@@ -65,8 +65,8 @@ useSeoMeta({
         </div>
       </div>
 
-      <!-- 笔记正文卡片 -->
-      <article class="md3-card p-6 sm:p-10 space-y-6">
+      <!-- 笔记正文卡片 (采用实体纯色卡片，统一为组件 3 纯白/深色实底) -->
+      <article class="md3-card-solid p-6 sm:p-10 space-y-6">
         <MarkdownRenderer :content="note.content || ''" />
 
         <div class="pt-4 border-t border-sky-100/60 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-400 font-mono">

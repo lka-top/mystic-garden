@@ -17,21 +17,21 @@ const props = withDefaults(defineProps<Props>(), {
   title: '神秘花园 · 晴空之下',
   subtitle: '漫步夏日微风 · 记录全栈探索 · 沉淀技术与美学思考',
   bgImage: undefined,
-  bgImageLight: '/images/banner-light.png',
-  bgImageDark: '/images/banner-night.png',
+  bgImageLight: '/images/banner-light.webp',
+  bgImageDark: '/images/banner-night.webp',
   height: 'lg',
   showWave: true,
   showArrow: undefined
 })
 
 const lightBannerImage = computed(() => {
-  if (props.bgImage && props.bgImage !== '/images/banner.png') return props.bgImage
-  return props.bgImageLight || '/images/banner-light.png'
+  if (props.bgImage && props.bgImage !== '/images/banner.webp') return props.bgImage
+  return props.bgImageLight || '/images/banner-light.webp'
 })
 
 const darkBannerImage = computed(() => {
-  if (props.bgImage && props.bgImage !== '/images/banner.png') return props.bgImage
-  return props.bgImageDark || '/images/banner-night.png'
+  if (props.bgImage && props.bgImage !== '/images/banner.webp') return props.bgImage
+  return props.bgImageDark || '/images/banner-night.webp'
 })
 
 const isLarge = computed(() => props.height === 'lg' || props.height === 'full')

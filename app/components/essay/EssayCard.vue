@@ -69,7 +69,7 @@ async function handleLike() {
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
           <img
-            :src="essay.author?.avatar || ''"
+            :src="essay.author?.avatar || '/images/avatar.webp'"
             :alt="essay.author?.nickname || 'lka'"
             class="w-full h-full object-cover"
           >

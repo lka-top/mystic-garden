@@ -253,7 +253,7 @@ const skillCategories: SkillCategory[] = [
           class="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden shrink-0 shadow-md"
         >
           <img
-            src="/images/avatar.png"
+            src="/images/avatar.webp"
             alt="lka"
             class="w-full h-full object-cover rounded-full"
           />

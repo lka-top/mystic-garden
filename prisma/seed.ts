@@ -17,7 +17,7 @@ async function main() {
       username: "admin",
       passwordHash,
       nickname: "lka",
-      avatar: "/images/avatar.png",
+      avatar: "/images/avatar.webp",
       email: "admin@mysgarden.top",
       bio: "全栈开发者 / 探索 Web 现代美学与工程架构。",
       role: "admin",
@@ -139,7 +139,7 @@ interface DigitalGarden {
 - **极致速度**：SSR 服务端渲染 + 资源强缓存，秒开体验。
 
 欢迎常来逛逛，在下方留言交流！`,
-      coverImage: "/images/banner.png",
+      coverImage: "/images/banner-light.webp",
       isPinned: true,
       isPublished: true,
       views: 342,

@@ -30,7 +30,7 @@ onMounted(() => {
     <!-- 🖼️ 全局主视觉壁纸背景 (固定视口平铺) -->
     <div
       class="fixed inset-0 pointer-events-none bg-cover bg-center bg-no-repeat bg-fixed z-0 transition-opacity duration-700"
-      style="background-image: url('/images/bg-main.png');"
+      style="background-image: url('/images/bg-main.webp');"
     />
 
     <!-- 🌌 通透毛玻璃与光影滤镜蒙层 (亮色晶莹通透 / 暗色深邃沉浸) -->

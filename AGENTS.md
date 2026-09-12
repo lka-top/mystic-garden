@@ -141,7 +141,7 @@ NUXT_PUBLIC_SITE_URL="http://localhost:3000"
 
 ## 6. 协同与交付
 
-1. **任务跟踪**：多步骤复杂任务使用 `task.md` 维护执行清单与进度。
+1. **任务跟踪**：多步骤复杂任务使用 `docs/ROADMAP.md` 维护执行清单与进度。
 2. **文件引用**：交付说明中的文件路径使用 Markdown 链接（如 [`nuxt.config.ts`](file:///d:/luo_kai_blog/nuxt.config.ts)），确保可点击导航。
 3. **修改验证**：代码修改后应确认构建通过或开发服务器无报错。
 
@@ -162,4 +162,3 @@ NUXT_PUBLIC_SITE_URL="http://localhost:3000"
 
 4. **每次回答附带相关链接（Relevant Links & References）**：
    - 每次回答用户问题、提供技术建议、介绍云服务权益或活动方案时，**必须主动附带准确、相关的官方文档、活动入口或项目内链接**（如官网地址、活动页面、控制台入口、GitHub 仓库等），方便用户一键查阅和跳转操作。
-

@@ -43,6 +43,38 @@ git push origin main
 ```
 等待约 **2~3 分钟**，刷新网页即可看到更新。
 
+### 1.2 本地知识库同步
+
+在博客项目根目录运行：
+
+```bash
+pnpm sync:notes
+```
+
+首次会扫描所有 Markdown；之后状态文件 `.cache/notebook-sync-state.json` 会按 SHA-256 跳过未修改的 Markdown 和图片。图片以默认 4 路并发上传，终端会显示每个正在传输的文件；单张超过 10 MB 会跳过并保留原 Markdown 引用。请求默认 60 秒超时、失败最多尝试 3 次，可在本地 `.env` 覆盖 `NOTE_SYNC_UPLOAD_CONCURRENCY`、`NOTE_SYNC_REQUEST_TIMEOUT_MS`、`NOTE_SYNC_RETRY_COUNT` 和 `NOTE_SYNC_MAX_IMAGE_SIZE_MB`。
+
+需要强制重新提交所有 Markdown 时运行：
+
+```bash
+pnpm sync:notes --full
+```
+
+使用生产站点前，确认本地 `.env` 的 `NOTE_SYNC_URL` 是 `https://mysgarden.top/api/v1/notes/sync`，且 `NOTE_SYNC_TOKEN` 与服务器一致。状态文件不应提交到 Git。
+
+### 1.3 Obsidian 与复制粘贴内容的当前边界
+
+当前同步器只将标准 Markdown 图片 `![](image.png)` 与 Obsidian 图片嵌入 `![[image.png]]` 上传到网站。PDF、音频、视频、Obsidian Canvas、`data:` 内嵌资源和其他附件不会作为图片上传；远程图片 URL 会保持原样。超过上限的本地图片也会保留原始引用并打印警告，避免静默丢失笔记内容。
+
+从网页复制的笔记常包含失效 URL、`data:` 图片或不规范的附件嵌入。同步前先在 Obsidian 预览该笔记；终端出现 `⚠️` 时，修复对应文件后再运行同步。附件公开策略、复制内容自动清理和同步前预览属于后续待办，详见 `ROADMAP.md`，当前不要把它们当作已支持功能。
+
+### 1.4 每次发布后的最小检查
+
+1. 在 GitHub Actions 确认镜像构建成功；
+2. 在 ECS 执行 `docker compose ps`，确认 `app`、`nginx`、`mysql` 均为运行状态；
+3. 访问首页、`/notes`，并上传一张小图片确认 `/uploads/` 返回 200；
+4. 首次同步或大批量同步后，检查终端汇总中的新增、更新、跳过和警告数量；
+5. 不要因单篇笔记错误直接重复全量同步；先修复警告对应文件，普通重跑会使用增量状态。
+
 ---
 
 ## 二、数据备份与容灾恢复（MySQL 与上传附件）
@@ -76,6 +108,14 @@ docker run --rm -v luokai_uploads_data:/from:ro -v /data/luokai-blog/uploads:/to
 
 - 在服务器 `.env` 配置 `BACKUP_SSH_TARGET`、`BACKUP_REMOTE_DIR` 和 SSH 私钥；先手动运行一次 `sh scripts/backup.sh`，确认 NAS 中有同名备份目录后，再通过 cron 每日执行。
 
+- 建议每月做一次恢复演练：在隔离目录启动临时 MySQL，导入最近 SQL 备份，并抽查归档中的 `uploads` 文件数量与 SHA-256 清单。备份“存在”不等于可恢复。
+
+推荐每日凌晨执行备份（先在服务器以实际路径验证一次）：
+
+```cron
+20 3 * * * cd /app/mystic-garden && /bin/sh scripts/backup.sh >> /var/log/mystic-garden-backup.log 2>&1
+```
+
 ### 2.3 OSS 历史图片迁移与回滚
 
 切换到本地存储前，先保留 OSS 凭证和旧域名配置，执行：
@@ -97,7 +137,7 @@ docker exec -i luokai-mysql mysql -u root -pLuokaiSecureRoot2025! luokai_blog < 
 
 ## 三、服务器迁移标准作业程序（SOP）
 
-当服务器到期不续费、需要升级配置或更换云厂商时，按本章流程可实现 **0 停机、数据 0 丢失平滑迁移**。
+当服务器到期不续费、需要升级配置或更换云厂商时，按本章流程可实现短暂 DNS 切换、数据可回滚的迁移。不要承诺绝对零停机：数据库最终导出到 DNS 生效期间仍可能产生少量新评论或访问记录。
 
 ```mermaid
 sequenceDiagram
@@ -119,6 +159,8 @@ sequenceDiagram
 
 ### 3.1 场景 A：阿里云同平台更换/升级服务器
 
+迁移前准备：将 DNS TTL 暂时调低；确认最近一次异地备份可读取；保留旧服务器和 OSS（如仍在使用）至少 7 天；记录当前镜像标签、`docker-compose.yml`、`.env`、Nginx 配置和证书目录。
+
 #### 步骤 1：旧服务器数据导出
 ```bash
 # 登录旧服务器
@@ -132,8 +174,9 @@ docker exec luokai-mysql mysqldump -u root -pLuokaiSecureRoot2025! luokai_blog >
 # 1. 安装 Docker（如果新机器未预装）
 curl -fsSL https://get.docker.com | bash
 
-# 2. 创建目录
+# 2. 创建项目与本地图片持久化目录（1001 是应用容器运行用户）
 mkdir -p /app/mystic-garden/nginx/conf.d /app/mystic-garden/certbot/conf /app/mystic-garden/certbot/www
+install -d -o 1001 -g 1001 /data/luokai-blog/uploads
 cd /app/mystic-garden
 
 # 3. 登录 ACR 镜像仓库
@@ -144,14 +187,19 @@ docker login --username=您的ACR用户名 crpi-81wstmjlihs5q8t3.cn-chengdu.pers
 # 可直接从 GitHub 极速下载：
 curl -o docker-compose.yml https://raw.githubusercontent.com/lka-top/mystic-garden/main/docker-compose.yml
 
-# 5. 启动全部服务
+# 5. 从安全备份恢复 .env、Nginx 配置和图片目录后，启动全部服务
 docker compose up -d
 ```
+
+不要把 `.env`、证书私钥或 SSH 私钥提交到 Git。新机器使用 GitHub/ACR 的镜像发布流程；ECS 本地图片目录必须从旧机或 NAS 复制到 `/data/luokai-blog/uploads`。
 
 #### 步骤 3：导入数据至新服务器
 ```bash
 # 将旧服务器的 mystic_backup.sql 复制到新服务器后执行：
 docker exec -i luokai-mysql mysql -u root -pLuokaiSecureRoot2025! luokai_blog < mystic_backup.sql
+
+# 同步本地图片目录（在确认旧站停止写入图片后执行）
+rsync -aHAX --info=progress2 root@旧服务器:/data/luokai-blog/uploads/ /data/luokai-blog/uploads/
 ```
 
 #### 步骤 4：切换 DNS 解析
@@ -171,6 +219,13 @@ docker compose exec nginx nginx -s reload
 #### 步骤 6：合规信息更新
 - **工信部备案**：无需重新备案（同在阿里云机房，自动放行）。
 - **公安备案**：登录 [全国公安联网备案系统](https://beian.mps.gov.cn/)，在网站列表点击“变更信息”，将服务器 IP 修改为新 IP 即可。
+
+#### 步骤 7：切换后验证与回滚窗口
+
+1. 在新机检查 `docker compose ps`、首页、登录、`/notes`、图片 URL 和数据库记录；
+2. 运行一次 `sh scripts/backup.sh`，确认异地备份可达；
+3. 保留旧服务器只读运行至少 7 天；
+4. 若新站异常，将 DNS A 记录切回旧服务器，并停止向新站写入数据，再根据故障原因重试迁移。
 
 ---
 

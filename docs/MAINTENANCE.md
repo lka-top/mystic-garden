@@ -43,7 +43,27 @@ git push origin main
 ```
 等待约 **2~3 分钟**，刷新网页即可看到更新。
 
-### 1.2 本地知识库同步
+### 1.2 自动发布边界
+
+GitHub Actions 只在应用源码、服务端、Prisma、受版本控制的静态资源、依赖或镜像构建配置变化时构建镜像；文档、路线图、Git 忽略规则等不会触发 CI/CD。
+
+Watchtower 的职责只有一件事：检测 ACR 中 `latest` 镜像的新摘要，拉取镜像并重建 `luokai-blog-app` 容器。它不会读取 Git 仓库，也不会重新加载 `docker-compose.yml`。因此以下变更不能仅靠推送 Git 生效：
+
+- 容器挂载、端口、环境变量、网络与服务定义：`docker-compose.yml`；
+- Nginx 反向代理、TLS 与静态目录：`nginx/conf.d/`；
+- ECS 上的 `.env`、证书和 `/data/luokai-blog/uploads`。
+
+完成上述运行环境变更后，在 ECS 项目目录执行：
+
+```bash
+docker compose config -q
+docker compose up -d
+docker compose ps
+```
+
+`docker compose up -d` 会比较 Compose 定义与现有容器，并仅重建配置发生变化的服务；图片和 MySQL 数据由宿主机目录/命名卷持久化，不会因应用容器重建而删除。
+
+### 1.3 本地知识库同步
 
 在博客项目根目录运行：
 
@@ -61,13 +81,13 @@ pnpm sync:notes --full
 
 使用生产站点前，确认本地 `.env` 的 `NOTE_SYNC_URL` 是 `https://mysgarden.top/api/v1/notes/sync`，且 `NOTE_SYNC_TOKEN` 与服务器一致。状态文件不应提交到 Git。
 
-### 1.3 Obsidian 与复制粘贴内容的当前边界
+### 1.4 Obsidian 与复制粘贴内容的当前边界
 
 当前同步器只将标准 Markdown 图片 `![](image.png)` 与 Obsidian 图片嵌入 `![[image.png]]` 上传到网站。PDF、音频、视频、Obsidian Canvas、`data:` 内嵌资源和其他附件不会作为图片上传；远程图片 URL 会保持原样。超过上限的本地图片也会保留原始引用并打印警告，避免静默丢失笔记内容。
 
 从网页复制的笔记常包含失效 URL、`data:` 图片或不规范的附件嵌入。同步前先在 Obsidian 预览该笔记；终端出现 `⚠️` 时，修复对应文件后再运行同步。附件公开策略、复制内容自动清理和同步前预览属于后续待办，详见 `ROADMAP.md`，当前不要把它们当作已支持功能。
 
-### 1.4 每次发布后的最小检查
+### 1.5 每次发布后的最小检查
 
 1. 在 GitHub Actions 确认镜像构建成功；
 2. 在 ECS 执行 `docker compose ps`，确认 `app`、`nginx`、`mysql` 均为运行状态；

@@ -4,11 +4,21 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.gitignore'
-      - 'LICENSE'
+    paths:
+      - 'app/**'
+      - 'server/**'
+      - 'shared/**'
+      - 'prisma/**'
+      - 'public/**'
+      - 'Dockerfile'
+      - 'docker-entrypoint.sh'
+      - 'nuxt.config.ts'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'tsconfig.json'
+      - 'tailwind.config.ts'
+      - '.dockerignore'
   workflow_dispatch: # 支持在 GitHub 网页端手动点击触发
 
 concurrency:

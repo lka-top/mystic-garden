@@ -6,20 +6,48 @@ on:
       - main
       - master
       - dev
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.gitignore'
-      - 'LICENSE'
+    paths:
+      - 'app/**'
+      - 'server/**'
+      - 'shared/**'
+      - 'prisma/**'
+      - 'public/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'Dockerfile'
+      - 'docker-entrypoint.sh'
+      - 'nuxt.config.ts'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'tsconfig.json'
+      - 'tailwind.config.ts'
+      - 'eslint.config.mjs'
+      - 'vitest.config.ts'
+      - '.github/workflows/ci.yml'
   pull_request:
     branches:
       - main
       - master
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.gitignore'
-      - 'LICENSE'
+    paths:
+      - 'app/**'
+      - 'server/**'
+      - 'shared/**'
+      - 'prisma/**'
+      - 'public/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'Dockerfile'
+      - 'docker-entrypoint.sh'
+      - 'nuxt.config.ts'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'tsconfig.json'
+      - 'tailwind.config.ts'
+      - 'eslint.config.mjs'
+      - 'vitest.config.ts'
+      - '.github/workflows/ci.yml'
   workflow_dispatch:
 
 concurrency:

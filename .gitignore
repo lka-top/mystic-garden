@@ -30,3 +30,6 @@ Thumbs.db
 # Tooling and temporary caches
 .dsh-vision-toolkit/
 *.tsbuildinfo
+
+# Runtime uploads: production files live on the ECS host, never in Git.
+public/uploads/

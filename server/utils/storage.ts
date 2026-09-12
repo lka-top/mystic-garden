@@ -1,74 +1,165 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import crypto from 'node:crypto'
+import type OSS from 'ali-oss'
 
-/**
- * 获取初始化的 S3 客户端实例（若未配置环境变量则返回 null）
- */
-function getS3Client(): { client: S3Client; bucket: string; publicDomain: string } | null {
-  const endpoint = process.env.S3_ENDPOINT
-  const accessKeyId = process.env.S3_ACCESS_KEY_ID
-  const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY
-  const bucket = process.env.S3_BUCKET_NAME
-  const publicDomain = process.env.S3_PUBLIC_DOMAIN || ''
-  const region = process.env.S3_REGION || 'auto'
+export type StorageScope = 'admin' | 'notes'
+export type StorageDriver = 'local' | 'oss'
 
-  if (!endpoint || !accessKeyId || !secretAccessKey || !bucket) {
-    return null
-  }
+interface OssStorageConfig {
+  client: OSS
+  publicDomain: string
+}
 
-  const client = new S3Client({
+const STORAGE_PREFIX = 'uploads'
+
+function getStorageDriver(): StorageDriver {
+  return process.env.STORAGE_DRIVER === 'oss' ? 'oss' : 'local'
+}
+
+function toOssRegion(value: string | undefined): string {
+  if (!value) return 'oss-cn-hangzhou'
+  return value.startsWith('oss-') ? value : `oss-${value}`
+}
+
+function hasOssStorageConfiguration(): boolean {
+  const accessKeyId = process.env.OSS_ACCESS_KEY_ID || process.env.S3_ACCESS_KEY_ID
+  const accessKeySecret = process.env.OSS_ACCESS_KEY_SECRET || process.env.S3_SECRET_ACCESS_KEY
+  const bucket = process.env.OSS_BUCKET || process.env.S3_BUCKET_NAME
+  return Boolean(accessKeyId && accessKeySecret && bucket)
+}
+
+async function getOssStorageConfig(): Promise<OssStorageConfig | null> {
+  const endpoint = process.env.OSS_ENDPOINT || process.env.S3_ENDPOINT
+  const accessKeyId = process.env.OSS_ACCESS_KEY_ID || process.env.S3_ACCESS_KEY_ID
+  const accessKeySecret = process.env.OSS_ACCESS_KEY_SECRET || process.env.S3_SECRET_ACCESS_KEY
+  const bucket = process.env.OSS_BUCKET || process.env.S3_BUCKET_NAME
+  const region = toOssRegion(process.env.OSS_REGION || process.env.S3_REGION)
+  const publicDomain = process.env.OSS_PUBLIC_DOMAIN || process.env.S3_PUBLIC_DOMAIN || ''
+
+  if (!accessKeyId || !accessKeySecret || !bucket) return null
+
+  const { default: OssClient } = await import('ali-oss') as { default: typeof OSS }
+  const client = new OssClient({
     region,
-    endpoint,
-    credentials: {
-      accessKeyId,
-      secretAccessKey
-    }
+    bucket,
+    ...(endpoint ? { endpoint } : {}),
+    accessKeyId,
+    accessKeySecret,
+    secure: true,
+    authorizationV4: true
   })
 
-  return { client, bucket, publicDomain }
+  const endpointDomain = endpoint?.replace(/^https?:\/\//, '').replace(/\/+$/, '')
+  const derivedPublicDomain = endpointDomain ? `https://${bucket}.${endpointDomain}` : `https://${bucket}.${region}.aliyuncs.com`
+  return { client, publicDomain: (publicDomain || derivedPublicDomain).replace(/\/+$/, '') }
+}
+
+function getLocalUploadDirectory(): string {
+  return process.env.UPLOAD_DIR || path.resolve(process.cwd(), 'public', STORAGE_PREFIX)
+}
+
+function getLocalPublicBaseUrl(): string {
+  return (process.env.UPLOAD_PUBLIC_BASE_URL || `/${STORAGE_PREFIX}`).replace(/\/+$/, '')
+}
+
+function getMonthPrefix(scope: StorageScope): string {
+  const date = new Date()
+  return `${STORAGE_PREFIX}/${scope}/${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}`
+}
+
+function normalizeFilename(filename: string): string {
+  const baseName = path.basename(filename)
+  return baseName.replace(/[^a-zA-Z0-9._-]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '') || 'image'
+}
+
+function toPublicUrl(publicDomain: string, objectKey: string): string {
+  return `${publicDomain}/${objectKey.split('/').map(segment => encodeURIComponent(segment)).join('/')}`
+}
+
+/** 将 provider 内部 key 转为本地 uploads 根目录下的安全相对路径。 */
+export function getLocalRelativePath(objectKey: string): string {
+  const prefix = `${STORAGE_PREFIX}/`
+  if (!objectKey.startsWith(prefix)) {
+    throw new Error(`无效的上传对象路径：${objectKey}`)
+  }
+
+  const relativePath = objectKey.slice(prefix.length)
+  const normalizedPath = path.posix.normalize(relativePath)
+  if (!relativePath || normalizedPath.startsWith('../') || normalizedPath === '..' || path.isAbsolute(normalizedPath)) {
+    throw new Error(`不安全的上传对象路径：${objectKey}`)
+  }
+  return normalizedPath
+}
+
+export function getLocalFilePath(objectKey: string, uploadDirectory = getLocalUploadDirectory()): string {
+  const resolvedDirectory = path.resolve(uploadDirectory)
+  const filePath = path.resolve(resolvedDirectory, getLocalRelativePath(objectKey))
+  if (!filePath.startsWith(`${resolvedDirectory}${path.sep}`)) {
+    throw new Error(`不安全的上传对象路径：${objectKey}`)
+  }
+  return filePath
+}
+
+export function getLocalPublicUrl(objectKey: string): string {
+  return toPublicUrl(getLocalPublicBaseUrl(), getLocalRelativePath(objectKey))
+}
+
+export function isOssStorageConfigured(): boolean {
+  return getStorageDriver() === 'oss' && hasOssStorageConfiguration()
+}
+
+export function createStorageObjectKey(scope: StorageScope, filename: string): string {
+  const extension = path.extname(filename).toLowerCase()
+  const uniqueName = `${crypto.randomUUID()}${extension}`
+  return `${getMonthPrefix(scope)}/${uniqueName}`
+}
+
+export interface StorageUploadOptions {
+  scope: StorageScope
+  objectKey?: string
 }
 
 /**
- * 统一文件上传适配器
- * - 若配置了 S3/R2/COS 环境变量：直传云端对象存储并返回 CDN 公开外链
- * - 未配置（本地开发环境）：自动保存至 public/uploads 目录并返回相对路径
+ * 统一文件上传适配器。
+ * 默认写入本地 UPLOAD_DIR；STORAGE_DRIVER=oss 时写入阿里云 OSS。
  */
 export async function uploadFileToStorage(
   fileBuffer: Buffer,
   filename: string,
-  mimeType: string
+  mimeType: string,
+  options: StorageUploadOptions = { scope: 'admin' }
 ): Promise<string> {
-  const s3Config = getS3Client()
+  const objectKey = options.objectKey || `${getMonthPrefix(options.scope)}/${normalizeFilename(filename)}`
+  const ossConfig = isOssStorageConfigured() ? await getOssStorageConfig() : null
 
-  if (s3Config) {
-    // 1. 云端 OSS / S3 上传模式 (Cloudflare R2 / 腾讯云 COS / 阿里云 OSS)
-    const key = `uploads/${new Date().getFullYear()}/${(new Date().getMonth() + 1).toString().padStart(2, '0')}/${filename}`
-
-    await s3Config.client.send(
-      new PutObjectCommand({
-        Bucket: s3Config.bucket,
-        Key: key,
-        Body: fileBuffer,
-        ContentType: mimeType,
-        CacheControl: 'public, max-age=31536000, immutable'
-      })
-    )
-
-    // 格式化输出外链域名
-    const baseDomain = s3Config.publicDomain.replace(/\/+$/, '')
-    if (baseDomain) {
-      return `${baseDomain}/${key}`
-    }
-    return `/${key}`
+  if (ossConfig) {
+    await ossConfig.client.put(objectKey, fileBuffer, {
+      mime: mimeType,
+      headers: { 'Cache-Control': 'public, max-age=31536000, immutable' }
+    })
+    return toPublicUrl(ossConfig.publicDomain, objectKey)
   }
 
-  // 2. 本地磁盘回退模式 (用于本地快速开发调试)
-  const uploadDir = path.resolve(process.cwd(), 'public/uploads')
-  await fs.mkdir(uploadDir, { recursive: true })
-
-  const filePath = path.join(uploadDir, filename)
+  const filePath = getLocalFilePath(objectKey)
+  await fs.mkdir(path.dirname(filePath), { recursive: true })
   await fs.writeFile(filePath, fileBuffer)
+  return getLocalPublicUrl(objectKey)
+}
 
-  return `/uploads/${filename}`
+/**
+ * 仅 OSS 模式可生成浏览器直传签名；本地模式由前端自动回退服务端上传。
+ */
+export async function createDirectUploadSignature(
+  objectKey: string,
+  mimeType: string,
+  expiresInSeconds = 5 * 60
+): Promise<{ uploadUrl: string; publicUrl: string } | null> {
+  const ossConfig = isOssStorageConfigured() ? await getOssStorageConfig() : null
+  if (!ossConfig) return null
+
+  const uploadUrl = await ossConfig.client.signatureUrlV4('PUT', expiresInSeconds, {
+    headers: { 'Content-Type': mimeType }
+  }, objectKey)
+  return { uploadUrl, publicUrl: toPublicUrl(ossConfig.publicDomain, objectKey) }
 }

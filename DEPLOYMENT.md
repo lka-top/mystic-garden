@@ -2,6 +2,25 @@
 
 本指南记录了博客系统的生产环境部署方案（**Vercel 全栈托管 + TiDB Cloud 永久免费 25GB 云端 MySQL + 阿里云 OSS 对象存储**）。通过该方案，你可以实现 **0 成本（永久免费）、零服务器运维、全自动 CI/CD 极速上线**。
 
+> 当前 ECS 生产部署使用本地持久化图片目录，而非 OSS：图片写入 `/data/luokai-blog/uploads`，由 Nginx 在 `/uploads/` 直接提供。以下 Vercel/OSS 内容仅保留为未来切换 `STORAGE_DRIVER=oss` 的参考。
+
+## 当前 ECS 图片存储配置
+
+部署前在服务器执行：
+
+```bash
+sudo install -d -o 1001 -g 1001 /data/luokai-blog/uploads
+```
+
+并在 `.env` 设置：
+
+```ini
+STORAGE_DRIVER="local"
+UPLOAD_PUBLIC_BASE_URL="https://mysgarden.top/uploads"
+```
+
+`docker compose up -d` 会将该宿主机目录同时挂载给应用容器（写入）和 Nginx（只读公开访问）。容器镜像更新、Watchtower 重建均不会删除图片。
+
 ---
 
 ## 🏗️ 架构与费用总览
@@ -80,7 +99,21 @@ pnpm db:seed
 1. 访问 [阿里云 RAM 访问控制台](https://ram.console.aliyun.com/users)。
 2. 点击 **「创建用户」**（勾选 **OpenAPI 调用访问**）。
 3. 创建成功后，保存好弹出的 **AccessKey ID** 与 **AccessKey Secret**。
-4. 点击该用户的 **「添加权限」** $\rightarrow$ 搜索并添加 **`AliyunOSSFullAccess`** $\rightarrow$ 点击确定。
+4. 为该 RAM 用户附加自定义最小权限策略：仅允许目标 Bucket 的 `uploads/*` 执行 `oss:PutObject`；不要授予 `AliyunOSSFullAccess`、删除或列举权限。
+5. 在 Bucket 的 CORS 规则中添加站点域名和本地开发地址，允许 `PUT`、`Content-Type` 请求头，并暴露 `ETag`、`x-oss-request-id`。
+
+RAM 自定义策略示例（将 `<bucket-name>` 替换为实际 Bucket 名）：
+
+```json
+{
+  "Version": "1",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": ["oss:PutObject"],
+    "Resource": ["acs:oss:*:*:<bucket-name>/uploads/*"]
+  }]
+}
+```
 
 ---
 
@@ -98,12 +131,12 @@ pnpm db:seed
 | :--- | :--- | :--- |
 | **`DATABASE_URL`** | `mysql://...:4000/luokai_blog?sslaccept=strict` | 第一阶段从 TiDB Cloud 复制的云数据库连接串 |
 | **`JWT_SECRET`** | `luokai-secure-jwt-token-2026-secret-key` | 管理员登录加密密钥（任意复杂字符串） |
-| **`S3_ENDPOINT`** | `https://oss-cn-hangzhou.aliyuncs.com` | 阿里云 OSS 地域节点 |
-| **`S3_ACCESS_KEY_ID`** | `LTAI5txxxxxxxxxxxxxxxx` | 阿里云 RAM 用户 AccessKey ID |
-| **`S3_SECRET_ACCESS_KEY`** | `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` | 阿里云 RAM 用户 AccessKey Secret |
-| **`S3_BUCKET_NAME`** | `luokai-blog-img` | 阿里云 OSS 存储桶名称 |
-| **`S3_PUBLIC_DOMAIN`** | `https://luokai-blog-img.oss-cn-hangzhou.aliyuncs.com` | 阿里云 OSS 公开访问外链域名 |
-| **`S3_REGION`** | `cn-hangzhou` | 阿里云 OSS 地域代码 |
+| **`OSS_REGION`** | `oss-cn-chengdu` | 阿里云 OSS 地域代码 |
+| **`OSS_ENDPOINT`** | `https://oss-cn-chengdu.aliyuncs.com` | 阿里云 OSS 地域节点 |
+| **`OSS_BUCKET`** | `luokai-blog-img` | 阿里云 OSS 存储桶名称 |
+| **`OSS_ACCESS_KEY_ID`** | `LTAI5txxxxxxxxxxxxxxxx` | RAM 用户 AccessKey ID |
+| **`OSS_ACCESS_KEY_SECRET`** | `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` | RAM 用户 AccessKey Secret |
+| **`OSS_PUBLIC_DOMAIN`** | `https://img.mysgarden.top` | OSS 或 CDN 的公开访问域名 |
 
 ### 3. 点击部署
 - 点击页面底部的 **「Deploy」** 按钮。

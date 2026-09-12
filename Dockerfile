@@ -41,10 +41,11 @@ RUN addgroup --system --gid 1001 nodejs && \
 COPY --from=builder /app/.output ./
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/scripts/migrate-oss-images.ts ./server/scripts/migrate-oss-images.ts
 COPY docker-entrypoint.sh ./
 
 RUN chmod +x ./docker-entrypoint.sh && \
-    mkdir -p /app/public/uploads && \
+    mkdir -p /app/uploads && \
     chown -R nuxtjs:nodejs /app
 
 USER nuxtjs

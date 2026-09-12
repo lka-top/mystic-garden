@@ -16,7 +16,8 @@ const rules: RateLimitRule[] = [
   { path: '/api/v1/auth/login', method: 'POST', limit: 5, windowMs: 60 * 1000 },
   { path: '/api/v1/auth/register', method: 'POST', limit: 3, windowMs: 60 * 1000 },
   { path: '/api/v1/comments', method: 'POST', limit: 10, windowMs: 60 * 1000 },
-  { path: '/api/v1/upload', method: 'POST', limit: 15, windowMs: 60 * 1000 }
+  { path: '/api/v1/upload', method: 'POST', limit: 15, windowMs: 60 * 1000 },
+  { path: '/api/v1/uploads/sign', method: 'POST', limit: 30, windowMs: 60 * 1000 }
 ]
 
 // 内存 IP 记录表
@@ -66,7 +67,7 @@ export default defineEventHandler((event: H3Event) => {
   record.timestamps = record.timestamps.filter(ts => now - ts < matchedRule.windowMs)
 
   if (record.timestamps.length >= matchedRule.limit) {
-    const earliestTime = record.timestamps[0]
+    const earliestTime = record.timestamps[0] || now
     const resetSeconds = Math.ceil((matchedRule.windowMs - (now - earliestTime)) / 1000)
 
     setResponseHeader(event, 'Retry-After', resetSeconds)

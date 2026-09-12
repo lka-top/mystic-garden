@@ -1,24 +1,41 @@
+import fs from "node:fs";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+
+// 优先加载本地 .env 环境变量
+if (fs.existsSync(".env") && typeof process.loadEnvFile === "function") {
+  process.loadEnvFile(".env");
+}
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("开始初始化「神秘花园」全量测试种子数据...");
 
-  // 1. 初始化管理员用户
+  // 1. 初始化管理员用户 (从 .env 安全读取，杜绝源码硬编码泄露)
+  const adminUsername = process.env.ADMIN_USERNAME || "admin";
+  const rawAdminPassword = process.env.ADMIN_PASSWORD;
+
+  if (!rawAdminPassword) {
+    console.error("❌ 安全拦截：未在 .env 中检测到 ADMIN_PASSWORD 配置！");
+    console.error("   为了防止凭据泄露风险，请在 .env 中配置 ADMIN_PASSWORD 后再执行种子初始化。");
+    process.exit(1);
+  }
+
   const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash("LuokaiAdmin2025!", salt);
+  const passwordHash = await bcrypt.hash(rawAdminPassword, salt);
 
   const admin = await prisma.user.upsert({
-    where: { username: "admin" },
-    update: {},
+    where: { username: adminUsername },
+    update: {
+      passwordHash
+    },
     create: {
-      username: "admin",
+      username: adminUsername,
       passwordHash,
-      nickname: "lka",
+      nickname: process.env.ADMIN_NICKNAME || "lka",
       avatar: "/images/avatar.webp",
-      email: "admin@mysgarden.top",
+      email: process.env.ADMIN_EMAIL || "admin@mysgarden.top",
       bio: "全栈开发者 / 探索 Web 现代美学与工程架构。",
       role: "admin",
     },
@@ -404,6 +421,7 @@ body, header, nav, .md3-card {
     create: {
       name: "前端工程备忘录",
       slug: "frontend-knowledge",
+      path: "frontend-knowledge",
       description: "Nuxt 3、Vue 3、TypeScript 与 Vite 核心技巧速查",
       icon: "terminal",
       isPrivate: false,
@@ -417,6 +435,7 @@ body, header, nav, .md3-card {
     create: {
       name: "服务端与架构笔记",
       slug: "backend-architecture",
+      path: "backend-architecture",
       description: "MySQL 性能调优、Prisma 模式设计与 Docker 运维",
       icon: "layers",
       isPrivate: false,
@@ -430,6 +449,7 @@ body, header, nav, .md3-card {
     create: {
       name: "UI/UX 设计规范",
       slug: "ui-design-guidelines",
+      path: "ui-design-guidelines",
       description: "Tailwind CVA、色彩阶梯与排版尺度速查",
       icon: "sparkles",
       isPrivate: false,

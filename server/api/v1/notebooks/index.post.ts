@@ -7,6 +7,8 @@ import { readValidated } from '~~/server/utils/validate'
 const CreateNotebookSchema = z.object({
   name: z.string().min(1, '名称不能为空').max(50),
   slug: z.string().min(1, 'Slug不能为空').max(50),
+  path: z.string().min(1).max(500).optional(),
+  parentId: z.number().int().positive().optional().nullable(),
   description: z.string().optional().nullable(),
   icon: z.string().optional().nullable(),
   isPrivate: z.boolean().default(false),
@@ -24,7 +26,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const notebook = await prisma.notebook.create({
-    data
+    data: {
+      ...data,
+      path: data.path || data.slug
+    }
   })
 
   return successResponse(notebook, '笔记本创建成功')

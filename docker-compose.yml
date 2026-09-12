@@ -34,10 +34,20 @@ services:
     environment:
       DATABASE_URL: "mysql://${MYSQL_USER:-luokai}:${MYSQL_PASSWORD:-LuokaiSecurePass2025!}@mysql:3306/${MYSQL_DATABASE:-luokai_blog}"
       JWT_SECRET: ${JWT_SECRET:-luokai-garden-super-secret-jwt-key-2025}
+      NUXT_NOTE_SYNC_TOKEN: ${NOTE_SYNC_TOKEN:?请在 .env 中配置 NOTE_SYNC_TOKEN}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      UPLOAD_DIR: /app/uploads
+      UPLOAD_PUBLIC_BASE_URL: ${UPLOAD_PUBLIC_BASE_URL:-https://mysgarden.top/uploads}
+      OSS_REGION: ${OSS_REGION:-}
+      OSS_ENDPOINT: ${OSS_ENDPOINT:-}
+      OSS_BUCKET: ${OSS_BUCKET:-}
+      OSS_ACCESS_KEY_ID: ${OSS_ACCESS_KEY_ID:-}
+      OSS_ACCESS_KEY_SECRET: ${OSS_ACCESS_KEY_SECRET:-}
+      OSS_PUBLIC_DOMAIN: ${OSS_PUBLIC_DOMAIN:-}
       NODE_ENV: production
       NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL:-https://mysgarden.top}
     volumes:
-      - uploads-data:/app/public/uploads
+      - /data/luokai-blog/uploads:/app/uploads
     depends_on:
       mysql:
         condition: service_healthy
@@ -55,6 +65,7 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
+      - /data/luokai-blog/uploads:/var/www/uploads:ro
     depends_on:
       - app
     networks:
@@ -87,8 +98,6 @@ services:
 volumes:
   mysql-data:
     name: luokai_mysql_data
-  uploads-data:
-    name: luokai_uploads_data
 
 networks:
   luokai-network:

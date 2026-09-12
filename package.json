@@ -15,18 +15,20 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "sync:notes": "tsx scripts/sync-notebook.ts",
+    "migrate:images": "tsx scripts/migrate-oss-images.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1111.0",
     "@prisma/client": "^5.20.0",
     "@shikijs/markdown-it": "^4.4.3",
     "@vueuse/core": "^11.1.0",
     "@vueuse/motion": "^3.0.3",
     "@vueuse/nuxt": "^14.4.0",
+    "ali-oss": "^6.23.0",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -52,6 +54,7 @@
     "@nuxtjs/color-mode": "^3.5.0",
     "@nuxtjs/tailwindcss": "^6.12.2",
     "@tailwindcss/typography": "^0.5.20",
+    "@types/ali-oss": "^6.23.3",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/markdown-it": "^14.1.2",

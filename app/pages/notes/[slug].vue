@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { Calendar, Eye, ArrowLeft, BookMarked, Layers, Terminal, Folder } from 'lucide-vue-next'
+import { computed } from 'vue'
+import { ArrowLeft, BookMarked, ChevronRight } from 'lucide-vue-next'
 import dayjs from 'dayjs'
 import type { ApiResponse, Note } from '~/types'
 import MarkdownRenderer from '~/components/article/MarkdownRenderer.vue'
-import Badge from '~/components/ui/Badge.vue'
 import HeroBanner from '~/components/layout/HeroBanner.vue'
 
 const route = useRoute()
@@ -21,6 +20,12 @@ if (error.value || !res.value?.data) {
 }
 
 const note = computed(() => res.value!.data)
+
+const notebookSegments = computed(() => {
+  const notebook = note.value.notebook
+  if (!notebook) return []
+  return (notebook.path || notebook.name).split('/').filter(Boolean)
+})
 
 useSeoMeta({
   title: note.value.title,
@@ -43,7 +48,7 @@ useSeoMeta({
       <!-- 返回按钮与笔记本元信息卡片 -->
       <div class="md3-card p-4 sm:p-5 flex items-center justify-between gap-4 flex-wrap">
         <NuxtLink
-          to="/notes"
+          :to="note.notebook ? `/notes?notebook=${encodeURIComponent(note.notebook.slug)}` : '/notes'"
           class="inline-flex items-center gap-1.5 text-xs font-bold text-sky-600 dark:text-sky-400 hover:text-rose-500 transition-colors font-mono"
         >
           <ArrowLeft class="w-3.5 h-3.5" />
@@ -51,10 +56,19 @@ useSeoMeta({
         </NuxtLink>
 
         <div class="flex items-center gap-2">
-          <span v-if="note.notebook" class="text-xs font-semibold px-3 py-1 rounded-full bg-sky-500/10 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300 border border-sky-200/50 flex items-center gap-1.5">
+          <NuxtLink
+            v-if="note.notebook"
+            :to="`/notes?notebook=${encodeURIComponent(note.notebook.slug)}`"
+            class="inline-flex max-w-full items-center gap-1.5 rounded-full border border-sky-200/50 bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-700 transition-colors hover:bg-sky-500/20 dark:border-sky-800/50 dark:bg-sky-500/20 dark:text-sky-300 dark:hover:bg-sky-500/30"
+          >
             <BookMarked class="w-3.5 h-3.5 text-sky-500" />
-            {{ note.notebook.name }}
-          </span>
+            <span class="flex min-w-0 items-center truncate">
+              <template v-for="(segment, index) in notebookSegments" :key="`${segment}-${index}`">
+                <ChevronRight v-if="index > 0" class="mx-0.5 size-3 shrink-0 opacity-60" />
+                <span class="truncate">{{ segment }}</span>
+              </template>
+            </span>
+          </NuxtLink>
           <span
             v-for="tag in note.tags"
             :key="tag.id"
@@ -65,8 +79,8 @@ useSeoMeta({
         </div>
       </div>
 
-      <!-- 笔记正文卡片 (采用实体纯色卡片，统一为组件 3 纯白/深色实底) -->
-      <article class="md3-card-solid p-6 sm:p-10 space-y-6">
+      <!-- 笔记正文卡片 (采用统一容器毛玻璃背景) -->
+      <article class="md3-card p-6 sm:p-10 space-y-6">
         <MarkdownRenderer :content="note.content || ''" />
 
         <div class="pt-4 border-t border-sky-100/60 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-400 font-mono">

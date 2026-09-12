@@ -31,6 +31,10 @@ export interface Notebook {
   id: number
   name: string
   slug: string
+  /** 从笔记仓库根目录开始的完整分类路径，如 `开发/Web/Nuxt`。 */
+  path?: string | null
+  /** 多级分类树中的父目录；根目录分类为 null。 */
+  parentId?: number | null
   description?: string | null
   icon?: string | null
   isPrivate: boolean

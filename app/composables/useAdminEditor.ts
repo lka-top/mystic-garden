@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import type { Ref } from 'vue'
 import type { ApiResponse } from '~/types'
+import { compressImageToWebP } from '~/utils/imageCompressor'
 
 /** 内联新建（分类/笔记本分区）的表单结构，E 为资源特有字段（如笔记本的 isPrivate） */
 export interface InlineCreateForm<E extends Record<string, unknown> = Record<string, never>> {
@@ -27,13 +28,46 @@ export function toSlug(name: string): string {
   return name.toLowerCase().trim().replace(/[^\w\u4e00-\u9fa5]+/g, '-').replace(/^-+|-+$/g, '')
 }
 
-import { compressImageToWebP } from '~/utils/imageCompressor'
+interface DirectUploadSignature {
+  uploadUrl: string
+  publicUrl: string
+  method: 'PUT'
+  headers: { 'Content-Type': string }
+  expiresAt: string
+}
 
 /**
  * Markdown 编辑器图片上传：逐个自动 WebP 压缩并上传到 /api/v1/upload，成功后回调 URL 列表
  */
 export function useImageUpload() {
   const api = useApi()
+
+  async function uploadWithOssSignature(file: File): Promise<string | null> {
+    try {
+      const signature = await api<DirectUploadSignature>('/api/v1/uploads/sign', {
+        method: 'POST',
+        body: {
+          filename: file.name,
+          contentType: file.type,
+          size: file.size
+        }
+      })
+      if (signature.code !== 200 || !signature.data?.uploadUrl) return null
+
+      const response = await fetch(signature.data.uploadUrl, {
+        method: signature.data.method,
+        headers: signature.data.headers,
+        body: file
+      })
+      if (!response.ok) {
+        throw new Error(`OSS 上传失败（HTTP ${response.status}）`)
+      }
+      return signature.data.publicUrl
+    } catch (error: unknown) {
+      console.warn('[ImageUpload] OSS 直传不可用，回退服务端上传', error)
+      return null
+    }
+  }
 
   async function handleUploadImg(files: File[], callback: (urls: string[]) => void): Promise<void> {
     const uploadedUrls: string[] = []
@@ -42,15 +76,16 @@ export function useImageUpload() {
         // ⚡ 客户端智能 WebP 硬件加速转码与尺寸约束（体积节省 70%+）
         const optimizedFile = await compressImageToWebP(file)
 
+        const directUrl = await uploadWithOssSignature(optimizedFile)
+        if (directUrl) {
+          uploadedUrls.push(directUrl)
+          continue
+        }
+
         const formData = new FormData()
         formData.append('file', optimizedFile)
-        const res = await api<{ url: string }>('/api/v1/upload', {
-          method: 'POST',
-          body: formData
-        })
-        if (res.code === 200 && res.data?.url) {
-          uploadedUrls.push(res.data.url)
-        }
+        const res = await api<{ url: string }>('/api/v1/upload', { method: 'POST', body: formData })
+        if (res.code === 200 && res.data?.url) uploadedUrls.push(res.data.url)
       } catch (err: unknown) {
         alert(extractStatusMessage(err) || '图片上传失败')
       }

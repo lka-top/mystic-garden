@@ -58,23 +58,34 @@ cd /app/mystic-garden
 docker exec luokai-mysql mysqldump -u root -pLuokaiSecureRoot2025! --default-character-set=utf8mb4 luokai_blog > backup_$(date +%Y%m%d_%H%M%S).sql
 ```
 
-### 2.2 阿里云 OSS 媒体图片一键增量冷备份（防丢失 SOP）
-为了让图片资产 100% 独立于云厂商、永不丢失，可使用阿里云官方 `ossutil` 工具随时将云端所有图片一键拉取备份到本地电脑或移动硬盘：
+### 2.2 ECS 本地媒体与异地备份
 
-#### Windows / macOS / Linux 本地同步命令：
+- 图片资产目录：`/data/luokai-blog/uploads`；站点通过 `https://mysgarden.top/uploads/...` 访问。
+- 每日执行 `scripts/backup.sh`，它会归档数据库和上传目录、生成 SHA-256 清单，并通过 SSH/rsync 同步到本地电脑或 NAS。
+- 首次配置时，在服务器创建目录并授权给 Nuxt 容器运行用户：
+
 ```bash
-# 1. 下载并配置 ossutil (配置 AccessKey)
-# 官网下载: https://help.aliyun.com/document_detail/120075.html
-ossutil64 config -e oss-cn-chengdu.aliyuncs.com -i <您的AccessKeyId> -k <您的AccessKeySecret>
-
-# 2. 一键增量同步云端所有 uploads/ 图片到本地 backup_images 目录
-ossutil64 sync oss://<您的Bucket名称>/uploads/ ./backup_images/ --update
+sudo install -d -o 1001 -g 1001 /data/luokai-blog/uploads
 ```
-> 💡 **优势**：增量同步只会下载新上传的图片，几秒钟即可完成备份，实现 10 年+ 数据长效永续留存。
 
-### 2.3 本地与云端媒体分流策略
-- 💻 **本地目录 (`public/`)**：Logo、Banner、暗色/亮色占位图、常用 Live2D 模型（小仙狐、小黑猫）；
-- ☁️ **云端 OSS (`img.mysgarden.top/uploads/`)**：文章封面与正文配图、随笔照片、笔记思维导图（客户端自动 WebP 转码压缩，体积立减 70%+）。
+- 若旧部署使用了 `luokai_uploads_data` Docker 命名卷，在更新 Compose 前先无覆盖复制一次：
+
+```bash
+docker run --rm -v luokai_uploads_data:/from:ro -v /data/luokai-blog/uploads:/to alpine sh -c 'cp -an /from/. /to/'
+```
+
+- 在服务器 `.env` 配置 `BACKUP_SSH_TARGET`、`BACKUP_REMOTE_DIR` 和 SSH 私钥；先手动运行一次 `sh scripts/backup.sh`，确认 NAS 中有同名备份目录后，再通过 cron 每日执行。
+
+### 2.3 OSS 历史图片迁移与回滚
+
+切换到本地存储前，先保留 OSS 凭证和旧域名配置，执行：
+
+```bash
+docker compose exec app tsx server/scripts/migrate-oss-images.ts
+docker compose exec app tsx server/scripts/migrate-oss-images.ts --apply
+```
+
+第一条命令只统计将迁移的图片；第二条命令下载成功的图片并更新文章、笔记、随笔、头像和站点设置中的 URL。确认网站图片与异地备份均正常后，保留 OSS 至少 7 天再删除 AccessKey。
 
 ### 2.4 数据库恢复（灾难恢复）
 如需在新机器或故障后恢复数据：

@@ -20,7 +20,18 @@ export default defineEventHandler(async (event) => {
   const whereCondition = applyPublishFilter<Prisma.NoteWhereInput>(event, query.all, {})
 
   if (notebookSlug) {
-    whereCondition.notebook = { slug: notebookSlug }
+    const notebook = await prisma.notebook.findUnique({
+      where: { slug: notebookSlug },
+      select: { path: true }
+    })
+    whereCondition.notebook = notebook
+      ? {
+          OR: [
+            { path: notebook.path },
+            { path: { startsWith: `${notebook.path}/` } }
+          ]
+        }
+      : { id: -1 }
   }
 
   if (tagSlug) {
@@ -49,7 +60,7 @@ export default defineEventHandler(async (event) => {
       ],
       include: {
         notebook: {
-          select: { id: true, name: true, slug: true, icon: true }
+          select: { id: true, name: true, slug: true, path: true, parentId: true, icon: true }
         },
         tags: {
           select: {
@@ -64,7 +75,7 @@ export default defineEventHandler(async (event) => {
   ])
 
   const list = notes.map(item => {
-    const { password, ...rest } = item
+    const { password: _password, ...rest } = item
     return {
       ...rest,
       tags: item.tags.map(t => t.tag)

@@ -24,13 +24,18 @@ export default defineNuxtConfig({
 
   // 全站 SWR 内存高速缓存与路由性能规则
   routeRules: {
+    // 同步接口写入数据，绝不能命中公开笔记接口的 SWR 缓存。
+    '/api/v1/notes/sync': { cache: false },
+    '/api/v1/notes/sync/assets': { cache: false },
+    '/api/v1/uploads/sign': { cache: false },
     // 1. 公开数据接口开启 SWR 内存缓存 (Stale-While-Revalidate)
     '/api/v1/stats/**': { swr: 60, cache: { maxAge: 60 } },
     '/api/v1/categories/**': { swr: 120, cache: { maxAge: 120 } },
-    '/api/v1/notebooks/**': { swr: 120, cache: { maxAge: 120 } },
+    // 笔记同步后刷新页面应立即看到目录与内容，故不使用 SWR 缓存。
+    '/api/v1/notebooks/**': { cache: false },
     '/api/v1/tags/**': { swr: 120, cache: { maxAge: 120 } },
     '/api/v1/articles/**': { swr: 30, cache: { maxAge: 30 } },
-    '/api/v1/notes/**': { swr: 30, cache: { maxAge: 30 } },
+    '/api/v1/notes/**': { cache: false },
     '/api/v1/essays/**': { swr: 30, cache: { maxAge: 30 } },
 
     // 2. 后台管理面板走纯客户端 SPA 模式，确保实时管理
@@ -54,6 +59,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     jwtSecret: process.env.JWT_SECRET || 'luokai-garden-secret-jwt-key-2025',
     databaseUrl: process.env.DATABASE_URL,
+    noteSyncToken: process.env.NUXT_NOTE_SYNC_TOKEN || process.env.NOTE_SYNC_TOKEN,
     public: {
       siteName: '神秘花园',
       siteDescription: '记录思考、探索技术、沉淀生活的一方数字花园',

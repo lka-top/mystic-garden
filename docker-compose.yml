@@ -3,8 +3,6 @@ services:
     image: mysql:8.0.36
     container_name: luokai-mysql
     restart: always
-    ports:
-      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-LuokaiSecureRoot2025!}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-luokai_blog}

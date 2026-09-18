@@ -1,0 +1,64 @@
+{
+  "hash": "ad6dbe54",
+  "configHash": "dffbd4ac",
+  "lockfileHash": "5e782528",
+  "browserHash": "6ae31085",
+  "optimized": {
+    "errx": {
+      "src": "../../../../.pnpm/errx@0.1.2/node_modules/errx/dist/index.mjs",
+      "file": "errx.js",
+      "fileHash": "548648e2",
+      "needsInterop": false
+    },
+    "lucide-vue-next": {
+      "src": "../../../../.pnpm/lucide-vue-next@0.453.0_vue@3.5.41_typescript@5.6.3_/node_modules/lucide-vue-next/dist/esm/lucide-vue-next.js",
+      "file": "lucide-vue-next.js",
+      "fileHash": "18b942f4",
+      "needsInterop": false
+    },
+    "class-variance-authority": {
+      "src": "../../../../.pnpm/class-variance-authority@0.7.1/node_modules/class-variance-authority/dist/index.mjs",
+      "file": "class-variance-authority.js",
+      "fileHash": "dc42f97e",
+      "needsInterop": false
+    },
+    "clsx": {
+      "src": "../../../../.pnpm/clsx@2.1.1/node_modules/clsx/dist/clsx.mjs",
+      "file": "clsx.js",
+      "fileHash": "d10c38d4",
+      "needsInterop": false
+    },
+    "tailwind-merge": {
+      "src": "../../../../.pnpm/tailwind-merge@2.6.1/node_modules/tailwind-merge/dist/bundle-mjs.mjs",
+      "file": "tailwind-merge.js",
+      "fileHash": "9ef6ac83",
+      "needsInterop": false
+    },
+    "dayjs": {
+      "src": "../../../../.pnpm/dayjs@1.11.21/node_modules/dayjs/dayjs.min.js",
+      "file": "dayjs.js",
+      "fileHash": "50f4591b",
+      "needsInterop": true
+    },
+    "oh-my-live2d": {
+      "src": "../../../../.pnpm/oh-my-live2d@0.19.3/node_modules/oh-my-live2d/dist/index.js",
+      "file": "oh-my-live2d.js",
+      "fileHash": "209fdf28",
+      "needsInterop": false
+    },
+    "simple-icons": {
+      "src": "../../../../.pnpm/simple-icons@16.28.0/node_modules/simple-icons/index.mjs",
+      "file": "simple-icons.js",
+      "fileHash": "f8cb9402",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-2OL6YHAR": {
+      "file": "chunk-2OL6YHAR.js"
+    },
+    "chunk-AXQFWXYZ": {
+      "file": "chunk-AXQFWXYZ.js"
+    }
+  }
+}

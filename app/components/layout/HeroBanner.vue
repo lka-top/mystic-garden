@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Sparkles, Heart, ChevronDown } from 'lucide-vue-next'
+import ShadertoyBackdrop from '~/components/ui/ShadertoyBackdrop.vue'
+import cloudSeaImageSource from '~/assets/shaders/cloud-sea/image.frag?raw'
+import cloudSeaBufferSource from '~/assets/shaders/cloud-sea/buffer-a.frag?raw'
 
 interface Props {
   title?: string
@@ -11,6 +14,8 @@ interface Props {
   height?: 'sm' | 'md' | 'lg' | 'full'
   showWave?: boolean
   showArrow?: boolean
+  /** 是否启用 Shadertoy 云海动画层（渐进增强：静态壁纸仍为首屏兜底），默认关闭，仅在需要的页面显式开启 */
+  useShader?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -21,7 +26,8 @@ const props = withDefaults(defineProps<Props>(), {
   bgImageDark: '/images/banner-night.webp',
   height: 'lg',
   showWave: true,
-  showArrow: undefined
+  showArrow: undefined,
+  useShader: false
 })
 
 const lightBannerImage = computed(() => {
@@ -35,6 +41,38 @@ const darkBannerImage = computed(() => {
 })
 
 const isLarge = computed(() => props.height === 'lg' || props.height === 'full')
+
+// 着色器首帧渲染成功后隐藏静态壁纸，避免两种画风在半透明区段混杂；
+// 着色器未启用/初始化失败时该状态恒为 false，静态壁纸保持兜底
+const shaderReady = ref(false)
+
+// 日落 ↔ 星夜 混合系数（0=日落 1=深夜），跟随站点亮暗主题平滑过渡
+const colorMode = useColorMode()
+const isDark = computed(() => colorMode.value === 'dark')
+const nightBlend = ref(0)
+let blendTweenRaf = 0
+
+const animateNightBlend = (target: number) => {
+  cancelAnimationFrame(blendTweenRaf)
+  const startTime = performance.now()
+  const from = nightBlend.value
+  const step = (now: number) => {
+    const k = Math.min((now - startTime) / 900, 1)
+    nightBlend.value = from + (target - from) * k
+    if (k < 1) blendTweenRaf = requestAnimationFrame(step)
+  }
+  blendTweenRaf = requestAnimationFrame(step)
+}
+
+onMounted(() => {
+  nightBlend.value = isDark.value ? 1 : 0
+})
+
+watch(isDark, (dark) => {
+  animateNightBlend(dark ? 1 : 0)
+})
+
+onBeforeUnmount(() => cancelAnimationFrame(blendTweenRaf))
 
 const shouldShowArrow = computed(() => {
   if (props.showArrow !== undefined) return props.showArrow
@@ -64,27 +102,49 @@ function scrollToContent() {
 
 <template>
   <div :class="['relative w-full overflow-hidden select-none transition-all duration-500', heightClass]">
-    <!-- 1. 白天/浅色模式壁纸 (纯 CSS 原生控制，0ms 响应，零水合延迟) -->
+    <!-- 1. 白天/浅色模式壁纸 (纯 CSS 原生控制，0ms 响应，零水合延迟；着色器就绪后淡出) -->
     <div
       class="absolute inset-0 bg-cover bg-no-repeat transition-opacity duration-700 ease-out opacity-100 dark:opacity-0 pointer-events-none transform scale-100"
       :style="{
         backgroundImage: `url(${lightBannerImage})`,
         backgroundPosition: 'center 25%',
         maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)',
-        WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)'
+        WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)',
+        opacity: shaderReady ? 0 : undefined
       }"
     />
 
-    <!-- 2. 黑夜/深色模式壁纸 (纯 CSS 原生控制，在 Night 模式打开瞬间 0 延迟生效) -->
+    <!-- 2. 黑夜/深色模式壁纸 (纯 CSS 原生控制，在 Night 模式打开瞬间 0 延迟生效；着色器就绪后淡出) -->
     <div
       class="absolute inset-0 bg-cover bg-no-repeat transition-opacity duration-700 ease-out opacity-0 dark:opacity-100 pointer-events-none transform scale-100"
       :style="{
         backgroundImage: `url(${darkBannerImage})`,
         backgroundPosition: 'center 25%',
         maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)',
-        WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)'
+        WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)',
+        opacity: shaderReady ? 0 : undefined
       }"
     />
+
+    <!-- 2.5 ☁️ Shadertoy 云海动画层 (渐进增强：仅在客户端挂载，首帧渲染成功后渐入；
+         静态壁纸保留在下层作为 0ms 首屏与降级兜底，本层失败/不支持时完全不影响页面) -->
+    <ClientOnly v-if="useShader">
+      <ShadertoyBackdrop
+        :image-source="cloudSeaImageSource"
+        :buffer-source="cloudSeaBufferSource"
+        :night-blend="nightBlend"
+        :buffer-channels="[
+          { url: '/textures/blue_noise.png', wrap: 'repeat' },
+          'feedback'
+        ]"
+        class="pointer-events-none"
+        :style="{
+          maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)'
+        }"
+        @ready="shaderReady = true"
+      />
+    </ClientOnly>
 
     <!-- 2. 半透明玻璃遮罩与主色调微光渐变 -->
     <div class="absolute inset-0 bg-gradient-to-b from-sky-950/40 via-transparent to-sky-950/50 pointer-events-none" />

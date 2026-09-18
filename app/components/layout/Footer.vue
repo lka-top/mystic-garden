@@ -28,6 +28,16 @@ const authorName = config.public.authorName || 'lka'
             {{ icpNumber }}
           </a>
         </p>
+        <p class="text-[10px] text-slate-400 dark:text-slate-500">
+          首页顶部动画
+          <a
+            href="https://www.shadertoy.com/view/Ndc3zl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors underline-offset-4 hover:underline"
+          >Up in the Cloud Sea</a>
+          © mdb · CC BY-NC-SA 3.0
+        </p>
       </div>
 
       <div class="flex items-center gap-5 text-xs font-mono">

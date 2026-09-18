@@ -159,8 +159,8 @@ useHead(() => ({
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <!-- 左侧正文与互动区 (8列) -->
         <article class="lg:col-span-8 space-y-8">
-          <!-- 正文卡片 (采用实体纯色卡片，统一为组件 3 纯白/深色实底) -->
-          <div class="md3-card-solid p-6 sm:p-10">
+          <!-- 正文卡片 (采用统一容器毛玻璃背景) -->
+          <div class="md3-card p-6 sm:p-10">
             <MarkdownRenderer
               :content="article.content || ''"
               @toc-ready="handleTocReady"

@@ -1,0 +1,72 @@
+spring:
+  application:
+    name: garden-backend
+
+  datasource:
+    # 生产/容器通过 SPRING_DATASOURCE_* 注入；本地开发见 application-dev.yml
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/luokai_blog}
+    username: ${SPRING_DATASOURCE_USERNAME:}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    hikari:
+      maximum-pool-size: 10
+      # Prisma 以 UTC 写入 DATETIME(3)：强制连接会话为 UTC，避免与库时区（+08:00）产生 8 小时偏差
+      data-source-properties:
+        connectionTimeZone: UTC
+        forceConnectionTimeZoneToSession: "true"
+        characterEncoding: UTF-8
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      # 表结构由 Flyway 管理；Hibernate 仅校验实体与库是否一致，不一致则启动失败，绝不改库
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_batch_fetch_size: 50
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    # 生产库已存在（由 Prisma db push 创建）：登记 V1 为基线而不执行；全新库会完整执行 V1
+    baseline-on-migrate: true
+    baseline-version: "1"
+
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 30MB
+
+server:
+  port: ${SERVER_PORT:8080}
+  # 应用只位于 Nginx 之后：客户端 IP 取 Nginx 写入的 X-Real-IP，见 ClientInfo
+  forward-headers-strategy: none
+  error:
+    include-message: never
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+app:
+  site-url: ${APP_SITE_URL:http://localhost:3000}
+  site-name: 神秘花园
+  site-description: 记录思考、探索技术、沉淀生活的一方数字花园
+  author-name: lka
+  jwt:
+    # 至少 32 字节；未配置时拒绝启动（见 JwtService）
+    secret: ${JWT_SECRET:}
+    expiration: 7d
+  # 本地笔记同步脚本专用凭证，至少 32 字符；与 JWT 相互独立
+  note-sync-token: ${NOTE_SYNC_TOKEN:}
+  storage:
+    driver: ${STORAGE_DRIVER:local}
+    upload-dir: ${UPLOAD_DIR:./uploads}
+    public-base-url: ${UPLOAD_PUBLIC_BASE_URL:/uploads}

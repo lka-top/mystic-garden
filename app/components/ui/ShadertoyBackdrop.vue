@@ -285,7 +285,7 @@ async function initEngine(canvas: HTMLCanvasElement): Promise<() => void> {
 
   // ---- 尺寸与帧缓冲（ping-pong）----
   let frameTargets: [FrameTarget, FrameTarget] | null = null
-  let readIndex = 0
+  let readIndex: 0 | 1 = 0
   let renderWidth = 0
   let renderHeight = 0
   const channelResolutions = new Float32Array(12)
@@ -436,7 +436,7 @@ async function initEngine(canvas: HTMLCanvasElement): Promise<() => void> {
     }
 
     if (bufferProgram && frameTargets) {
-      const writeIndex = 1 - readIndex
+      const writeIndex: 0 | 1 = readIndex === 0 ? 1 : 0
       gl.bindFramebuffer(gl.FRAMEBUFFER, frameTargets[writeIndex].framebuffer)
       gl.viewport(0, 0, renderWidth, renderHeight)
       gl.useProgram(bufferProgram.program)

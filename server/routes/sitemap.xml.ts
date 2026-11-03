@@ -1,8 +1,10 @@
 import { prisma } from '~~/server/utils/prisma'
+import { getPublicNoteWhere } from '~~/server/utils/note-visibility'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
   const siteUrl = (config.public.siteUrl || 'http://localhost:3000').replace(/\/$/, '')
+  const publicNoteWhere = await getPublicNoteWhere()
 
   const [articles, notes] = await Promise.all([
     prisma.article.findMany({
@@ -10,7 +12,7 @@ export default defineEventHandler(async (event) => {
       select: { slug: true, updatedAt: true, createdAt: true }
     }),
     prisma.note.findMany({
-      where: { isPublished: true },
+      where: publicNoteWhere,
       select: { slug: true, updatedAt: true, createdAt: true }
     })
   ])

@@ -9,15 +9,18 @@
     "preview": "nuxt preview",
     "typecheck": "nuxt typecheck",
     "test": "vitest run",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "eslint -c eslint.config.mjs .",
+    "lint:fix": "eslint -c eslint.config.mjs . --fix",
     "postinstall": "nuxt prepare && prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "sync:notes": "tsx scripts/sync-notebook.ts",
-    "migrate:images": "tsx scripts/migrate-oss-images.ts"
+    "migrate:images": "tsx scripts/migrate-oss-images.ts",
+    "backend:dev": "cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev",
+    "backend:test": "cd backend && ./mvnw -B test",
+    "contract:diff": "node scripts/contract-diff.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

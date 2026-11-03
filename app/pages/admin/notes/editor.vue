@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { Save, ArrowLeft, BookMarked, Plus, X, FolderPlus } from 'lucide-vue-next'
-import type { ApiResponse, Note, Notebook } from '~/types'
+import type { Note, Notebook } from '~/types'
 import { useImageUpload, useInlineCreate, useEditorSave, loadEditorEntity } from '~/composables/useAdminEditor'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -10,6 +10,7 @@ import Select from '~/components/ui/Select.vue'
 import TagSelect from '~/components/ui/TagSelect.vue'
 
 const colorMode = useColorMode()
+const api = useApi()
 
 definePageMeta({
   layout: 'admin'
@@ -55,13 +56,13 @@ const {
 })
 
 onMounted(async () => {
-  const nbRes = await $fetch<ApiResponse<Notebook[]>>('/api/v1/notebooks')
+  const nbRes = await api<Notebook[]>('/api/v1/notebooks')
   if (nbRes.code === 200) {
     notebooks.value = nbRes.data
   }
 
   if (slugQuery) {
-    const n = await loadEditorEntity<Note>('/api/v1/notes', slugQuery, '加载笔记失败')
+    const n = await loadEditorEntity<Note>('/api/v1/notes', slugQuery, '加载笔记失败', api)
     if (n) {
       noteId.value = n.id
       form.value = {

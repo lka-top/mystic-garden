@@ -1,14 +1,16 @@
 import { prisma } from '~~/server/utils/prisma'
 import { successResponse } from '~~/server/utils/response'
+import { getPublicNoteWhere } from '~~/server/utils/note-visibility'
 
 export default defineEventHandler(async () => {
+  const publicNoteWhere = await getPublicNoteWhere()
   const tags = await prisma.tag.findMany({
     orderBy: { id: 'asc' },
     include: {
       _count: {
         select: {
           articles: true,
-          notes: true
+          notes: { where: { note: publicNoteWhere } }
         }
       }
     }

@@ -1,5 +1,6 @@
 import { prisma } from '~~/server/utils/prisma'
 import { successResponse } from '~~/server/utils/response'
+import { getPublicNoteWhere } from '~~/server/utils/note-visibility'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
@@ -8,6 +9,8 @@ export default defineEventHandler(async (event) => {
   if (!q) {
     return successResponse({ articles: [], notes: [], essays: [] })
   }
+
+  const publicNoteWhere = await getPublicNoteWhere()
 
   const [articles, notes, essays] = await Promise.all([
     // 1. 检索公开文章
@@ -34,7 +37,7 @@ export default defineEventHandler(async (event) => {
     // 2. 检索公开笔记
     prisma.note.findMany({
       where: {
-        isPublished: true,
+        ...publicNoteWhere,
         OR: [
           { title: { contains: q } },
           { summary: { contains: q } },

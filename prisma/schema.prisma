@@ -31,6 +31,7 @@ model User {
   notes        Note[]                                                 // 1:N 该用户编写的知识库笔记列表
   comments     Comment[]                                              // 1:N 该用户发表的评论回复列表 (强关联外键)
 
+  @@index([role])
   @@map("users")
 }
 
@@ -126,8 +127,8 @@ model Note {
   summary     String?   @db.VarChar(500)                             // 笔记摘要或一句话备忘核心点 (可选)
   isPinned    Boolean   @default(false) @map("is_pinned")            // 置顶状态 (true: 在知识库列表中高亮置顶)
   isPublished Boolean   @default(true) @map("is_published")          // 发布状态 (true: 公开, false: 草稿)
-  isEncrypted Boolean   @default(false) @map("is_encrypted")        // 是否加密访问 (true: 需要密码才可查看)
-  password    String?   @db.VarChar(255)                             // 笔记独立访问密码 (加密保护时生效)
+  isEncrypted Boolean   @default(false) @map("is_encrypted")        // 仅管理员可读标记（true: 匿名和普通用户不可读）
+  password    String?   @db.VarChar(255)                             // 遗留笔记密码散列；当前不用于访问授权
   views       Int       @default(0)                                  // 笔记查看次数统计
   notebookId  Int?      @map("notebook_id")                          // 所属笔记本 ID (外键 -> notebooks.id, 可为空)
   authorId    Int       @map("author_id")                            // 作者用户 ID (外键 -> users.id)

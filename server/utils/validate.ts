@@ -44,7 +44,7 @@ export function parseIdParam(event: H3Event, name = 'id'): number {
 export function getClientIp(event: H3Event): string {
   return (getRequestHeader(event, 'x-forwarded-for') || getRequestHeader(event, 'x-real-ip') || '127.0.0.1')
     .toString()
-    .split(',')[0]
+    .split(',')[0]!
     .trim()
 }
 

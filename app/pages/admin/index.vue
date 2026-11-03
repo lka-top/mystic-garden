@@ -60,7 +60,7 @@ async function openQuickNoteModal() {
 
   // 加载分区
   try {
-    const nbRes = await $fetch<ApiResponse<Notebook[]>>('/api/v1/notebooks')
+    const nbRes = await api<Notebook[]>('/api/v1/notebooks')
     if (nbRes.code === 200) {
       notebooks.value = nbRes.data
     }

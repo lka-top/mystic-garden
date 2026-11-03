@@ -10,6 +10,7 @@ import Select from '~/components/ui/Select.vue'
 import TagSelect from '~/components/ui/TagSelect.vue'
 
 const colorMode = useColorMode()
+const api = useApi()
 
 definePageMeta({
   layout: 'admin'
@@ -62,7 +63,7 @@ onMounted(async () => {
   }
 
   if (slugQuery) {
-    const a = await loadEditorEntity<Article>('/api/v1/articles', slugQuery, '加载文章失败')
+    const a = await loadEditorEntity<Article>('/api/v1/articles', slugQuery, '加载文章失败', api)
     if (a) {
       articleId.value = a.id
       form.value = {

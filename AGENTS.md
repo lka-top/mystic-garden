@@ -47,11 +47,12 @@
 
 | 层次 | 技术 | 说明 |
 |------|------|------|
-| **框架** | Nuxt 3 / Vue 3 | Composition API / `<script setup lang="ts">` |
+| **前端框架** | Nuxt 3 / Vue 3 | Composition API / `<script setup lang="ts">` |
+| **后端框架** | Spring Boot 4.1.2 / Java 21 | `backend/`（Spring Data JPA + Flyway + Caffeine + Spring Security），参见 `backend/AGENTS.md` |
 | **样式** | Tailwind CSS + CVA | `cn()` = `clsx` + `tailwind-merge` |
 | **图标** | Lucide Icons / `@nuxt/icon` | `lucide-vue-next` |
-| **数据库** | MySQL 8.0 | Docker 容器运行，Prisma ORM |
-| **认证** | JWT + bcryptjs | `server/utils/auth.ts` |
+| **数据库** | MySQL 8.0 | Docker 容器运行，Flyway + Spring Data JPA（渐进过渡期并存 Prisma） |
+| **认证** | JWT (HS256) + BCrypt | `JwtService` / `SecurityConfig`（与原 `server/utils/auth.ts` 互通） |
 | **内容渲染** | markdown-it + Shiki | 支持 anchor / container / task-lists |
 | **动效** | @vueuse/motion | 页面过渡 `page` / `out-in` |
 | **暗色模式** | @nuxtjs/color-mode | `preference: 'system'`，`classSuffix: ''` |
@@ -61,27 +62,35 @@
 ## 3. 开发命令
 
 ```bash
-# 启动数据库（Docker）
-docker compose up -d mysql
+# 启动数据库（Docker，开发态映射 127.0.0.1:3306）
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d mysql
 
-# 启动前端开发服务器
+# 启动 Spring Boot 4 后端（默认 dev 端口 8080）与运行测试
+pnpm backend:dev                # → http://localhost:8080
+pnpm backend:test               # → JUnit 5 + Testcontainers MySQL 8.0.36
+
+# 启动前端开发服务器（开发态默认通过 NUXT_BACKEND_URL 代理至 http://127.0.0.1:8080）
 pnpm dev                        # → http://localhost:3000
 
-# 数据库操作
+# 新旧后端实时契约对比
+pnpm contract:diff
+
+# 数据库操作（渐进并存期）
 npx prisma db push              # Schema 同步到数据库
 npx prisma generate             # 重新生成 Prisma Client
 npx prisma migrate dev          # 创建迁移
 npx prisma studio               # 数据库可视化管理
 
 # 数据填充与构建
-npm run db:seed                  # 执行种子数据
+npm run db:seed                  # 执行种子数据（Java 侧支持 --spring.profiles.active=dev,seed）
 npm run build                    # 生产构建
 ```
 
 ### 环境变量（`.env`）
 
 ```
-DATABASE_URL="mysql://luokai:LuokaiSecurePass2025!@localhost:3306/luokai_blog"
+DATABASE_URL="mysql://luokai:LuokaiSecurePass2025!@127.0.0.1:3306/luokai_blog"
+NUXT_BACKEND_URL="http://127.0.0.1:8080"
 JWT_SECRET="..."
 NUXT_PUBLIC_SITE_URL="http://localhost:3000"
 ```

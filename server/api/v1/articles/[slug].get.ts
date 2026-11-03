@@ -3,7 +3,7 @@ import { successResponse } from '~~/server/utils/response'
 
 export default defineEventHandler(async (event) => {
   const paramSlug = getRouterParam(event, 'slug') || (event.context.params?.slug as string)
-  const pathParts = event.path.split('?')[0].split('/')
+  const pathParts = (event.path.split('?')[0] || '').split('/')
   const slug = paramSlug || pathParts[pathParts.length - 1]
 
   if (!slug) {

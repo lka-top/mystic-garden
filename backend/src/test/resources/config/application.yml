@@ -1,0 +1,13 @@
+app:
+  site-url: https://mysgarden.top
+  site-name: 神秘花园
+  site-description: 记录思考、探索技术、沉淀生活的一方数字花园
+  author-name: lka
+  jwt:
+    secret: test-only-jwt-secret-key-at-least-32-bytes-long-2026
+    expiration: 7d
+  note-sync-token: test-only-note-sync-token-at-least-32-chars-2026
+  storage:
+    driver: local
+    upload-dir: ${java.io.tmpdir}/mystic-garden-test-uploads
+    public-base-url: https://mysgarden.top/uploads

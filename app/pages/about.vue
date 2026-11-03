@@ -2,12 +2,8 @@
 import {
   User,
   Sparkles,
-  Code2,
   ExternalLink,
   Cpu,
-  Layers,
-  Database,
-  Terminal,
   Compass,
   Mail,
   Rss,
@@ -18,206 +14,36 @@ import HeroBanner from "~/components/layout/HeroBanner.vue";
 
 useSeoMeta({
   title: "关于神秘花园",
-  description: "关于神秘花园的诞生、技术栈与博主简介",
+  description: "了解神秘花园与这里记录的游戏、兴趣、笔记和日常",
 });
 
-interface SkillItem {
+interface ProjectStackItem {
   name: string;
-  desc: string;
-  tag: string;
   brand: BrandName;
   url: string;
-  bg: string;
 }
 
-interface SkillCategory {
-  title: string;
-  icon: any;
-  tag: string;
-  skills: SkillItem[];
-}
-
-const skillCategories: SkillCategory[] = [
+const projectStack: ProjectStackItem[] = [
+  { name: "Nuxt 3", brand: "nuxt", url: "https://nuxt.com" },
+  { name: "Vue 3", brand: "vue", url: "https://vuejs.org" },
   {
-    title: "编程语言核心",
-    icon: Code2,
-    tag: "Core Languages",
-    skills: [
-      {
-        name: "Java",
-        desc: "面向对象、高并发与企业级服务端核心",
-        tag: "Backend Language",
-        brand: "java",
-        url: "https://dev.java",
-        bg: "bg-amber-500/10 border-amber-500/20",
-      },
-      {
-        name: "Python",
-        desc: "脚本自动化、数据分析与 AI 工程管道",
-        tag: "Scripting & AI",
-        brand: "python",
-        url: "https://www.python.org",
-        bg: "bg-blue-500/10 border-blue-500/20",
-      },
-      {
-        name: "JavaScript",
-        desc: "现代 ESNext 标准与 Web 全平台互联",
-        tag: "Web Standard",
-        brand: "javascript",
-        url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
-        bg: "bg-yellow-500/10 border-yellow-500/20",
-      },
-      {
-        name: "TypeScript",
-        desc: "端到端强类型系统与企业级大型工程架构",
-        tag: "Type Safety",
-        brand: "typescript",
-        url: "https://www.typescriptlang.org",
-        bg: "bg-sky-500/10 border-sky-500/20",
-      },
-      {
-        name: "HTML5",
-        desc: "语义化标记、现代化可访问性与 Web Components",
-        tag: "Markup",
-        brand: "html",
-        url: "https://developer.mozilla.org/en-US/docs/Web/HTML",
-        bg: "bg-orange-500/10 border-orange-500/20",
-      },
-      {
-        name: "CSS3",
-        desc: "现代响应式网格布局、Flexbox 与微交互动效",
-        tag: "Styling",
-        brand: "css",
-        url: "https://developer.mozilla.org/en-US/docs/Web/CSS",
-        bg: "bg-blue-500/10 border-blue-500/20",
-      },
-    ],
+    name: "TypeScript",
+    brand: "typescript",
+    url: "https://www.typescriptlang.org",
   },
   {
-    title: "现代前端与全栈生态",
-    icon: Layers,
-    tag: "Frontend & Fullstack",
-    skills: [
-      {
-        name: "Nuxt 3",
-        desc: "SSR / SSG 混合渲染与同构全栈引擎",
-        tag: "Fullstack Framework",
-        brand: "nuxt",
-        url: "https://nuxt.com",
-        bg: "bg-emerald-500/10 border-emerald-500/20",
-      },
-      {
-        name: "Vue 3",
-        desc: "Composition API、响应式核心与生态系统",
-        tag: "UI Library",
-        brand: "vue",
-        url: "https://vuejs.org",
-        bg: "bg-emerald-500/10 border-emerald-500/20",
-      },
-      {
-        name: "Tailwind CSS",
-        desc: "原子化样式系统与无缝暗黑模式",
-        tag: "Design System",
-        brand: "tailwindcss",
-        url: "https://tailwindcss.com",
-        bg: "bg-sky-500/10 border-sky-500/20",
-      },
-      {
-        name: "Vite",
-        desc: "极速 esbuild / Rollup 构建工具链与 HMR",
-        tag: "Bundler",
-        brand: "vite",
-        url: "https://vitejs.dev",
-        bg: "bg-purple-500/10 border-purple-500/20",
-      },
-    ],
+    name: "Tailwind CSS",
+    brand: "tailwindcss",
+    url: "https://tailwindcss.com",
   },
   {
-    title: "后端架构与数据持久化",
-    icon: Database,
-    tag: "Backend & Data",
-    skills: [
-      {
-        name: "Spring Boot",
-        desc: "Java 企业级微服务、IoC/DI 与生态体系",
-        tag: "Enterprise Framework",
-        brand: "spring",
-        url: "https://spring.io/projects/spring-boot",
-        bg: "bg-emerald-500/10 border-emerald-500/20",
-      },
-      {
-        name: "Node.js",
-        desc: "高并发异步 I/O 驱动的服务端运行时",
-        tag: "Runtime",
-        brand: "nodejs",
-        url: "https://nodejs.org",
-        bg: "bg-green-500/10 border-green-500/20",
-      },
-      {
-        name: "MySQL 8.0",
-        desc: "高可靠关系型数据存储与 ACID 事务保障",
-        tag: "RDBMS",
-        brand: "mysql",
-        url: "https://www.mysql.com",
-        bg: "bg-blue-500/10 border-blue-500/20",
-      },
-      {
-        name: "Redis",
-        desc: "内存级高速缓存、分布式锁与会话存储",
-        tag: "In-Memory DB",
-        brand: "redis",
-        url: "https://redis.io",
-        bg: "bg-red-500/10 border-red-500/20",
-      },
-      {
-        name: "Prisma ORM",
-        desc: "下一代类型安全的数据库客户端与迁移工具",
-        tag: "ORM & Modeling",
-        brand: "prisma",
-        url: "https://www.prisma.io",
-        bg: "bg-slate-500/10 border-slate-500/20",
-      },
-    ],
+    name: "Spring Boot",
+    brand: "spring",
+    url: "https://spring.io/projects/spring-boot",
   },
-  {
-    title: "基础设施与工程运维",
-    icon: Terminal,
-    tag: "DevOps & Tooling",
-    skills: [
-      {
-        name: "Docker",
-        desc: "容器化编排、环境隔离与镜像交付",
-        tag: "Container",
-        brand: "docker",
-        url: "https://www.docker.com",
-        bg: "bg-blue-500/10 border-blue-500/20",
-      },
-      {
-        name: "Linux",
-        desc: "Shell 自动化脚本、服务器运维与内核管理",
-        tag: "Operating System",
-        brand: "linux",
-        url: "https://www.kernel.org",
-        bg: "bg-amber-500/10 border-amber-500/20",
-      },
-      {
-        name: "Git",
-        desc: "分布式版本控制、分支协作与工作流",
-        tag: "VCS",
-        brand: "git",
-        url: "https://git-scm.com",
-        bg: "bg-orange-500/10 border-orange-500/20",
-      },
-      {
-        name: "Zod",
-        desc: "以 TypeScript 为核心的运行时模式验证",
-        tag: "Validation",
-        brand: "zod",
-        url: "https://zod.dev",
-        bg: "bg-blue-500/10 border-blue-500/20",
-      },
-    ],
-  },
+  { name: "Java 21", brand: "java", url: "https://dev.java" },
+  { name: "MySQL 8", brand: "mysql", url: "https://www.mysql.com" },
+  { name: "Docker", brand: "docker", url: "https://www.docker.com" },
 ];
 </script>
 
@@ -226,7 +52,7 @@ const skillCategories: SkillCategory[] = [
     <!-- 顶部全宽 HeroBanner + 动态波浪 -->
     <HeroBanner
       title="关于「神秘花园」"
-      subtitle="Digital Garden · 全栈架构设计、现代 Web 美学与极客探索"
+      subtitle="Personal Space · 游戏、兴趣、笔记与日常记录"
       height="md"
       :show-wave="true"
     />
@@ -241,13 +67,13 @@ const skillCategories: SkillCategory[] = [
           关于「神秘花园」
         </h1>
         <p class="text-xs text-zinc-400 mt-1 font-mono">
-          Digital Garden & Technical Architecture Matrix
+          Games, Notes & Everyday Moments
         </p>
       </div>
 
       <!-- 个人简介卡片 -->
       <Card
-        className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-6 sm:p-8"
+        class-name="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-6 sm:p-8"
       >
         <div
           class="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden shrink-0 shadow-md"
@@ -265,22 +91,21 @@ const skillCategories: SkillCategory[] = [
             <h2
               class="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100"
             >
-              lka (Mystic Developer)
+              lka
             </h2>
             <span
               class="text-xs font-mono px-2.5 py-1 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 self-center sm:self-auto"
             >
-              Full-Stack Software Engineer
+              Gamer · Blogger
             </span>
           </div>
           <p class="text-xs text-zinc-500 dark:text-zinc-400 font-mono">
-            Java / Python · Nuxt 3 / Vue 3 · Cloud & Database Architecture
+            Games · Notes · Daily Life
           </p>
           <p
             class="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed pt-1"
           >
-            热衷于现代 Web 前沿、高可靠分布式后端与精致 UI
-            设计系统。坚信代码可维护性、极简审美与工程化严谨力量。
+            喜欢游戏和各种有意思的事。这里放着我的游戏记录、知识笔记、日常想法，以及偶尔遇到的技术问题。
           </p>
 
           <!-- 简单的社交与外链图标栏 (GitHub, B站, Email, RSS) -->
@@ -324,136 +149,107 @@ const skillCategories: SkillCategory[] = [
         </div>
       </Card>
 
-      <!-- 数字花园的理念 -->
+      <!-- 小站的内容说明 -->
       <div class="space-y-4">
         <h2
           class="text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2"
         >
           <Sparkles class="w-4 h-4 text-brand-600 dark:text-brand-400" />
-          数字花园理念
+          关于这个小站
         </h2>
         <div
           class="prose prose-zinc dark:prose-invert text-sm leading-relaxed space-y-3"
         >
           <p class="text-zinc-600 dark:text-zinc-400">
-            「神秘花园」不仅是一个发布完成文章的博客，更是一套持续演进的知识与工程底座：
+            「神秘花园」是一个用来收集兴趣和保存重要内容的个人小站。它没有固定的更新方向，记录的都是我当下真正感兴趣、以后还想回来查看的东西。
           </p>
           <ul
             class="list-disc pl-5 space-y-1.5 text-zinc-600 dark:text-zinc-400 text-xs"
           >
             <li>
-              <strong>随笔微言</strong
-              >：随时记录未经雕琢的灵感、开发调试火花与生活碎片。
+              <strong>文章</strong
+              >：游戏体验、攻略、兴趣分享和想认真保存的文字。
             </li>
             <li>
-              <strong>结构笔记</strong
-              >：速查表、设计模式规范与系统性工程备忘录。
+              <strong>笔记</strong
+              >：需要反复查阅的知识、操作步骤和实用资料。
             </li>
             <li>
-              <strong>深度长文</strong
-              >：严谨推敲、经过工程化验证的技术架构总结与复盘。
+              <strong>随笔</strong
+              >：游戏进度、日常碎片和当时想记下的小事。
             </li>
           </ul>
         </div>
       </div>
 
-      <!-- 技能全景矩阵 (按领域分类呈现) -->
-      <div class="space-y-8">
+      <!-- 未来展示区：预留主要视觉空间 -->
+      <section class="space-y-4">
         <div
           class="flex items-center justify-between pb-2 border-b border-zinc-200/80 dark:border-zinc-800/80"
         >
           <h2
             class="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2"
           >
-            <Code2 class="w-5 h-5 text-brand-600 dark:text-brand-400" />
-            全栈技能与技术栈全景
+            <Compass class="w-5 h-5 text-brand-600 dark:text-brand-400" />
+            展示区域
           </h2>
-          <span class="text-xs font-mono text-zinc-400"
-            >Full Spectrum Matrix</span
-          >
+          <span class="text-xs font-mono text-zinc-400">Future Space</span>
         </div>
 
-        <!-- 分组循环 -->
         <div
-          v-for="category in skillCategories"
-          :key="category.title"
-          class="space-y-3.5"
+          class="relative flex min-h-[30rem] items-center justify-center overflow-hidden rounded-[2rem] border border-dashed border-sky-200 bg-white/60 p-8 text-center shadow-xs backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/50 sm:min-h-[34rem]"
         >
-          <div class="flex items-center justify-between">
-            <h3
-              class="text-sm font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2"
-            >
-              <component
-                :is="category.icon"
-                class="w-4 h-4 text-zinc-500 dark:text-zinc-400"
-              />
-              <span>{{ category.title }}</span>
-            </h3>
+          <div class="absolute left-1/4 top-1/4 h-40 w-40 rounded-full bg-sky-200/40 blur-3xl dark:bg-sky-900/20" />
+          <div class="absolute bottom-1/4 right-1/4 h-32 w-32 rounded-full bg-rose-200/30 blur-3xl dark:bg-rose-900/15" />
+          <div class="relative max-w-md space-y-4">
             <span
-              class="text-[10px] font-mono text-zinc-400 uppercase tracking-wider"
+              class="inline-flex items-center gap-1.5 rounded-full border border-sky-200/70 bg-sky-50/80 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-sky-600 uppercase dark:border-sky-800/70 dark:bg-sky-950/40 dark:text-sky-300"
             >
-              {{ category.tag }}
+              <Sparkles class="w-3 h-3" />
+              Reserved for a future idea
             </span>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            <a
-              v-for="(skill, sIdx) in category.skills"
-              :key="skill.name"
-              :href="skill.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              v-motion
-              :initial="{ opacity: 0, y: 16, scale: 0.98 }"
-              :visible-once="{
-                opacity: 1,
-                y: 0,
-                scale: 1,
-                transition: {
-                  duration: 300,
-                  delay: (sIdx % 6) * 50,
-                  ease: 'easeOut',
-                },
-              }"
-              class="p-4 rounded-3xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md hover:border-brand-500/40 dark:hover:border-brand-500/40 hover:shadow-md transition-all duration-200 flex flex-col justify-between space-y-3 group"
-            >
-              <div class="flex items-center justify-between">
-                <div
-                  :class="[
-                    'w-9 h-9 rounded-2xl border flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shadow-xs',
-                    skill.bg,
-                  ]"
-                >
-                  <BrandIcon :name="skill.brand" :size="20" />
-                </div>
-                <div class="flex items-center gap-1">
-                  <span
-                    class="text-[10px] font-mono text-zinc-400 uppercase tracking-wider"
-                  >
-                    {{ skill.tag }}
-                  </span>
-                  <ExternalLink
-                    class="w-2.5 h-2.5 text-zinc-300 dark:text-zinc-600 group-hover:text-zinc-500 transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <div
-                  class="font-bold text-sm text-zinc-900 dark:text-zinc-100 font-mono tracking-tight group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors flex items-center gap-1.5"
-                >
-                  <span>{{ skill.name }}</span>
-                </div>
-                <p
-                  class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed"
-                >
-                  {{ skill.desc }}
-                </p>
-              </div>
-            </a>
+            <h3 class="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-2xl">
+              一个还在构思中的展示区域
+            </h3>
+            <p class="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+              这里暂时留白，未来会用来放置更适合这个小站的个人展示内容。
+            </p>
           </div>
         </div>
-      </div>
+      </section>
+
+      <!-- 当前项目技术栈：作为页面底部的辅助信息 -->
+      <section class="space-y-4 pb-12">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <h2 class="flex items-center gap-2 text-base font-bold text-zinc-900 dark:text-zinc-100">
+              <Cpu class="w-4 h-4 text-brand-600 dark:text-brand-400" />
+              这个小站使用的技术
+            </h2>
+            <p class="mt-1 text-xs text-zinc-400">
+              仅列出当前项目实际使用的主要技术栈。
+            </p>
+          </div>
+          <span class="hidden text-[10px] font-mono tracking-wider text-zinc-400 uppercase sm:block">
+            Project Stack
+          </span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <a
+            v-for="stack in projectStack"
+            :key="stack.name"
+            :href="stack.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group flex items-center gap-2.5 rounded-2xl border border-zinc-200/80 bg-white/70 px-3 py-3 text-xs font-semibold text-zinc-700 shadow-xs transition-colors hover:border-sky-300 hover:text-sky-600 dark:border-zinc-800/80 dark:bg-zinc-900/60 dark:text-zinc-300 dark:hover:border-sky-700 dark:hover:text-sky-300"
+          >
+            <BrandIcon :name="stack.brand" :size="17" />
+            <span class="truncate">{{ stack.name }}</span>
+            <ExternalLink class="ml-auto w-3 h-3 shrink-0 text-zinc-300 transition-colors group-hover:text-sky-400 dark:text-zinc-600" />
+          </a>
+        </div>
+      </section>
     </div>
   </div>
 </template>

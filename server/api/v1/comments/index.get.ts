@@ -68,5 +68,13 @@ export default defineEventHandler(async (event) => {
     })
   ])
 
-  return paginationResponse(comments, total, page, pageSize)
+  if (isAll) {
+    return paginationResponse(comments, total, page, pageSize)
+  }
+
+  const publicComments = comments.map(({ ipAddress: _ipAddress, userAgent: _userAgent, replies, ...comment }) => ({
+    ...comment,
+    replies: replies.map(({ ipAddress: _replyIpAddress, userAgent: _replyUserAgent, ...reply }) => reply)
+  }))
+  return paginationResponse(publicComments, total, page, pageSize)
 })

@@ -27,14 +27,16 @@ function updateActiveHeading() {
 
   for (let i = headingElements.length - 1; i >= 0; i--) {
     const el = headingElements[i]
+    if (!el) continue
     if (el.offsetTop <= scrollPosition) {
       activeId.value = el.id
       return
     }
   }
 
-  if (headingElements.length > 0) {
-    activeId.value = headingElements[0].id
+  const firstHeading = headingElements[0]
+  if (firstHeading) {
+    activeId.value = firstHeading.id
   }
 }
 

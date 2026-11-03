@@ -1,8 +1,8 @@
 # 洛凯花园 (LuoKai Garden) · 数据库设计与 ER 关系全景图
 
-> 本文是唯一的数据库设计文档，合并原 `luokai_blog.md`。修改 Prisma Schema 时，同时更新本文的 ER 图、表用途和字段说明。
+> 本文是唯一的数据库设计文档，合并原 `luokai_blog.md`。修改表结构时，必须新增 Flyway 迁移脚本 `backend/src/main/resources/db/migration/V{n}__{desc}.sql`，同步 JPA Entity（`backend/src/main/java/top/mysgarden/garden/model/`），并在双栈并存期内保持 `prisma/schema.prisma` 及本文 ER 图一致。
 
-本项目后端采用 **MySQL 8.0** 数据库，并通过 **Prisma ORM** 进行强类型模型管理。
+本项目后端采用 **MySQL 8.0** 数据库，由 **Flyway + Spring Data JPA (Hibernate `ddl-auto: validate`)** 强类型管理（双栈渐进过渡期同时兼容 Prisma ORM）。
 
 ---
 
@@ -50,7 +50,7 @@
 | **`articles`** | `Article` | 长篇深度文章（Markdown 源码、封面、阅读耗时、置顶、浏览量） | N:1 `categories`, N:1 `users`, N:M `tags`, 1:N `comments` |
 | **`essays`** | `Essay` | 碎片灵感随笔（心情、天气、地点、配图 JSON、点赞数） | N:1 `users`, 1:N `comments` |
 | **`notebooks`** | `Notebook` | 知识库专栏/笔记本分类（排序权重、私密状态） | 1:N `notes` |
-| **`notes`** | `Note` | 结构化卡片笔记、速查代码段、访问密码保护 | N:1 `notebooks`, N:1 `users`, N:M `tags` |
+| **`notes`** | `Note` | 结构化卡片笔记、速查代码段、仅管理员可读标记 | N:1 `notebooks`, N:1 `users`, N:M `tags` |
 | **`comments`** | `Comment` | 多态树形评论系统（支持文章/随笔/留言板，归一化关联 `User`，自引用 `parent_id` 楼中楼） | N:1 `articles`, N:1 `essays`, N:1 `users`, 自引用 `parent`/`replies` |
 | **`categories`** | `Category` | 文章大类分类索引（技术、设计、生活） | 1:N `articles` |
 | **`tags`** | `Tag` | 全站打通的通用技术标签与主题索引 | N:M `articles`, N:M `notes` |
@@ -60,7 +60,7 @@
 
 ## 3. 字段级 ER 图与维护约定
 
-`prisma/schema.prisma` 是可执行的唯一数据模型来源；本图用于评审和维护时快速理解字段用途。新增或修改表、字段、外键时，须同步更新本图及上方表说明。
+Flyway 迁移脚本是数据库结构变更来源，JPA Entity 用于运行时校验；`prisma/schema.prisma` 在双栈过渡期保持兼容。本图用于评审和维护时快速理解字段用途。新增或修改表、字段、外键时，须同步更新本图及上方表说明。
 
 ```mermaid
 erDiagram
@@ -139,7 +139,7 @@ erDiagram
         varchar slug UK "URL 标识"
         varchar description "说明"
         varchar icon "图标"
-        boolean isPrivate "是否私密"
+        boolean isPrivate "私密目录及子目录仅管理员可读"
         int sortOrder "排序权重"
         datetime createdAt "创建时间"
         datetime updatedAt "更新时间"
@@ -154,8 +154,8 @@ erDiagram
         varchar sourcePath UK "知识库源路径"
         boolean isPinned "是否置顶"
         boolean isPublished "是否发布"
-        boolean isEncrypted "是否加密"
-        varchar password "访问密码散列"
+        boolean isEncrypted "仅管理员可读标记"
+        varchar password "遗留密码散列；当前不用于授权"
         int views "浏览量"
         int notebookId FK "所属笔记本"
         int authorId FK "作者"

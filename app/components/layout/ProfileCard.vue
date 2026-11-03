@@ -15,7 +15,7 @@ import type { ApiResponse } from '~/types'
 
 const config = useRuntimeConfig()
 const authorName = config.public.authorName || 'lka'
-const authorBio = config.public.authorBio || '全栈开发者 · 晴空之下探索现代 Web 架构与设计'
+const authorBio = config.public.authorBio || '喜欢游戏和各种有意思的事，也偶尔写点代码'
 
 // 预取文章、分类、标签统计概览
 const { data: statsRes } = await useFetch<ApiResponse<any>>('/api/v1/stats/overview')
@@ -40,7 +40,7 @@ const stats = computed(() => statsRes.value?.data || { articles: 0, categories: 
       <!-- 珊瑚粉心动/在线状态小红点 -->
       <span
         class="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-rose-500 border-2 border-white dark:border-[#131c31] shadow-xs animate-pulse"
-        title="晴空在线探索"
+        title="正在逛花园"
       />
     </div>
 

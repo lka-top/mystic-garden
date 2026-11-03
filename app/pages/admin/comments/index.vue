@@ -10,8 +10,10 @@ definePageMeta({
 })
 
 const api = useApi()
+const { token } = useAuth()
 const { data: res, refresh } = await useFetch<ApiResponse<{ list: Comment[]; pagination: { total: number } }>>('/api/v1/comments', {
-  query: { all: 'true', pageSize: 100 }
+  query: { all: 'true', pageSize: 100 },
+  headers: computed(() => token.value ? { Authorization: `Bearer ${token.value}` } : undefined)
 })
 
 const comments = computed(() => res.value?.data?.list || [])

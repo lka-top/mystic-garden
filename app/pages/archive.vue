@@ -23,7 +23,7 @@ import HeroBanner from '~/components/layout/HeroBanner.vue'
 // 0ms 非阻塞预取归档文章
 const { data: res, pending } = await useLazyFetch<ApiResponse<{ list: Article[] }>>('/api/v1/articles', {
   key: 'archive-articles',
-  params: { pageSize: 200 },
+  params: { pageSize: 50 },
   transform: (response) => {
     if (response?.data?.list) {
       response.data.list = response.data.list.map(({ id, slug, title, createdAt, views, category, readingTime, tags, isPublished, isPinned, commentCount }) => ({

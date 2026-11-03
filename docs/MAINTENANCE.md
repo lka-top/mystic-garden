@@ -2,7 +2,7 @@
 
 > **站点域名**：`mysgarden.top` / `www.mysgarden.top`  
 > **备案号**：`蜀ICP备2026049694号`  
-> **技术架构**：Nuxt 3 + MySQL 8.0 + Tailwind CSS + Docker Compose + Nginx + Certbot + Watchtower + GitHub Actions
+> **技术架构**：Nuxt 3 (SSR 前端) + Spring Boot 4 / Java 21 / Spring Data JPA + MySQL 8.0 + Tailwind CSS + Docker Compose + Nginx + Certbot + Watchtower + GitHub Actions
 
 ---
 

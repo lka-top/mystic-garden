@@ -1,6 +1,5 @@
 import { ref } from 'vue'
 import type { Ref } from 'vue'
-import type { ApiResponse } from '~/types'
 import { compressImageToWebP } from '~/utils/imageCompressor'
 
 /** 内联新建（分类/笔记本分区）的表单结构，E 为资源特有字段（如笔记本的 isPrivate） */
@@ -249,9 +248,14 @@ export function useEditorSave<T>(options: {
  * 编辑模式下按 slug 加载既有内容（GET {resourceBase}/{slug}），失败时提示
  * 返回原始数据，由各编辑器映射到自身表单结构
  */
-export async function loadEditorEntity<T>(resourceBase: string, slug: string, loadFailedMessage: string): Promise<T | null> {
+export async function loadEditorEntity<T>(
+  resourceBase: string,
+  slug: string,
+  loadFailedMessage: string,
+  api: ReturnType<typeof useApi>
+): Promise<T | null> {
   try {
-    const res = await $fetch<ApiResponse<T>>(`${resourceBase}/${slug}`)
+    const res = await api<T>(`${resourceBase}/${slug}`)
     if (res.code === 200) {
       return res.data
     }

@@ -224,8 +224,9 @@ function handleKeydown(e: KeyboardEvent) {
     }
   } else if (e.key === 'Enter') {
     e.preventDefault()
-    if (flatResults.value.length > 0 && flatResults.value[selectedIndex.value]) {
-      handleSelect(flatResults.value[selectedIndex.value])
+    const selectedResult = flatResults.value[selectedIndex.value]
+    if (selectedResult) {
+      handleSelect(selectedResult)
     }
   }
 }

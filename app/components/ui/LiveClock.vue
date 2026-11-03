@@ -47,7 +47,7 @@ const currentSeconds = computed(() => String(now.value.getSeconds()).padStart(2,
     <span class="text-[10px]">东八区 · UTC+8</span>
     <span class="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
       <Activity class="w-2.5 h-2.5 text-sky-500" />
-      晴空全栈运行中
+      晴空之下营业中
     </span>
   </div>
 </template>

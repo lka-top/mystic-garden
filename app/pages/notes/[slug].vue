@@ -8,9 +8,12 @@ import HeroBanner from '~/components/layout/HeroBanner.vue'
 
 const route = useRoute()
 const slug = route.params.slug as string
+const { token } = useAuth()
 
 // SSR 预取笔记详情
-const { data: res, error } = await useFetch<ApiResponse<Note>>(`/api/v1/notes/${slug}`)
+const { data: res, error } = await useFetch<ApiResponse<Note>>(`/api/v1/notes/${slug}`, {
+  headers: computed(() => token.value ? { Authorization: `Bearer ${token.value}` } : undefined)
+})
 
 if (error.value || !res.value?.data) {
   throw createError({

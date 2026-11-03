@@ -54,7 +54,7 @@ const tagColors = [
       <div class="flex items-center justify-between pb-3 mb-3 border-b border-sky-100/70 dark:border-slate-800/80">
         <div class="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
           <TagIcon class="w-4 h-4 text-rose-500" />
-          <span>二次元灵感标签</span>
+          <span>兴趣标签</span>
         </div>
         <span class="text-[10px] font-mono text-rose-500/80 font-semibold">({{ tags.length }})</span>
       </div>

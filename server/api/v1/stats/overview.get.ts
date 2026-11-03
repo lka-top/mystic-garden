@@ -1,7 +1,12 @@
 import { prisma } from '~~/server/utils/prisma'
 import { successResponse } from '~~/server/utils/response'
+import { getPrivateNotebookIds, getPublicNoteWhere } from '~~/server/utils/note-visibility'
 
 export default defineEventHandler(async () => {
+  const [publicNoteWhere, privateNotebookIds] = await Promise.all([
+    getPublicNoteWhere(),
+    getPrivateNotebookIds()
+  ])
   const [
     articleCount,
     essayCount,
@@ -18,8 +23,8 @@ export default defineEventHandler(async () => {
   ] = await Promise.all([
     prisma.article.count({ where: { isPublished: true } }),
     prisma.essay.count({ where: { isPublished: true } }),
-    prisma.note.count({ where: { isPublished: true } }),
-    prisma.notebook.count(),
+    prisma.note.count({ where: publicNoteWhere }),
+    prisma.notebook.count({ where: { id: { notIn: privateNotebookIds } } }),
     prisma.category.count(),
     prisma.tag.count(),
     prisma.comment.count({ where: { isApproved: true } }),
@@ -27,7 +32,7 @@ export default defineEventHandler(async () => {
     prisma.user.count({ where: { role: 'guest' } }),
     prisma.user.count({ where: { role: { in: ['user', 'admin'] } } }),
     prisma.article.aggregate({ _sum: { views: true } }),
-    prisma.note.aggregate({ _sum: { views: true } })
+    prisma.note.aggregate({ where: publicNoteWhere, _sum: { views: true } })
   ])
 
   const [recentArticles, recentEssays, recentNotes] = await Promise.all([
@@ -57,7 +62,7 @@ export default defineEventHandler(async () => {
       }
     }),
     prisma.note.findMany({
-      where: { isPublished: true },
+      where: publicNoteWhere,
       orderBy: { createdAt: 'desc' },
       take: 5,
       select: {

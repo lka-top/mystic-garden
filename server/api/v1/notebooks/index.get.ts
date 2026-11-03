@@ -1,17 +1,21 @@
 import { prisma } from '~~/server/utils/prisma'
 import { successResponse } from '~~/server/utils/response'
+import { getPrivateNotebookIds } from '~~/server/utils/note-visibility'
 
 export default defineEventHandler(async (event) => {
   const isAdmin = !!tryGetAdminUser(event)
+  const privateNotebookIds = isAdmin ? [] : await getPrivateNotebookIds()
   const notebooks = await prisma.notebook.findMany({
-    where: isAdmin ? {} : { isPrivate: false },
+    where: isAdmin ? {} : { id: { notIn: privateNotebookIds } },
     orderBy: [
       { sortOrder: 'asc' },
       { createdAt: 'asc' }
     ],
     include: {
       _count: {
-        select: { notes: { where: { isPublished: true } } }
+        select: { notes: { where: isAdmin
+          ? { isPublished: true }
+          : { isPublished: true, isEncrypted: false } } }
       }
     }
   })

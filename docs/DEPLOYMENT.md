@@ -4,6 +4,18 @@
 
 > 当前 ECS 生产部署使用本地持久化图片目录，而非 OSS：图片写入 `/data/luokai-blog/uploads`，由 Nginx 在 `/uploads/` 直接提供。以下 Vercel/OSS 内容仅保留为未来切换 `STORAGE_DRIVER=oss` 的参考。
 
+## 当前 ECS 后端迁移与启动
+
+生产环境由 Spring Boot 的 Flyway 管理表结构，Hibernate 只校验结构。Nuxt 容器启动时不再运行 `prisma db push`。部署前先备份 MySQL，并核对现有库与 `backend/src/main/resources/db/migration/V1__baseline.sql` 的基线；Flyway 会将已有库登记为 V1，全新库则执行 V1 脚本。
+
+1. 在服务器的 `.env` 中配置 `MYSQL_ROOT_PASSWORD`、`MYSQL_PASSWORD`、`JWT_SECRET` 和 `NOTE_SYNC_TOKEN`，均使用独立的随机值。两个 MySQL 密码可分别用 `openssl rand -hex 32` 生成；`JWT_SECRET` 可用 `openssl rand -base64 48` 生成，前后端由 Compose 注入同一个值。任一必填值缺失或为空时 `docker compose config` 会直接报错。本地开发叠加 `docker-compose.dev.yml` 时也需先配置这些变量。
+2. 完成备份和基线核对后运行 `docker compose config -q`，再运行 `docker compose up -d`。确认后端健康检查通过，之后验证登录、文章、笔记、评论与上传。
+3. 如需首次初始化数据，须显式运行后端的 `seed` Profile，并提供 `ADMIN_PASSWORD`。常规生产启动不启用种子数据；旧 Nuxt `RUN_SEED=true` 入口只在明确传入该变量时运行，且种子失败会中止启动。
+
+已有 `mysql-data` 数据卷的部署，先在 `.env` 填入数据库当前使用的两个密码，确认服务可用后再安排密码轮换。仅修改 `.env` 不会更改 MySQL 中已创建账号的密码；若仍使用旧版 Compose 的公开默认密码，应在数据库中修改账号密码，并同步更新 `.env`。
+
+下方 TiDB/Vercel 方案是旧架构参考；其中的 Prisma 建表步骤不适用于当前 ECS 生产部署。
+
 ## 当前 ECS 图片存储配置
 
 部署前在服务器执行：
@@ -130,7 +142,7 @@ RAM 自定义策略示例（将 `<bucket-name>` 替换为实际 Bucket 名）：
 | 变量名 (Key) | 变量值 (Value 示例) | 作用说明 |
 | :--- | :--- | :--- |
 | **`DATABASE_URL`** | `mysql://...:4000/luokai_blog?sslaccept=strict` | 第一阶段从 TiDB Cloud 复制的云数据库连接串 |
-| **`JWT_SECRET`** | `luokai-secure-jwt-token-2026-secret-key` | 管理员登录加密密钥（任意复杂字符串） |
+| **`JWT_SECRET`** | 使用 `openssl rand -base64 48` 生成 | 管理员登录签名密钥，必须私密保存，且与后端一致 |
 | **`OSS_REGION`** | `oss-cn-chengdu` | 阿里云 OSS 地域代码 |
 | **`OSS_ENDPOINT`** | `https://oss-cn-chengdu.aliyuncs.com` | 阿里云 OSS 地域节点 |
 | **`OSS_BUCKET`** | `luokai-blog-img` | 阿里云 OSS 存储桶名称 |
@@ -149,7 +161,7 @@ RAM 自定义策略示例（将 `<bucket-name>` 替换为实际 Bucket 名）：
 
 - [ ] 访问博客首页，确认 4K 二次元晴空壁纸、SVG 动态波浪、毛玻璃导航栏与原地伸缩搜索正常。
 - [ ] 访问 `/articles` 与 `/notes`，确认文章与笔记列表排版正常，代码高亮与目录跳转顺畅。
-- [ ] 访问后台登录 `/admin/login`（默认超级管理员账号：`admin` / `admin123456`，建议登录后立即修改密码）。
+- [ ] 使用初始化时配置的管理员凭据访问后台登录 `/admin/login`。
 - [ ] 进入文章编辑页 `/admin/articles/editor`，按 `Ctrl + V` 粘贴一张截图，验证图片是否已自动上传至阿里云 OSS 并生成 Markdown 链接。
 
 ---
@@ -165,12 +177,12 @@ RAM 自定义策略示例（将 `<bucket-name>` 替换为实际 Bucket 名）：
 
 ### 2. 未来平移至国内云服务器（Docker Compose）
 如果后续需要国内备案或追求 20ms 极速秒开：
-1. 在云服务器上安装 Docker：
+1. 先按“当前 ECS 后端迁移与启动”一节备份数据库并核对 Flyway 基线；不要在生产库执行 `prisma db push`。再在云服务器上安装 Docker：
    ```bash
    git clone <你的GitHub仓库地址> /www/luokai_blog
    cd /www/luokai_blog
    cp .env.example .env
-   # 编辑 .env 填入 MySQL 密码与阿里云 OSS 密钥
+   # 编辑 .env，填入两个 MySQL 密码、JWT_SECRET 与 NOTE_SYNC_TOKEN
    docker compose up -d --build
    ```
-2. 项目已自带完整的 [`docker-compose.yml`](./docker-compose.yml) 与生产环境入口脚本，一条命令即可完成 100% 无缝平移！
+2. 启动后确认后端健康检查通过，并验证登录、文章、笔记、评论与上传。

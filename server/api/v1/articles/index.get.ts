@@ -6,7 +6,7 @@ import { applyPublishFilter } from '~~/server/utils/pagination'
 
 const QuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(50).default(10),
+  pageSize: z.coerce.number().int().min(1).max(200).default(10),
   category: z.string().optional(),
   tag: z.string().optional(),
   keyword: z.string().optional(),

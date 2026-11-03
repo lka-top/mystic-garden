@@ -1,0 +1,19 @@
+# 本地开发：java -jar / ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+# 连接 docker-compose.dev.yml 暴露的 127.0.0.1:3306；凭证即 AGENTS.md 中记录的本地库凭证，非生产机密。
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/luokai_blog}
+    username: ${SPRING_DATASOURCE_USERNAME:luokai}
+    password: ${SPRING_DATASOURCE_PASSWORD:LuokaiSecurePass2025!}
+
+server:
+  # 开发端口使用标准 8080（Nuxt 代理默认值与此对应）
+  port: ${SERVER_PORT:8080}
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:dev-only-jwt-secret-change-me-0123456789abcdef}
+  note-sync-token: ${NOTE_SYNC_TOKEN:dev-only-note-sync-token-0123456789abcdef0123}
+  storage:
+    upload-dir: ${UPLOAD_DIR:../public/uploads}
+    public-base-url: ${UPLOAD_PUBLIC_BASE_URL:/uploads}

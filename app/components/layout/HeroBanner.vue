@@ -20,7 +20,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   title: '神秘花园 · 晴空之下',
-  subtitle: '漫步夏日微风 · 记录全栈探索 · 沉淀技术与美学思考',
+  subtitle: '漫步夏日微风 · 记录游戏旅程 · 收藏喜欢的事物',
   bgImage: undefined,
   bgImageLight: '/images/banner-light.webp',
   bgImageDark: '/images/banner-night.webp',
@@ -190,7 +190,7 @@ function scrollToContent() {
           {{ subtitle }}
         </p>
         <p class="text-xs sm:text-sm text-indigo-100/90 font-light drop-shadow-md tracking-wider max-w-xl mx-auto leading-relaxed hidden dark:block">
-          {{ subtitle === '漫步夏日微风 · 记录全栈探索 · 沉淀技术与美学思考' ? '仰望浩瀚星海 · 记录全栈探索 · 沉淀技术与美学思考' : subtitle }}
+          {{ subtitle === '漫步夏日微风 · 记录游戏旅程 · 收藏喜欢的事物' ? '仰望浩瀚星海 · 记录游戏旅程 · 收藏喜欢的事物' : subtitle }}
         </p>
 
         <!-- 向下滚动指引箭头 -->

@@ -1,8 +1,12 @@
 // @ts-check
 import withNuxt from './.nuxt/eslint.config.mjs'
 
-export default withNuxt({
-  rules: {
+export default withNuxt(
+  {
+    ignores: ['backend/**', '.Trash-*/**']
+  },
+  {
+    rules: {
     // 允许单字组件名 (如 Button, Select, Badge, Navbar)
     'vue/multi-word-component-names': 'off',
 
@@ -25,7 +29,8 @@ export default withNuxt({
     // 允许特定场景下的 any 类型
     '@typescript-eslint/no-explicit-any': 'off',
 
-    // 允许 console 调试输出
-    'no-console': 'off'
+      // 允许 console 调试输出
+      'no-console': 'off'
+    }
   }
-})
+)

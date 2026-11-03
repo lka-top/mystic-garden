@@ -1,0 +1,11 @@
+# 仅限本地开发：把 MySQL 发布到宿主机回环地址，供 backend/（Spring Boot）与 Prisma 调试使用。
+# 生产环境不要叠加本文件（生产 MySQL 仅允许 Docker 内部网络访问）。
+#
+# 用法：
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d mysql
+#
+# 本地开发态默认把 MySQL 映射到 127.0.0.1:3306
+services:
+  mysql:
+    ports:
+      - "127.0.0.1:3306:3306"

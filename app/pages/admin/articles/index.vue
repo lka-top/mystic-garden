@@ -11,8 +11,10 @@ definePageMeta({
 })
 
 const api = useApi()
+const { token } = useAuth()
 const { data: res, refresh } = await useFetch<ApiResponse<{ list: Article[] }>>('/api/v1/articles', {
-  query: { all: 'true', pageSize: 50 }
+  query: { all: 'true', pageSize: 50 },
+  headers: computed(() => token.value ? { Authorization: `Bearer ${token.value}` } : undefined)
 })
 
 const articles = computed(() => res.value?.data?.list || [])

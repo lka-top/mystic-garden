@@ -66,8 +66,8 @@ const runningDays = computed(() => {
 })
 
 useSeoMeta({
-  title: '神秘花园 - 记录思考与沉淀工程实践',
-  description: '欢迎来到神秘花园，这里是记录全栈开发探索、前端架构沉淀与碎片随想的一方数字空间。'
+  title: '神秘花园 - 游戏、兴趣与日常',
+  description: '记录游戏体验、兴趣爱好、知识笔记和生活随想，偶尔分享一些技术内容。'
 })
 </script>
 
@@ -78,7 +78,7 @@ useSeoMeta({
     <!-- ========================================================================= -->
     <HeroBanner
       title="神秘花园 · 晴空之下"
-      subtitle="漫步夏日微风 · 记录全栈探索 · 沉淀技术与美学思考"
+      subtitle="漫步夏日微风 · 记录游戏旅程 · 收藏喜欢的事物"
       height="lg"
       :show-wave="true"
       use-shader
@@ -102,17 +102,17 @@ useSeoMeta({
           <!-- 分类与标签云微件 -->
           <SidebarWidgets />
 
-          <!-- 站点架构小卡片 -->
+          <!-- 小站介绍卡片 -->
           <div class="md3-card p-5 space-y-3 text-xs text-slate-500 leading-relaxed">
             <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
               <Activity class="w-4 h-4 text-sky-500" />
-              <span>架构说明</span>
+              <span>小站介绍</span>
             </div>
             <p>
-              基于 Nuxt 3 (SSR + Nitro) + Tailwind CSS + MySQL 8.0 构建，融合 Material Design 3 现代轻透美学。
+              这里主要记录游戏体验、攻略和个人兴趣，也会存放知识笔记与偶尔遇到的技术问题。
             </p>
             <div class="pt-2 border-t border-sky-100/60 dark:border-slate-800/80 flex items-center justify-between text-[11px] font-mono">
-              <span class="text-sky-600 dark:text-sky-400 font-semibold">Nuxt 3 SSR</span>
+              <span class="text-sky-600 dark:text-sky-400 font-semibold">游戏 · 兴趣 · 日常</span>
               <NuxtLink to="/about" class="text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">了解更多 →</NuxtLink>
             </div>
           </div>
@@ -125,7 +125,7 @@ useSeoMeta({
             <div class="flex items-center gap-2">
               <BookOpen class="w-4 h-4 text-sky-500" />
               <h2 class="text-base font-bold tracking-tight text-slate-900 dark:text-white">
-                精选文章流
+                最近文章
               </h2>
             </div>
 

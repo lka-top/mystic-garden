@@ -88,5 +88,6 @@ export default defineEventHandler(async (event) => {
     }
   })
 
-  return successResponse(comment, '评论提交成功')
+  const { ipAddress: _ipAddress, userAgent: _userAgent, ...publicComment } = comment
+  return successResponse(publicComment, '评论提交成功')
 })

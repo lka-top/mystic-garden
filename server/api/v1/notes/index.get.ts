@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '~~/server/utils/prisma'
 import { paginationResponse } from '~~/server/utils/response'
 import { applyPublishFilter } from '~~/server/utils/pagination'
+import { getPublicNoteWhere } from '~~/server/utils/note-visibility'
 
 const QuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -17,7 +18,10 @@ export default defineEventHandler(async (event) => {
   const query = await getValidatedQuery(event, QuerySchema.parse)
   const { page, pageSize, notebook: notebookSlug, tag: tagSlug, keyword } = query
 
-  const whereCondition = applyPublishFilter<Prisma.NoteWhereInput>(event, query.all, {})
+  const isAdmin = !!tryGetAdminUser(event)
+  const whereCondition = isAdmin
+    ? applyPublishFilter<Prisma.NoteWhereInput>(event, query.all, {})
+    : await getPublicNoteWhere()
 
   if (notebookSlug) {
     const notebook = await prisma.notebook.findUnique({

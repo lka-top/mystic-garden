@@ -222,7 +222,7 @@ jobs:
       ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
       SERVER_HOST: ${{ secrets.SERVER_HOST }}
       SERVER_USER: ${{ secrets.SERVER_USER }}
-      SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+      SERVER_SSH_KEY_B64: ${{ secrets.SERVER_SSH_KEY_B64 }}
       SERVER_KNOWN_HOSTS: ${{ secrets.SERVER_KNOWN_HOSTS }}
       SERVER_PORT: ${{ vars.SERVER_PORT || '22' }}
       SERVER_PROJECT_DIR: ${{ vars.SERVER_PROJECT_DIR || '/app/mystic-garden' }}
@@ -240,7 +240,7 @@ jobs:
           : "${ACR_PASSWORD:?请配置 ACR_PASSWORD}"
           : "${SERVER_HOST:?请配置 SERVER_HOST}"
           : "${SERVER_USER:?请配置 SERVER_USER}"
-          : "${SERVER_SSH_KEY:?请配置 SERVER_SSH_KEY}"
+          : "${SERVER_SSH_KEY_B64:?请配置 SERVER_SSH_KEY_B64}"
           : "${SERVER_KNOWN_HOSTS:?请配置 SERVER_KNOWN_HOSTS}"
           [[ "${DEPLOY_SHA}" =~ ^[0-9a-f]{40}$ ]]
           [[ "${ACR_REGISTRY}" =~ ^[A-Za-z0-9.:-]+$ ]]
@@ -257,8 +257,8 @@ jobs:
         shell: bash
         run: |
           install -d -m 700 "${RUNNER_TEMP}/mystic-garden-ssh"
-          printf '%s\n' "${SERVER_SSH_KEY}" \
-            | tr -d '\r' \
+          printf '%s' "${SERVER_SSH_KEY_B64}" \
+            | base64 --decode \
             > "${RUNNER_TEMP}/mystic-garden-ssh/id"
           printf '%s\n' "${SERVER_KNOWN_HOSTS}" > "${RUNNER_TEMP}/mystic-garden-ssh/known_hosts"
           chmod 600 "${RUNNER_TEMP}/mystic-garden-ssh/id"

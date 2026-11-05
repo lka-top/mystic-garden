@@ -17,7 +17,7 @@
 | `ACR_IMAGE` | Nuxt 镜像完整仓库名，不含标签 |
 | `ACR_BACKEND_IMAGE` | Spring Boot 镜像完整仓库名，不含标签 |
 | `SERVER_HOST` / `SERVER_USER` | ECS SSH 地址与部署用户 |
-| `SERVER_SSH_KEY` | 部署用户私钥，只使用密钥认证 |
+| `SERVER_SSH_KEY_B64` | 部署用户私钥的单行 Base64 编码，只使用密钥认证 |
 | `SERVER_KNOWN_HOSTS` | 人工核验过的 ECS SSH 主机公钥 |
 
 配置以下 Variables：
@@ -29,6 +29,8 @@
 | `PRODUCTION_URL` | `https://mysgarden.top` |
 
 `SERVER_KNOWN_HOSTS` 必须先通过阿里云控制台等可信通道核对主机指纹，再保存 `ssh-keyscan -H -p 22 <SERVER_HOST>` 的结果。不要在工作流中使用 `StrictHostKeyChecking=no`。
+
+`SERVER_SSH_KEY_B64` 在可信终端中使用 `base64 -w 0 <private-key-file>` 生成，只填写输出的单行编码，不要填入公钥或终端提示符。
 
 ### ECS 前置条件
 

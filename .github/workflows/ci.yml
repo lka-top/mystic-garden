@@ -257,10 +257,15 @@ jobs:
         shell: bash
         run: |
           install -d -m 700 "${RUNNER_TEMP}/mystic-garden-ssh"
-          printf '%s\n' "${SERVER_SSH_KEY}" > "${RUNNER_TEMP}/mystic-garden-ssh/id"
+          printf '%s\n' "${SERVER_SSH_KEY}" \
+            | tr -d '\r' \
+            > "${RUNNER_TEMP}/mystic-garden-ssh/id"
           printf '%s\n' "${SERVER_KNOWN_HOSTS}" > "${RUNNER_TEMP}/mystic-garden-ssh/known_hosts"
           chmod 600 "${RUNNER_TEMP}/mystic-garden-ssh/id"
           chmod 600 "${RUNNER_TEMP}/mystic-garden-ssh/known_hosts"
+          ssh-keygen -y -f "${RUNNER_TEMP}/mystic-garden-ssh/id" \
+            > "${RUNNER_TEMP}/mystic-garden-ssh/id.pub"
+          ssh-keygen -lf "${RUNNER_TEMP}/mystic-garden-ssh/id.pub" -E sha256
 
       - name: 登录服务器端 ACR
         shell: bash

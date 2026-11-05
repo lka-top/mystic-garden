@@ -2,6 +2,7 @@
 
 set -Eeuo pipefail
 
+# Container and configuration rollback is automatic; database restore stays a manual operation.
 : "${DEPLOY_SHA:?DEPLOY_SHA is required}"
 : "${APP_IMAGE:?APP_IMAGE is required}"
 : "${BACKEND_IMAGE:?BACKEND_IMAGE is required}"

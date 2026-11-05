@@ -1,8 +1,53 @@
 # 🚀 神秘花园 (LuoKai Garden) 部署方案指南
 
-本指南记录了博客系统的生产环境部署方案（**Vercel 全栈托管 + TiDB Cloud 永久免费 25GB 云端 MySQL + 阿里云 OSS 对象存储**）。通过该方案，你可以实现 **0 成本（永久免费）、零服务器运维、全自动 CI/CD 极速上线**。
+当前生产环境采用 **GitHub Actions + 阿里云 ACR + ECS Docker Compose**。推送到 `main` 后，前后端检查全部通过才会构建同一 Git SHA 的两个镜像，并自动通过 SSH 发布到 ECS。
 
-> 当前 ECS 生产部署使用本地持久化图片目录，而非 OSS：图片写入 `/data/luokai-blog/uploads`，由 Nginx 在 `/uploads/` 直接提供。以下 Vercel/OSS 内容仅保留为未来切换 `STORAGE_DRIVER=oss` 的参考。
+> 当前 ECS 生产部署使用本地 MySQL 与持久化图片目录：图片写入 `/data/luokai-blog/uploads`，由 Nginx 在 `/uploads/` 直接提供。后文 TiDB/Vercel/OSS 内容仅作为历史方案参考。
+
+## 当前 ECS 全自动生产发布
+
+### GitHub Environment 配置
+
+在仓库的 `Settings → Environments → production` 中创建生产环境，将 Deployment branches 限制为 `main`，不配置 Required reviewers，以保持全自动发布。配置以下 Secrets：
+
+| Secret | 用途 |
+|---|---|
+| `ACR_REGISTRY` | ACR Registry 域名 |
+| `ACR_USERNAME` / `ACR_PASSWORD` | 仅具备目标镜像仓库推拉权限的凭据 |
+| `ACR_IMAGE` | Nuxt 镜像完整仓库名，不含标签 |
+| `ACR_BACKEND_IMAGE` | Spring Boot 镜像完整仓库名，不含标签 |
+| `SERVER_HOST` / `SERVER_USER` | ECS SSH 地址与部署用户 |
+| `SERVER_SSH_KEY` | 部署用户私钥，只使用密钥认证 |
+| `SERVER_KNOWN_HOSTS` | 人工核验过的 ECS SSH 主机公钥 |
+
+配置以下 Variables：
+
+| Variable | 建议值 |
+|---|---|
+| `SERVER_PORT` | `22` |
+| `SERVER_PROJECT_DIR` | `/app/mystic-garden` |
+| `PRODUCTION_URL` | `https://mysgarden.top` |
+
+`SERVER_KNOWN_HOSTS` 必须先通过阿里云控制台等可信通道核对主机指纹，再保存 `ssh-keyscan -H -p 22 <SERVER_HOST>` 的结果。不要在工作流中使用 `StrictHostKeyChecking=no`。
+
+### ECS 前置条件
+
+1. 安装 Docker 与 Docker Compose v2，部署用户拥有执行 Docker 的权限。
+2. `/app/mystic-garden/.env` 已配置 MySQL、JWT 与笔记同步凭据，权限设为 `600`。
+3. `/app/mystic-garden/certbot` 与 `/data/luokai-blog/uploads` 已从安全备份恢复。
+4. ACR 中已创建前端和后端两个镜像仓库，并允许 GitHub 与 ECS 使用的账号访问。
+5. ECS 已安装 `bash`、`flock`、`gzip`，并至少提供 `curl` 或 `wget`。
+
+### 自动发布顺序
+
+1. GitHub Actions 运行 ESLint、Vitest、TypeScript、Nuxt Build 和 Spring Boot/Testcontainers 测试。
+2. 全部通过后构建 `ACR_IMAGE:<commit-sha>` 与 `ACR_BACKEND_IMAGE:<commit-sha>`。
+3. SSH 上传版本化 Compose、Nginx 配置和部署脚本。
+4. ECS 拉取两个 SHA 镜像，并在 `/data/backups/luokai-blog/pre-deploy` 创建 MySQL 快照；发布成功后清理超过 30 天的发布前快照。
+5. 依次更新后端、前端和 Nginx，等待容器健康并请求生产首页。
+6. 失败时恢复旧 Compose/Nginx 配置和旧容器镜像；数据库迁移不会自动反向恢复。
+
+生产不再使用 Watchtower 或 `latest` 标签。当前发布 SHA 记录在 ECS 的 `/app/mystic-garden/.release.env` 与 `.deploy/current-sha`。
 
 ## 当前 ECS 后端迁移与启动
 
@@ -31,9 +76,13 @@ STORAGE_DRIVER="local"
 UPLOAD_PUBLIC_BASE_URL="https://mysgarden.top/uploads"
 ```
 
-`docker compose up -d` 会将该宿主机目录同时挂载给应用容器（写入）和 Nginx（只读公开访问）。容器镜像更新、Watchtower 重建均不会删除图片。
+`docker compose up -d` 会将该宿主机目录同时挂载给应用容器（写入）和 Nginx（只读公开访问）。容器镜像更新或失败回滚都不会删除图片。
 
 ---
+
+## 历史托管方案参考（非当前生产）
+
+以下 TiDB Cloud、Vercel 与 OSS 内容仅用于未来方案比较，不属于当前自动生产发布链路。
 
 ## 🏗️ 架构与费用总览
 

@@ -16,7 +16,9 @@ on:
       - 'scripts/**'
       - 'tests/**'
       - 'Dockerfile'
+      - 'docker-compose.yml'
       - 'docker-entrypoint.sh'
+      - 'nginx/**'
       - 'nuxt.config.ts'
       - 'package.json'
       - 'pnpm-lock.yaml'
@@ -40,7 +42,9 @@ on:
       - 'scripts/**'
       - 'tests/**'
       - 'Dockerfile'
+      - 'docker-compose.yml'
       - 'docker-entrypoint.sh'
+      - 'nginx/**'
       - 'nuxt.config.ts'
       - 'package.json'
       - 'pnpm-lock.yaml'
@@ -53,8 +57,9 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: mystic-garden-${{ github.workflow }}-${{ github.ref }}
+  # Never interrupt a running deployment. Newer pushes wait and supersede older pending runs.
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -62,20 +67,20 @@ permissions:
 jobs:
   build-and-verify:
     name: Build & Verify
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
 
     steps:
       - name: 检出仓库代码 (Checkout)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: 安装 pnpm 包管理器 (Setup pnpm v4)
-        uses: pnpm/action-setup@v4
+      - name: 安装 pnpm 9
+        uses: pnpm/action-setup@v6
         with:
           version: 9
 
       - name: 配置 Node.js 22 运行时与依赖缓存 (Setup Node.js)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: 'pnpm'
@@ -106,15 +111,15 @@ jobs:
 
   backend-verify:
     name: Spring Boot Backend Test (Java 21 + MySQL 8.0)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     steps:
       - name: 检出仓库代码 (Checkout)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: 配置 Java 21 (Eclipse Temurin) 与 Maven 缓存
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -123,3 +128,203 @@ jobs:
       - name: 运行 Spring Boot 单元测试与 Testcontainers MySQL 集成测试
         working-directory: ./backend
         run: ./mvnw -B test
+
+  build-production-images:
+    name: Build immutable production images
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    needs:
+      - build-and-verify
+      - backend-verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment:
+      name: production
+
+    steps:
+      - name: 检查生产镜像配置
+        env:
+          ACR_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+          ACR_IMAGE: ${{ secrets.ACR_IMAGE }}
+          ACR_BACKEND_IMAGE: ${{ secrets.ACR_BACKEND_IMAGE }}
+        run: |
+          : "${ACR_REGISTRY:?请配置 ACR_REGISTRY}"
+          : "${ACR_USERNAME:?请配置 ACR_USERNAME}"
+          : "${ACR_PASSWORD:?请配置 ACR_PASSWORD}"
+          : "${ACR_IMAGE:?请配置 ACR_IMAGE}"
+          : "${ACR_BACKEND_IMAGE:?请配置 ACR_BACKEND_IMAGE}"
+
+      - name: 检出已通过验证的提交
+        uses: actions/checkout@v7
+
+      - name: 设置 Docker Buildx 构建器
+        uses: docker/setup-buildx-action@v4
+
+      - name: 登录阿里云容器镜像服务 ACR
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ secrets.ACR_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: 构建并推送 Nuxt 生产镜像
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          push: true
+          pull: true
+          provenance: false
+          sbom: false
+          tags: ${{ secrets.ACR_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+
+      - name: 构建并推送 Spring Boot 生产镜像
+        uses: docker/build-push-action@v7
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          platforms: linux/amd64
+          push: true
+          pull: true
+          provenance: false
+          sbom: false
+          tags: ${{ secrets.ACR_BACKEND_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+  deploy-production:
+    name: Deploy exact SHA to production
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    needs:
+      - build-production-images
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL || 'https://mysgarden.top' }}
+    concurrency:
+      group: mystic-garden-production
+      cancel-in-progress: false
+    env:
+      DEPLOY_SHA: ${{ github.sha }}
+      APP_IMAGE: ${{ secrets.ACR_IMAGE }}:${{ github.sha }}
+      BACKEND_IMAGE: ${{ secrets.ACR_BACKEND_IMAGE }}:${{ github.sha }}
+      ACR_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      SERVER_HOST: ${{ secrets.SERVER_HOST }}
+      SERVER_USER: ${{ secrets.SERVER_USER }}
+      SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+      SERVER_KNOWN_HOSTS: ${{ secrets.SERVER_KNOWN_HOSTS }}
+      SERVER_PORT: ${{ vars.SERVER_PORT || '22' }}
+      SERVER_PROJECT_DIR: ${{ vars.SERVER_PROJECT_DIR || '/app/mystic-garden' }}
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://mysgarden.top' }}
+
+    steps:
+      - name: 检出部署清单与脚本
+        uses: actions/checkout@v7
+
+      - name: 校验部署参数
+        shell: bash
+        run: |
+          : "${ACR_REGISTRY:?请配置 ACR_REGISTRY}"
+          : "${ACR_USERNAME:?请配置 ACR_USERNAME}"
+          : "${ACR_PASSWORD:?请配置 ACR_PASSWORD}"
+          : "${SERVER_HOST:?请配置 SERVER_HOST}"
+          : "${SERVER_USER:?请配置 SERVER_USER}"
+          : "${SERVER_SSH_KEY:?请配置 SERVER_SSH_KEY}"
+          : "${SERVER_KNOWN_HOSTS:?请配置 SERVER_KNOWN_HOSTS}"
+          [[ "${DEPLOY_SHA}" =~ ^[0-9a-f]{40}$ ]]
+          [[ "${ACR_REGISTRY}" =~ ^[A-Za-z0-9.:-]+$ ]]
+          [[ "${ACR_USERNAME}" =~ ^[A-Za-z0-9._@-]+$ ]]
+          [[ "${SERVER_PORT}" =~ ^[0-9]{1,5}$ ]]
+          [[ "${SERVER_USER}" =~ ^[A-Za-z0-9._-]+$ ]]
+          [[ "${SERVER_HOST}" =~ ^[A-Za-z0-9.:-]+$ ]]
+          [[ "${SERVER_PROJECT_DIR}" =~ ^/[A-Za-z0-9._/-]+$ ]]
+          [[ "${APP_IMAGE}" =~ ^[A-Za-z0-9._:/-]+:${DEPLOY_SHA}$ ]]
+          [[ "${BACKEND_IMAGE}" =~ ^[A-Za-z0-9._:/-]+:${DEPLOY_SHA}$ ]]
+          [[ "${PRODUCTION_URL}" =~ ^https://[A-Za-z0-9.:-]+/?$ ]]
+
+      - name: 配置经过主机密钥校验的 SSH
+        shell: bash
+        run: |
+          install -d -m 700 "${RUNNER_TEMP}/mystic-garden-ssh"
+          printf '%s\n' "${SERVER_SSH_KEY}" > "${RUNNER_TEMP}/mystic-garden-ssh/id"
+          printf '%s\n' "${SERVER_KNOWN_HOSTS}" > "${RUNNER_TEMP}/mystic-garden-ssh/known_hosts"
+          chmod 600 "${RUNNER_TEMP}/mystic-garden-ssh/id"
+          chmod 600 "${RUNNER_TEMP}/mystic-garden-ssh/known_hosts"
+
+      - name: 登录服务器端 ACR
+        shell: bash
+        run: |
+          printf '%s' "${ACR_PASSWORD}" | ssh \
+            -i "${RUNNER_TEMP}/mystic-garden-ssh/id" \
+            -p "${SERVER_PORT}" \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="${RUNNER_TEMP}/mystic-garden-ssh/known_hosts" \
+            "${SERVER_USER}@${SERVER_HOST}" \
+            "docker login '${ACR_REGISTRY}' --username '${ACR_USERNAME}' --password-stdin"
+
+      - name: 上传版本化部署包
+        shell: bash
+        run: |
+          RELEASE_ARCHIVE="${RUNNER_TEMP}/mystic-garden-${DEPLOY_SHA}.tgz"
+          tar -czf "${RELEASE_ARCHIVE}" \
+            docker-compose.yml \
+            nginx/conf.d \
+            scripts/deploy-production.sh
+          scp \
+            -i "${RUNNER_TEMP}/mystic-garden-ssh/id" \
+            -P "${SERVER_PORT}" \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="${RUNNER_TEMP}/mystic-garden-ssh/known_hosts" \
+            "${RELEASE_ARCHIVE}" \
+            "${SERVER_USER}@${SERVER_HOST}:/tmp/mystic-garden-${DEPLOY_SHA}.tgz"
+
+      - name: 自动部署并在失败时回滚镜像
+        shell: bash
+        run: |
+          ssh \
+            -i "${RUNNER_TEMP}/mystic-garden-ssh/id" \
+            -p "${SERVER_PORT}" \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="${RUNNER_TEMP}/mystic-garden-ssh/known_hosts" \
+            "${SERVER_USER}@${SERVER_HOST}" \
+            "mkdir -p '${SERVER_PROJECT_DIR}/.deploy/releases/${DEPLOY_SHA}' && \
+             tar -xzf '/tmp/mystic-garden-${DEPLOY_SHA}.tgz' -C '${SERVER_PROJECT_DIR}/.deploy/releases/${DEPLOY_SHA}' && \
+             chmod 700 '${SERVER_PROJECT_DIR}/.deploy/releases/${DEPLOY_SHA}/scripts/deploy-production.sh' && \
+             DEPLOY_SHA='${DEPLOY_SHA}' \
+             APP_IMAGE='${APP_IMAGE}' \
+             BACKEND_IMAGE='${BACKEND_IMAGE}' \
+             PROJECT_DIR='${SERVER_PROJECT_DIR}' \
+             RELEASE_DIR='${SERVER_PROJECT_DIR}/.deploy/releases/${DEPLOY_SHA}' \
+             PRODUCTION_URL='${PRODUCTION_URL}' \
+             bash '${SERVER_PROJECT_DIR}/.deploy/releases/${DEPLOY_SHA}/scripts/deploy-production.sh'"
+
+      - name: 写入部署摘要
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Production deployment"
+            echo
+            echo "- Commit: ${DEPLOY_SHA}"
+            echo "- Frontend: ${APP_IMAGE}"
+            echo "- Backend: ${BACKEND_IMAGE}"
+            echo "- URL: ${PRODUCTION_URL}"
+            echo "- Result: ${{ job.status }}"
+          } >> "${GITHUB_STEP_SUMMARY}"

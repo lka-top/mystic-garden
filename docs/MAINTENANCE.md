@@ -2,7 +2,7 @@
 
 > **站点域名**：`mysgarden.top` / `www.mysgarden.top`  
 > **备案号**：`蜀ICP备2026049694号`  
-> **技术架构**：Nuxt 3 (SSR 前端) + Spring Boot 4 / Java 21 / Spring Data JPA + MySQL 8.0 + Tailwind CSS + Docker Compose + Nginx + Certbot + Watchtower + GitHub Actions
+> **技术架构**：Nuxt 3 (SSR 前端) + Spring Boot 4 / Java 21 / Spring Data JPA + MySQL 8.0 + Tailwind CSS + Docker Compose + Nginx + Certbot + GitHub Actions
 
 ---
 
@@ -28,10 +28,11 @@
 ```mermaid
 flowchart LR
     A[1. 本地编写代码/文章] -->|git push origin main| B[2. GitHub 仓库]
-    B -->|自动触发| C[3. GitHub Actions 构建镜像]
-    C -->|推送到| D[4. 阿里云 ACR 镜像仓库]
-    D -->|60秒内自动拉取并热更新| E[5. 服务器 Watchtower 哨兵]
-    E --> F[6. 网站即时上线更新]
+    B -->|自动触发| C[3. 前后端 CI 检查]
+    C -->|全部通过| D[4. 构建同一 SHA 的两个镜像]
+    D -->|推送到| E[5. 阿里云 ACR 镜像仓库]
+    E -->|SSH 精确部署 SHA| F[6. ECS 备份、健康检查与自动镜像回滚]
+    F --> G[7. 网站上线]
 ```
 
 ### 1.1 极速发布命令
@@ -41,27 +42,22 @@ git add .
 git commit -m "feat: 更新博客功能或文章"
 git push origin main
 ```
-等待约 **2~3 分钟**，刷新网页即可看到更新。
+等待 GitHub Actions 中 `Deploy exact SHA to production` 成功后刷新网页。前后端测试、镜像构建、ECS 部署和健康检查均在同一流水线中串行完成。
 
 ### 1.2 自动发布边界
 
-GitHub Actions 只在应用源码、服务端、Prisma、受版本控制的静态资源、依赖或镜像构建配置变化时构建镜像；文档、路线图、Git 忽略规则等不会触发 CI/CD。
+GitHub Actions 只在运行时代码、前后端依赖、Docker Compose、Nginx 或流水线配置变化时执行完整 CI/CD；纯文档修改不会触发生产发布。生产镜像只使用完整 Git SHA 标签，不再发布或跟随可变的 `latest` 标签。
 
-Watchtower 的职责只有一件事：检测 ACR 中 `latest` 镜像的新摘要，拉取镜像并重建 `luokai-blog-app` 容器。它不会读取 Git 仓库，也不会重新加载 `docker-compose.yml`。因此以下变更不能仅靠推送 Git 生效：
+自动发布会同步受版本控制的 `docker-compose.yml` 与 `nginx/conf.d/`，但不会覆盖 ECS 上的以下状态：
 
-- 容器挂载、端口、环境变量、网络与服务定义：`docker-compose.yml`；
-- Nginx 反向代理、TLS 与静态目录：`nginx/conf.d/`；
-- ECS 上的 `.env`、证书和 `/data/luokai-blog/uploads`。
+- `.env` 与 `.release.env`；
+- TLS 证书和 Certbot 状态；
+- `/data/luokai-blog/uploads`；
+- MySQL 数据卷。
 
-完成上述运行环境变更后，在 ECS 项目目录执行：
+部署脚本会先拉取两个同 SHA 镜像，再创建本地 MySQL 快照，按“后端 → 前端 → Nginx”顺序更新并检查健康状态。失败时自动切回旧容器镜像；Flyway 已执行的数据库迁移不会自动反向恢复，因此迁移必须保持至少一个旧版本的向后兼容性。发布前快照保留 30 天，长期异地备份仍由每日备份任务负责。
 
-```bash
-docker compose config -q
-docker compose up -d
-docker compose ps
-```
-
-`docker compose up -d` 会比较 Compose 定义与现有容器，并仅重建配置发生变化的服务；图片和 MySQL 数据由宿主机目录/命名卷持久化，不会因应用容器重建而删除。
+首次启用前需要在 GitHub `production` Environment 中配置 ACR、SSH 和服务器变量，详见 `DEPLOYMENT.md`。ECS 不再运行 Watchtower。
 
 ### 1.3 本地知识库同步
 
@@ -89,8 +85,8 @@ pnpm sync:notes --full
 
 ### 1.5 每次发布后的最小检查
 
-1. 在 GitHub Actions 确认镜像构建成功；
-2. 在 ECS 执行 `docker compose ps`，确认 `app`、`nginx`、`mysql` 均为运行状态；
+1. 在 GitHub Actions 确认 `Deploy exact SHA to production` 成功；
+2. 确认流水线摘要中的前端和后端镜像使用相同提交 SHA；
 3. 访问首页、`/notes`，并上传一张小图片确认 `/uploads/` 返回 200；
 4. 首次同步或大批量同步后，检查终端汇总中的新增、更新、跳过和警告数量；
 5. 不要因单篇笔记错误直接重复全量同步；先修复警告对应文件，普通重跑会使用增量状态。
@@ -106,8 +102,10 @@ pnpm sync:notes --full
 ```bash
 cd /app/mystic-garden
 
-# 导出带时间戳的完整 SQL 备份文件
-docker exec luokai-mysql mysqldump -u root -pLuokaiSecureRoot2025! --default-character-set=utf8mb4 luokai_blog > backup_$(date +%Y%m%d_%H%M%S).sql
+# 密码只从 MySQL 容器环境读取，不写入文档或宿主机命令行
+docker exec luokai-mysql sh -c \
+  'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" exec mysqldump --single-transaction --default-character-set=utf8mb4 -u root "$MYSQL_DATABASE"' \
+  > "backup_$(date +%Y%m%d_%H%M%S).sql"
 ```
 
 ### 2.2 ECS 本地媒体与异地备份
@@ -150,7 +148,9 @@ docker compose exec app tsx server/scripts/migrate-oss-images.ts --apply
 ### 2.4 数据库恢复（灾难恢复）
 如需在新机器或故障后恢复数据：
 ```bash
-docker exec -i luokai-mysql mysql -u root -pLuokaiSecureRoot2025! luokai_blog < backup_xxx.sql
+docker exec -i luokai-mysql sh -c \
+  'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" exec mysql -u root "$MYSQL_DATABASE"' \
+  < backup_xxx.sql
 ```
 
 ---
@@ -185,7 +185,9 @@ sequenceDiagram
 ```bash
 # 登录旧服务器
 cd /app/mystic-garden
-docker exec luokai-mysql mysqldump -u root -pLuokaiSecureRoot2025! luokai_blog > /root/mystic_backup.sql
+docker exec luokai-mysql sh -c \
+  'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" exec mysqldump --single-transaction -u root "$MYSQL_DATABASE"' \
+  > /root/mystic_backup.sql
 ```
 
 #### 步骤 2：在新服务器上部署环境
@@ -216,7 +218,9 @@ docker compose up -d
 #### 步骤 3：导入数据至新服务器
 ```bash
 # 将旧服务器的 mystic_backup.sql 复制到新服务器后执行：
-docker exec -i luokai-mysql mysql -u root -pLuokaiSecureRoot2025! luokai_blog < mystic_backup.sql
+docker exec -i luokai-mysql sh -c \
+  'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" exec mysql -u root "$MYSQL_DATABASE"' \
+  < mystic_backup.sql
 
 # 同步本地图片目录（在确认旧站停止写入图片后执行）
 rsync -aHAX --info=progress2 root@旧服务器:/data/luokai-blog/uploads/ /data/luokai-blog/uploads/

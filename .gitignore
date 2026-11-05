@@ -38,3 +38,7 @@ public/uploads/
 
 # Spring Boot Backend Build Output
 backend/target/
+
+# Production deployment state is generated on the ECS host.
+.release.env
+.deploy/

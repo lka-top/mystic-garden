@@ -24,9 +24,6 @@ services:
       retries: 10
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
     image: ${BACKEND_IMAGE:-crpi-81wstmjlihs5q8t3.cn-chengdu.personal.cr.aliyuncs.com/mystic-garden/garden-backend:latest}
     container_name: luokai-blog-backend
     restart: always
@@ -57,7 +54,7 @@ services:
       - luokai-network
 
   app:
-    image: crpi-81wstmjlihs5q8t3.cn-chengdu.personal.cr.aliyuncs.com/mystic-garden/garden:latest
+    image: ${APP_IMAGE:-crpi-81wstmjlihs5q8t3.cn-chengdu.personal.cr.aliyuncs.com/mystic-garden/garden:latest}
     container_name: luokai-blog-app
     restart: always
     expose:
@@ -85,6 +82,15 @@ services:
         condition: service_healthy
       backend:
         condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/').then(response => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 6
     networks:
       - luokai-network
 
@@ -114,19 +120,6 @@ services:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-    networks:
-      - luokai-network
-
-  watchtower:
-    image: containrrr/watchtower
-    container_name: watchtower
-    restart: always
-    environment:
-      - DOCKER_API_VERSION=1.44
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /root/.docker/config.json:/config.json
-    command: --interval 60 --cleanup luokai-blog-app luokai-blog-backend
     networks:
       - luokai-network
 

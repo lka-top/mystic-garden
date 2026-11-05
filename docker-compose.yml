@@ -39,6 +39,7 @@ services:
       STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
       UPLOAD_DIR: /app/uploads
       UPLOAD_PUBLIC_BASE_URL: ${UPLOAD_PUBLIC_BASE_URL:-https://mysgarden.top/uploads}
+      JAVA_OPTS: ${JAVA_OPTS:--Xms128m -Xmx512m -Dfile.encoding=UTF-8}
       TZ: Asia/Shanghai
     volumes:
       - /data/luokai-blog/uploads:/app/uploads
@@ -49,7 +50,8 @@ services:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/actuator/health | grep -q '\"status\":\"UP\"' || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 6
+      retries: 12
+      start_period: 60s
     networks:
       - luokai-network
 
@@ -73,6 +75,7 @@ services:
       OSS_ACCESS_KEY_ID: ${OSS_ACCESS_KEY_ID:-}
       OSS_ACCESS_KEY_SECRET: ${OSS_ACCESS_KEY_SECRET:-}
       OSS_PUBLIC_DOMAIN: ${OSS_PUBLIC_DOMAIN:-}
+      NODE_OPTIONS: ${NODE_OPTIONS:---max-old-space-size=384}
       NODE_ENV: production
       NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL:-https://mysgarden.top}
     volumes:
@@ -90,7 +93,8 @@ services:
         - "fetch('http://127.0.0.1:3000/').then(response => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
       interval: 10s
       timeout: 5s
-      retries: 6
+      retries: 12
+      start_period: 30s
     networks:
       - luokai-network
 

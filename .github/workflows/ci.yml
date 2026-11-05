@@ -206,7 +206,7 @@ jobs:
     needs:
       - build-production-images
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 45
     environment:
       name: production
       url: ${{ vars.PRODUCTION_URL || 'https://mysgarden.top' }}
@@ -275,6 +275,8 @@ jobs:
             -p "${SERVER_PORT}" \
             -o BatchMode=yes \
             -o IdentitiesOnly=yes \
+            -o ServerAliveInterval=15 \
+            -o ServerAliveCountMax=8 \
             -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="${RUNNER_TEMP}/mystic-garden-ssh/known_hosts" \
             "${SERVER_USER}@${SERVER_HOST}" \
@@ -293,6 +295,8 @@ jobs:
             -P "${SERVER_PORT}" \
             -o BatchMode=yes \
             -o IdentitiesOnly=yes \
+            -o ServerAliveInterval=15 \
+            -o ServerAliveCountMax=8 \
             -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="${RUNNER_TEMP}/mystic-garden-ssh/known_hosts" \
             "${RELEASE_ARCHIVE}" \
@@ -306,6 +310,8 @@ jobs:
             -p "${SERVER_PORT}" \
             -o BatchMode=yes \
             -o IdentitiesOnly=yes \
+            -o ServerAliveInterval=15 \
+            -o ServerAliveCountMax=8 \
             -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="${RUNNER_TEMP}/mystic-garden-ssh/known_hosts" \
             "${SERVER_USER}@${SERVER_HOST}" \

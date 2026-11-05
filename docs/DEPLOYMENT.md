@@ -38,18 +38,19 @@
 2. `/app/mystic-garden/.env` 已配置 MySQL、JWT 与笔记同步凭据，权限设为 `600`。
 3. `/app/mystic-garden/certbot` 与 `/data/luokai-blog/uploads` 已从安全备份恢复。
 4. ACR 中已创建前端和后端两个镜像仓库，并允许 GitHub 与 ECS 使用的账号访问。
-5. ECS 已安装 `bash`、`flock`、`gzip`，并至少提供 `curl` 或 `wget`。
+5. ECS 已安装 `bash`、`flock`、`gzip`、`timeout`，并至少提供 `curl` 或 `wget`。
+6. 2 GiB 内存的 ECS 至少配置 2 GiB 持久 Swap；生产机不得同时运行 Watchtower。
 
 ### 自动发布顺序
 
 1. GitHub Actions 运行 ESLint、Vitest、TypeScript、Nuxt Build 和 Spring Boot/Testcontainers 测试。
 2. 全部通过后构建 `ACR_IMAGE:<commit-sha>` 与 `ACR_BACKEND_IMAGE:<commit-sha>`。
 3. SSH 上传版本化 Compose、Nginx 配置和部署脚本。
-4. ECS 拉取两个 SHA 镜像，并在 `/data/backups/luokai-blog/pre-deploy` 创建 MySQL 快照；发布成功后清理超过 30 天的发布前快照。
+4. ECS 先移除遗留 Watchtower，按“后端 → 前端”顺序拉取两个 SHA 镜像，再在 `/data/backups/luokai-blog/pre-deploy` 创建 MySQL 快照；发布成功后清理超过 30 天的发布前快照。
 5. 依次更新后端、前端和 Nginx，等待容器健康并请求生产首页。
 6. 失败时恢复旧 Compose/Nginx 配置和旧容器镜像；数据库迁移不会自动反向恢复。
 
-生产不再使用 Watchtower 或 `latest` 标签。当前发布 SHA 记录在 ECS 的 `/app/mystic-garden/.release.env` 与 `.deploy/current-sha`。
+生产不再使用 Watchtower 或 `latest` 标签。当前发布 SHA 记录在 ECS 的 `/app/mystic-garden/.release.env` 与 `.deploy/current-sha`，每次远端执行日志保存在 `.deploy/logs/<commit-sha>.log`。低内存主机会限制 Java 堆与 Node.js 堆，并为冷启动预留更长的健康检查窗口。
 
 ## 当前 ECS 后端迁移与启动
 

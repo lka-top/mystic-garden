@@ -33,8 +33,10 @@ readonly RELEASE_NGINX_CONFIG="${RELEASE_DIR}/nginx/conf.d/app.conf"
 readonly RELEASE_ENV="${PROJECT_DIR}/.release.env"
 readonly BACKUP_DIR="/data/backups/luokai-blog/pre-deploy"
 readonly CONFIG_BACKUP_DIR="${STATE_DIR}/config-backup-${DEPLOY_SHA}"
+readonly LOG_DIR="${STATE_DIR}/logs"
+readonly DEPLOY_LOG="${LOG_DIR}/${DEPLOY_SHA}.log"
 
-for command_name in docker gzip flock install; do
+for command_name in docker gzip flock install tee timeout; do
   if ! command -v "${command_name}" >/dev/null 2>&1; then
     echo "Required command is unavailable: ${command_name}" >&2
     exit 1
@@ -50,7 +52,8 @@ if [[ ! -f "${RELEASE_COMPOSE}" || ! -f "${RELEASE_NGINX_CONFIG}" ]]; then
   exit 1
 fi
 
-mkdir -p "${STATE_DIR}" "${BACKUP_DIR}" "${CONFIG_BACKUP_DIR}" "${PROJECT_DIR}/nginx/conf.d"
+mkdir -p "${STATE_DIR}" "${BACKUP_DIR}" "${CONFIG_BACKUP_DIR}" "${LOG_DIR}" "${PROJECT_DIR}/nginx/conf.d"
+exec > >(tee -a "${DEPLOY_LOG}") 2>&1
 exec 9>"${LOCK_FILE}"
 if ! flock -n 9; then
   echo "Another production deployment is already running" >&2
@@ -89,9 +92,12 @@ wait_for_healthy() {
         echo "${container_name} is ${health_status}"
         return 0
         ;;
-      unhealthy|stopped)
+      stopped)
         echo "${container_name} entered state: ${health_status}" >&2
         return 1
+        ;;
+      unhealthy)
+        # Low-memory production hosts may briefly miss health checks during cold start.
         ;;
     esac
 
@@ -140,7 +146,7 @@ write_release_env() {
 rollback() {
   local exit_code="$?"
 
-  trap - ERR INT TERM
+  trap - ERR INT TERM HUP
   if [[ "${DEPLOY_SUCCEEDED}" == true || "${ROLLBACK_ARMED}" != true ]]; then
     exit "${exit_code}"
   fi
@@ -173,7 +179,12 @@ rollback() {
   exit "${exit_code}"
 }
 
-trap rollback ERR INT TERM
+trap rollback ERR INT TERM HUP
+
+if docker container inspect watchtower >/dev/null 2>&1; then
+  echo "Removing legacy Watchtower before the controlled deployment"
+  docker rm -f watchtower
+fi
 
 OLD_APP_IMAGE="$(container_image luokai-blog-app)"
 OLD_BACKEND_IMAGE="$(container_image luokai-blog-backend)"
@@ -193,7 +204,10 @@ install -m 0644 "${RELEASE_NGINX_CONFIG}" "${NGINX_CONFIG}"
 ROLLBACK_ARMED=true
 
 run_compose config -q
-run_compose pull app backend
+echo "Pulling backend image ${BACKEND_IMAGE}"
+timeout --signal=TERM 900 docker pull "${BACKEND_IMAGE}"
+echo "Pulling frontend image ${APP_IMAGE}"
+timeout --signal=TERM 900 docker pull "${APP_IMAGE}"
 
 backup_timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
 backup_temp="${BACKUP_DIR}/${backup_timestamp}-${DEPLOY_SHA}.sql.gz.tmp"
@@ -209,11 +223,11 @@ mv "${backup_temp}" "${backup_file}"
 
 echo "Deploying backend image ${BACKEND_IMAGE}"
 run_compose up -d --no-deps backend
-wait_for_healthy luokai-blog-backend 180
+wait_for_healthy luokai-blog-backend 300
 
 echo "Deploying frontend image ${APP_IMAGE}"
 run_compose up -d --no-deps app
-wait_for_healthy luokai-blog-app 120
+wait_for_healthy luokai-blog-app 180
 
 run_compose exec -T nginx nginx -t
 run_compose up -d --no-deps nginx
@@ -229,5 +243,5 @@ run_compose up -d --no-deps --remove-orphans backend app nginx
 find "${BACKUP_DIR}" -maxdepth 1 -type f -name '*.sql.gz' -mtime +30 -delete
 
 DEPLOY_SUCCEEDED=true
-trap - ERR INT TERM
+trap - ERR INT TERM HUP
 echo "Production deployment succeeded: ${DEPLOY_SHA}"

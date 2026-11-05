@@ -55,7 +55,7 @@ GitHub Actions 只在运行时代码、前后端依赖、Docker Compose、Nginx 
 - `/data/luokai-blog/uploads`；
 - MySQL 数据卷。
 
-部署脚本会先拉取两个同 SHA 镜像，再创建本地 MySQL 快照，按“后端 → 前端 → Nginx”顺序更新并检查健康状态。失败时自动切回旧容器镜像；Flyway 已执行的数据库迁移不会自动反向恢复，因此迁移必须保持至少一个旧版本的向后兼容性。发布前快照保留 30 天，长期异地备份仍由每日备份任务负责。
+部署脚本会先移除遗留 Watchtower，按“后端 → 前端”顺序拉取两个同 SHA 镜像，再创建本地 MySQL 快照，按“后端 → 前端 → Nginx”顺序更新并检查健康状态。失败时自动切回旧容器镜像；Flyway 已执行的数据库迁移不会自动反向恢复，因此迁移必须保持至少一个旧版本的向后兼容性。发布前快照保留 30 天，长期异地备份仍由每日备份任务负责。远端日志位于 `.deploy/logs/<commit-sha>.log`。
 
 首次启用前需要在 GitHub `production` Environment 中配置 ACR、SSH 和服务器变量，详见 `DEPLOYMENT.md`。ECS 不再运行 Watchtower。
 

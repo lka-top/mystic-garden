@@ -66,6 +66,8 @@ OLD_APP_IMAGE=""
 OLD_BACKEND_IMAGE=""
 ROLLBACK_ARMED=false
 DEPLOY_SUCCEEDED=false
+BACKEND_UPDATE_STARTED=false
+APP_UPDATE_STARTED=false
 
 run_compose() {
   APP_IMAGE="${ACTIVE_APP_IMAGE}" \
@@ -75,6 +77,15 @@ run_compose() {
 
 container_image() {
   docker inspect --format '{{.Config.Image}}' "$1" 2>/dev/null || true
+}
+
+remove_container_if_exists() {
+  local container_name="$1"
+
+  if docker container inspect "${container_name}" >/dev/null 2>&1; then
+    docker stop --time 30 "${container_name}" || true
+    docker rm -f "${container_name}" || true
+  fi
 }
 
 wait_for_healthy() {
@@ -163,11 +174,13 @@ rollback() {
   ACTIVE_APP_IMAGE="${OLD_APP_IMAGE:-${APP_IMAGE}}"
   ACTIVE_BACKEND_IMAGE="${OLD_BACKEND_IMAGE:-${BACKEND_IMAGE}}"
 
-  if [[ -n "${OLD_BACKEND_IMAGE}" ]]; then
+  if [[ "${BACKEND_UPDATE_STARTED}" == true && -n "${OLD_BACKEND_IMAGE}" ]]; then
+    remove_container_if_exists luokai-blog-backend
     run_compose up -d --no-deps backend || true
     wait_for_healthy luokai-blog-backend 120 || true
   fi
-  if [[ -n "${OLD_APP_IMAGE}" ]]; then
+  if [[ "${APP_UPDATE_STARTED}" == true && -n "${OLD_APP_IMAGE}" ]]; then
+    remove_container_if_exists luokai-blog-app
     run_compose up -d --no-deps app || true
     wait_for_healthy luokai-blog-app 120 || true
   fi
@@ -222,10 +235,14 @@ gzip -t "${backup_temp}"
 mv "${backup_temp}" "${backup_file}"
 
 echo "Deploying backend image ${BACKEND_IMAGE}"
+BACKEND_UPDATE_STARTED=true
+remove_container_if_exists luokai-blog-backend
 run_compose up -d --no-deps backend
 wait_for_healthy luokai-blog-backend 300
 
 echo "Deploying frontend image ${APP_IMAGE}"
+APP_UPDATE_STARTED=true
+remove_container_if_exists luokai-blog-app
 run_compose up -d --no-deps app
 wait_for_healthy luokai-blog-app 180
 
